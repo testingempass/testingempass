@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:showIn="@layout/app_bar_main">
+
+    <include
+        android:id="@+id/btn_header"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/dp_50"
+        android:background="@color/m_gray_colr"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:id="@+id/rl_result"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sp_145"
+            android:background="@color/sdk_tickcolor"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_game_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/sp_10"
+                android:text="@string/m_abandon"
+                android:textColor="@color/m_white"
+                android:textSize="@dimen/sp_20" />
+
+            <RelativeLayout
+                android:id="@+id/rl_user"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_game_status"
+                android:layout_marginTop="@dimen/sp_10">
+
+                <TextView
+                    android:id="@+id/tv_vs"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:gravity="center"
+                    android:text="@string/m_vs"
+                    android:textAllCaps="true"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:id="@+id/tv_localUserPoint"
+                    android:layout_width="@dimen/sp_55"
+                    android:layout_height="@dimen/sp_55"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/sp_10"
+                    android:layout_toLeftOf="@+id/tv_vs"
+                    android:background="@drawable/m_circle_lightblack"
+                    android:gravity="center"
+                    android:text="400"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:id="@+id/tv_opponentUserPoint"
+                    android:layout_width="@dimen/sp_55"
+                    android:layout_height="@dimen/sp_55"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/sp_10"
+                    android:layout_toRightOf="@+id/tv_vs"
+                    android:background="@drawable/m_circle_lightblack"
+                    android:gravity="center"
+                    android:text="400"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:id="@+id/tv_localUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="@dimen/sp_10"
+                    android:layout_toLeftOf="@+id/tv_localUserPoint"
+                    android:text="@string/m_jaydeep"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_14" />
+
+                <TextView
+                    android:id="@+id/tv_opponentUser"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="@dimen/sp_10"
+                    android:layout_toRightOf="@+id/tv_opponentUserPoint"
+                    android:text="@string/m_ashish"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_14" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/rl_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/rl_user">
+
+                <android.support.design.widget.FloatingActionButton
+                    android:id="@+id/btn_play"
+                    style="@style/floating_action_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:clickable="true"
+                    android:onClick="onClickPlayAgain"
+                    android:scaleType="center"
+                    android:src="@drawable/play_icon"
+                    app:backgroundTint="@color/sdk_seconderycolor" />
+
+                <Button
+                    android:id="@+id/btn_performance"
+                    android:layout_width="@dimen/sp_110"
+                    android:layout_height="@dimen/sp_36"
+                    android:layout_centerInParent="true"
+                    android:layout_marginRight="@dimen/sp_10"
+                    android:layout_marginTop="@dimen/sp_2"
+                    android:layout_toLeftOf="@+id/btn_play"
+                    android:background="@drawable/m_shape_white_rec"
+                    android:clickable="true"
+                    android:onClick="onClickPerformance"
+                    android:text="@string/m_performance"
+                    android:textAllCaps="false"
+                    android:textColor="@color/m_black_dark"
+                    android:textSize="@dimen/sp_14" />
+
+                <Button
+                    android:id="@+id/btn_summary"
+                    android:layout_width="@dimen/sp_110"
+                    android:layout_height="@dimen/sp_36"
+                    android:layout_centerInParent="true"
+                    android:layout_marginLeft="@dimen/sp_10"
+                    android:layout_marginTop="@dimen/sp_2"
+                    android:layout_toRightOf="@+id/btn_play"
+                    android:background="@drawable/m_shape_white_rec"
+                    android:clickable="true"
+                    android:onClick="onClickSummary"
+                    android:text="@string/m_summary_txt"
+                    android:textAllCaps="false"
+                    android:textColor="@color/m_black_dark"
+                    android:textSize="@dimen/sp_14" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_view_score"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sp_100"
+            android:layout_above="@+id/card_view_graph"
+            app:cardElevation="@dimen/dp_4">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/pointtxt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/sp_10"
+                    android:text="@string/m_point"
+                    android:textAllCaps="true"
+                    android:textSize="@dimen/sp_16" />
+
+                <LinearLayout
+                    android:id="@+id/ll_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/pointtxt"
+                    android:layout_margin="@dimen/sp_5">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/m_correct_answer_new"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_10" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/m_speed_bonus_new"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_10" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/m_completion_bonus_new"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_10" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/m_win_bonus_new"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_10" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/m_point_earned_new"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_10" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/ll_txt"
+                    android:layout_marginLeft="@dimen/dp_5"
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_gamePoints"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="400"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_16" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:text="@string/m_plash"
+                        android:textColor="@color/m_gray"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_speedBonus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="400"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_16" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:text="@string/m_plash"
+                        android:textColor="@color/m_gray"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_completionBonus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="400"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_16" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:text="@string/m_plash"
+                        android:textColor="@color/m_gray"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_winBonus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="400"
+                            android:textColor="@color/m_black_dark"
+                            android:textSize="@dimen/sp_16" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginRight="5dp"
+                        android:text="@string/m_equel"
+                        android:textColor="@color/m_gray"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_pointEarned"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="400"
+                            android:textColor="@color/sdk_primarycolor"
+                            android:textSize="@dimen/sp_16" />
+                    </LinearLayout>
+                </LinearLayout>
+            </RelativeLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_view_graph"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sp_145"
+            android:layout_above="@+id/card_view_level"
+            app:cardElevation="@dimen/dp_4">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_margin="@dimen/sp_5"
+                        android:text="@string/m_accuracy"
+                        android:textColor="@color/m_black_dark"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_chartAccuracy"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="@dimen/sp_26">
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/chartAccuracy"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_centerHorizontal="true"
+                        android:layout_margin="@dimen/sp_5"
+                        android:text="@string/m_speed"
+                        android:textColor="@color/m_black_dark"
+                        android:textSize="@dimen/sp_16" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_chartSpeed"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginBottom="@dimen/sp_26">
+
+                        <com.github.mikephil.charting.charts.PieChart
+                            android:id="@+id/chartSpeed"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_gravity="center" />
+                    </LinearLayout>
+
+                </RelativeLayout>
+            </LinearLayout>
+        </android.support.v7.widget.CardView>
+
+        <android.support.v7.widget.CardView
+            android:id="@+id/card_view_level"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/sp_90"
+            android:layout_alignParentBottom="true"
+            android:foregroundGravity="center"
+            app:cardElevation="@dimen/dp_4">
+
+            <include
+                android:id="@+id/ll_level"
+                layout="@layout/m_level_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <ImageView
+                android:id="@+id/iv_small_banner"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:visibility="gone" />
+        </android.support.v7.widget.CardView>
+
+    </RelativeLayout>
+</RelativeLayout>
+
+

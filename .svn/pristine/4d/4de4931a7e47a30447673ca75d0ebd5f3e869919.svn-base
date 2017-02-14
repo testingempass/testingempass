@@ -1,0 +1,68 @@
+package com.empass.sdk.customview;
+
+import android.content.Context;
+import android.content.res.TypedArray;
+import android.graphics.Typeface;
+import android.util.AttributeSet;
+import android.widget.EditText;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.SDKConstant;
+
+
+/**
+ *
+ */
+public class MobiEditText extends EditText {
+    /**
+     *
+     */
+    public transient Typeface defaultTypeface = Typeface.createFromAsset(getContext().getAssets(), SDKConstant.ROBOTO);
+    /**
+     *
+     */
+
+    /**
+     *
+     */
+    public MobiEditText(final Context context) {
+        super(context);
+        setTypeface(defaultTypeface);
+    }
+
+    /**
+     * @param context
+     * @param attrs
+     */
+    public MobiEditText(final Context context, final AttributeSet attrs) {
+        super(context, attrs);
+        setTypeFaceFromAttributes(context, attrs);
+    }
+
+    /**
+     * @param context
+     * @param attrs
+     * @param defStyle
+     */
+    public MobiEditText(final Context context, final AttributeSet attrs, final int defStyle) {
+        super(context, attrs, defStyle);
+        setTypeFaceFromAttributes(context, attrs);
+    }
+
+    /**
+     * @param context
+     * @param attrs
+     */
+    private void setTypeFaceFromAttributes(final Context context, final AttributeSet attrs) {
+        final TypedArray attributelist = context.getTheme().obtainStyledAttributes(attrs, R.styleable.MobiEditTExt, 0, 0);
+        final String fontString = attributelist.getString(R.styleable.MobiEditTExt_Mobi_edittext_typeface);
+        if (null == fontString) {
+            setTypeface(defaultTypeface);
+
+        } else {
+            final Typeface customtypeface = Typeface.createFromAsset(getContext().getAssets(), "fonts/" + fontString);
+            setTypeface(customtypeface);
+        }
+    }
+
+}

@@ -1,0 +1,286 @@
+package com.empass.sdk.fragment;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.LeaderboardAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.utils.Urls;
+import com.empass.sdk.vo.DataVO;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.LeaderVO;
+import com.empass.sdk.vo.LeaderboardDataVO;
+import com.empass.sdk.vo.User;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+
+/**
+ * Created by Deepak on 11/4/2016.
+ */
+public class LeaderboardGlobleFragment extends Fragment {
+    public transient String color, type, skillId;
+    /**
+     * Declaer varable
+     */
+    private transient Goal[] goal;
+    int goalIndex;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvLeaderBoard;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvMinGame;
+    /**
+     * List object for Listview
+     */
+    public transient ListView listLeaderboard;
+    /**
+     * Declaer variable
+     */
+    public transient LinearLayout llSummary;
+    /**
+     * Declaer variable
+     */
+    public transient LinearLayout llCity;
+    /**
+     * Declaer variable
+     */
+    public transient LinearLayout llCC;
+    /**
+     * object of database empassHelper class
+     */
+    protected static transient SDKDBHelper dbHelper;
+    /**
+     * object of database controller class
+     */
+    protected transient SDKDatabaseController dbController;
+    /**
+     * Declaer varable
+     */
+    private transient String noLbd;
+    /**
+     * Vo for leader arraylist
+     */
+    private transient LeaderVO leadervo;
+    /**
+     * Declaer varable
+     */
+    private transient LeaderboardDataVO leaderboardDataVO;
+    /**
+     * Declaer varable
+     */
+    public transient User user;
+
+    public LeaderboardGlobleFragment() {
+        // Required empty public constructor
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_leaderboard, container, false);
+        try {
+            tvLeaderBoard = (TextView) rootView.findViewById(R.id.tv_leaderboard);
+            tvMinGame = (TextView) rootView.findViewById(R.id.mininum);
+            listLeaderboard = (ListView) rootView.findViewById(R.id.listLeaderboard);
+            llSummary = (LinearLayout) rootView.findViewById(R.id.ll_summary);
+            llCity = (LinearLayout) rootView.findViewById(R.id.ll_city);
+            llCC = (LinearLayout) rootView.findViewById(R.id.ll_cc);
+            dbHelper = SDKDBHelper.getInstance(getActivity());
+            dbController = new SDKDatabaseController(getActivity());
+            Bundle bundle = this.getArguments();
+            user = dbHelper.getLogedUser();
+            goal = dbHelper.getUserGoals();
+            type = bundle.getString(SDKConstant.INDEX, null);
+            color = bundle.getString(SDKConstant.COLOR, null);
+            skillId = bundle.getString(SDKConstant.SKILL_ID, null);
+            goalIndex = bundle.getInt(SDKConstant.GOALINDEX, SDKConstant.ZERO_VALUE);
+            llCC.setVisibility(View.GONE);
+            llCity.setVisibility(View.GONE);
+            switch (type) {
+                case SDKConstant.ZERO:
+                    type = SDKConstant.ALLTIME;
+                    LogUtils.debug(SDKConstant.TAG, type);
+                    noLbd = getString(R.string.m_play_minimum_for);
+                    showDbData(skillId, type);
+                    break;
+                case SDKConstant.ONE:
+                    type = SDKConstant.MONTHLY;
+                    LogUtils.debug(SDKConstant.TAG, "type" + type);
+                    noLbd = getString(R.string.m_play_minimum_formonth);
+                    showDbData(skillId, type);
+                    break;
+                case SDKConstant.TWOVALUE:
+                    type = SDKConstant.DAILY;
+                    LogUtils.debug(SDKConstant.TAG, "type" + type);
+                    noLbd = getString(R.string.m_play_minimum_forday);
+                    showDbData(skillId, type);
+                    break;
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return rootView;
+    }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+    }
+
+
+    /**
+     * show minimum game alert
+     */
+    private void showMinimumGameAlert() {
+        try {
+            if (Integer.parseInt(goal[goalIndex].getTotalPlayed()) < SDKConstant.THREE) {
+                llSummary.setVisibility(View.VISIBLE);
+                tvMinGame.setText(noLbd);
+            } else {
+                llSummary.setVisibility(View.GONE);
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param subSkillId
+     */
+    protected void showDbData(final String subSkillId, final String type) {
+        try {
+            final String[] res = dbHelper.getLeaderBoardData(subSkillId, SDKConstant.ALLTIME);
+            if (null == res[1]) {
+                listLeaderboard.setVisibility(View.GONE);
+                tvLeaderBoard.setVisibility(View.VISIBLE);
+            } else {
+                tvLeaderBoard.setVisibility(View.GONE);
+                final SDKHttpRequestVO httpRequestVO = null;
+                if (res[1].contains(Urls.RESPONSE_COSE_201)) {
+                    tvLeaderBoard.setVisibility(View.GONE);
+                    leaderboardDataVO = dbController.handleLeaderboardResponse(res[1], httpRequestVO);
+                    showLeadeboardList(leaderboardDataVO, type);
+                } else {
+                    tvLeaderBoard.setVisibility(View.VISIBLE);
+                    listLeaderboard.setVisibility(View.GONE);
+                    JSONObject bundleObject;
+                    String msgs;
+                    try {
+                        bundleObject = new JSONObject(res[1]);
+                        msgs = bundleObject.getString(SDKConstant.MSG);
+                        tvLeaderBoard.setText(msgs);
+                    } catch (JSONException e) {
+                        LogUtils.error(SDKConstant.TAG, "Exception", e);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            listLeaderboard.setVisibility(View.GONE);
+            tvLeaderBoard.setVisibility(View.VISIBLE);
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method to fill list from adapter class
+     *
+     * @param leaderboardDataVO
+     * @param type
+     */
+    @SuppressLint("SetTextI18n")
+    private void showLeadeboardList(final LeaderboardDataVO leaderboardDataVO,
+                                    final String type) {
+        try {
+            DataVO[] dataVOs = null;
+            switch (type) {
+                case SDKConstant.ALLTIME:
+                    dataVOs = leaderboardDataVO.data.getAllTime();
+                    break;
+                case SDKConstant.MONTHLY:
+                    dataVOs = leaderboardDataVO.data.getMonthly();
+                    break;
+                case SDKConstant.DAILY:
+                    dataVOs = leaderboardDataVO.data.getDaily();
+                    break;
+            }
+            if (null != dataVOs && dataVOs.length > 0) {
+                boolean notPlay = false;
+                showMinimumGameAlert();
+                listLeaderboard.setVisibility(View.VISIBLE);
+                tvLeaderBoard.setVisibility(View.GONE);
+                final ArrayList<LeaderVO> list = new ArrayList<LeaderVO>();
+                for (int i = 0; i < dataVOs.length; i++) {
+                    leadervo = getLeaderBoard();
+                    leadervo.setPlayerId(dataVOs[i].getPlayerId());
+                    leadervo.setRank(dataVOs[i].getRank());
+                    leadervo.setCountry(dataVOs[i].getPlayerCountry());
+                    leadervo.setPlayerName(dataVOs[i].getPlayerName());
+                    leadervo.setcLevel(dataVOs[i].getcLevel());
+                    leadervo.setcSubLevel(dataVOs[i].getcSublevel());
+                    leadervo.setAvgScore(dataVOs[i].getTotalScore());
+                    leadervo.setDomainId(Integer.parseInt(dataVOs[i].getDomainId()));
+                    leadervo.setCcName(dataVOs[i].getCcname());
+                    leadervo.setImage(dataVOs[i].getImage());
+                    leadervo.setDomainColor(color);
+                    list.add(leadervo);
+                }
+                final LeaderVO leadervo1 = new LeaderVO();
+                leadervo1.setPlayerId("Demo");
+                leadervo1.setPlayerName("Demo");
+                list.add(leadervo1);
+                final LeaderboardAdapter leaderboardAdap = new LeaderboardAdapter(getContext(), R.layout.m_activity_leaderboard, list,
+                        user.getName(), user.getId());
+                leaderboardAdap.notifyDataSetChanged();
+                listLeaderboard.setAdapter(leaderboardAdap);
+                listLeaderboard.setFooterDividersEnabled(false);
+            } else {
+                llSummary.setVisibility(View.VISIBLE);
+                tvMinGame.setText(noLbd);
+                tvLeaderBoard.setVisibility(View.VISIBLE);
+                tvLeaderBoard.setText("No Leaderboard Available");
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @return
+     */
+
+    private LeaderVO getLeaderBoard() {
+        return new LeaderVO();
+    }
+}
+

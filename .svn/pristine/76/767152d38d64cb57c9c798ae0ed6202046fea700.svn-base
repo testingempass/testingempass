@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linearlayout_listview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipToPadding="false">
+
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        app:cardElevation="@dimen/dp_3"
+        card_view:cardCornerRadius="4dp"
+        card_view:contentPadding="5dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/m_white">
+
+            <RelativeLayout
+                android:id="@+id/ll_imageview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentLeft="true"
+                android:layout_marginTop="10dp"
+                android:background="@color/m_white">
+
+                <ImageView
+                    android:id="@+id/ibUserImageSlider"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/m_education_circle" />
+
+                <TextView
+                    android:id="@+id/textView_first_char"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginTop="5dp"
+                    android:gravity="center"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="5sp"
+                android:layout_marginTop="10dp"
+                android:layout_toLeftOf="@+id/ll_option"
+                android:layout_toRightOf="@+id/ll_imageview"
+                android:background="@color/m_white"
+                android:orientation="vertical">
+
+                <com.empass.sdk.customview.MobiTextView
+                    android:id="@+id/textView_degree"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:gravity="left"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="5dp"
+                    android:textColor="@color/m_black_dark"
+                    android:textSize="15dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight=".40"
+                    android:gravity="left"
+                    android:orientation="horizontal"
+                    android:paddingLeft="10dp"
+                    android:paddingRight="5dp">
+
+
+                    <com.empass.sdk.customview.MobiTextView
+                        android:id="@+id/textView_start_year"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="left"
+                        android:textColor="@color/material_grey_600"
+                        android:textSize="10dp" />
+
+                    <com.empass.sdk.customview.MobiTextView
+                        android:id="@+id/textView_grade"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="left"
+                        android:textColor="#63A1BA"
+                        android:textSize="10dp" />
+
+                </LinearLayout>
+
+                <com.empass.sdk.customview.MobiTextView
+                    android:id="@+id/textView_college_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight=".30"
+                    android:textColor="@color/material_grey_600"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_option"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_alignParentRight="true"
+                android:layout_marginLeft="5sp"
+                android:background="@color/m_white">
+
+                <ImageView
+                    android:id="@+id/option"
+                    android:layout_width="match_parent"
+                    android:layout_height="18sp"
+                    android:layout_marginTop="5dp"
+                    android:src="@drawable/ic_action_overflow" />
+            </LinearLayout>
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+
+</RelativeLayout>

@@ -1,0 +1,71 @@
+package com.empass.sdk.vo;
+import com.google.gson.annotations.SerializedName;
+
+public class EducationDataVO {                              //EducationVO is use for education data @author Deepak
+	@SerializedName("from_year")                            //decler variable
+	private String startYear;
+	@SerializedName("to_year")
+	private	String endYear;
+	@SerializedName("college")
+	private	String collegeName;
+	@SerializedName("degree")
+	private	String degree;
+	@SerializedName("branch")
+	private	String study;
+	@SerializedName("percent")
+	private	String grade;
+	@SerializedName("player_id")
+	private	String playerId;
+	@SerializedName("id")
+	private int id;
+	public EducationDataVO() {	}
+
+	public String getStartYear() {
+		return startYear;
+	}
+	public void setStartYear(String startYear) {
+		this.startYear = startYear;
+	}
+	public String getEndYear() {
+		return endYear;
+	}
+	public void setEndYear(String endYear) {
+		this.endYear = endYear;
+	}
+	public String getCollegeName() {
+		return collegeName;
+	}
+	public void setCollegeName(String collegeName) {
+		this.collegeName = collegeName;
+	}
+	public String getDegree() {
+		return degree;
+	}
+	public void setDegree(String degree) {
+		this.degree = degree;
+	}
+	public String getStudy() {
+		return study;
+	}
+	public void setStudy(String study) {
+		this.study = study;
+	}
+	public String getGrade() {
+		return grade;
+	}
+	public void setGrade(String grade) {
+		this.grade = grade;
+	}
+	public String getPlayerId() {
+		return playerId;
+	}
+	public void setPlayerId(String playerId) {
+		this.playerId = playerId;
+	}
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+}

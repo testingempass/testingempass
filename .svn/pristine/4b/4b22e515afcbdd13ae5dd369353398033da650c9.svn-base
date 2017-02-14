@@ -1,0 +1,98 @@
+package com.empass.sdk.utils;
+
+import com.empass.sdk.offline.ExcludeAnnotationExclusionStrategy;
+import com.empass.sdk.offline.GameIdVO;
+import com.empass.sdk.offline.UserAnswer;
+import com.empass.sdk.s2.AnswerTimeResponse;
+import com.empass.sdk.s2.ApiQuestion;
+import com.empass.sdk.s2.FinalResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+
+abstract public class AbstractBEJsonParser {                                   // Json parser class   @author Deepak
+    private static Gson gson = new GsonBuilder().setDateFormat(
+            "yyyy-MM-dd'T'kk:mm:ss").create();
+
+    public static final String convertToJson(final Object src) {
+        return GSON.toJson(src);
+    }
+
+    public static <T> T parseServerResponse(final String json, final Class<T> clazz) {     //@param json  @param clazz  @return
+        return gson.fromJson(json, clazz);
+    }
+
+    /**
+     * declear variable
+     */
+    private static final String PREFIX_JSON_FORMAT = "<h1>Json format</h1>";
+    /**
+     * declear variable
+     */
+    private static final String SUFFIX_JSON_FORMAT = "<h1>Array</h1>";
+    /**
+     * declear variable
+     */
+    private static final Gson GSON = new GsonBuilder().setExclusionStrategies(new ExcludeAnnotationExclusionStrategy()).create();
+
+    /**
+     * getJSONStringFromResponse is use to parse json
+     *
+     * @param apiResponse
+     * @return
+     */
+    public static String getJSONStringFromResponse(final String apiResponse) {
+        final String result = apiResponse.substring(apiResponse.indexOf(PREFIX_JSON_FORMAT) + PREFIX_JSON_FORMAT.length(),
+                apiResponse.indexOf(SUFFIX_JSON_FORMAT)).trim();
+        return result;
+    }
+
+    /**
+     * parseQuestionsJSONString is use question json
+     *
+     * @param jsonString
+     * @return
+     */
+    public static ApiQuestion[] parseQuestionsJSONString(final String jsonString) {
+        return GSON.fromJson(jsonString, ApiQuestion[].class);
+    }
+
+
+    /**
+     * parseAnswerJSONString is parse answer json
+     *
+     * @param jsonString
+     * @return
+     */
+    public static UserAnswer parseAnswerJSONString(final String jsonString) {
+        return GSON.fromJson(jsonString, UserAnswer.class);
+
+    }
+
+    public static AnswerTimeResponse[] getJSONStringFromResponseTime(String resonse) {
+        return GSON.fromJson(resonse, AnswerTimeResponse[].class);
+    }
+
+    public static FinalResult[] getJSONStringFromResponseFinal(String response) {
+        return GSON.fromJson(response, FinalResult[].class);
+    }
+
+    /**
+     * @param resultJSON
+     * @return
+     */
+    public static GameIdVO parseGameJSONString(final String resultJSON) {
+        return GSON.fromJson(resultJSON, GameIdVO.class);
+
+    }
+
+    /**
+     * parseServerFinalResultResponses is use to parse server response
+     *
+     * @param response
+     * @param class1
+     * @return
+     */
+    public static FinalResult[] parseServerFinalResultResponses(final String response, final Class<FinalResult> class1) {
+        return GSON.fromJson(response, FinalResult[].class);
+    }
+}

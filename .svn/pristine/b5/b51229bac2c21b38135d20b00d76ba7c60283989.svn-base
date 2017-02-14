@@ -1,0 +1,69 @@
+package com.empass.sdk.s2;
+
+/**
+ * @author Deepak
+ */
+public final class WarpResponseCode {
+    /**
+     *
+     */
+    public static final int QUESTIONPACKET = 0;
+    /**
+     *
+     */
+    public static final int USERNAME = 5;
+    /**
+     *
+     */
+    public static final int ANSWERUPDATE = 8;
+    /**
+     *
+     */
+    public static final byte ANSWERPACKET = 2;
+    /**
+     *
+     */
+    public static final byte STARTQUIZ = 1;
+    /**
+     *
+     */
+    public static final byte FINALRESULT = 4;
+    /**
+     *
+     */
+    public static final byte ABANDONED = 7;
+    /**
+     *
+     */
+    public static final byte NOQUESTION = 11;
+    /**
+     *
+     */
+    public static final int TIMEDIFF = 12;
+    /**
+     *
+     */
+    public static final String DIFF_DATE = "App and Server time out of sync. Please set correct time from settings";
+    /**
+     *
+     */
+    public static final String NO_QUESTION_MSG = "No Questions Are Avalible Please Try Again";
+    /**
+     * declear variable
+     */
+    public static final String ABANDONED_CODE = "ABANDONED";
+    /**
+     * declear variable
+     */
+    public static final String QUE = "201";
+    /**
+     * declear variable
+     */
+    public static final String ANS = "202";
+    /**
+     * declear variable
+     */
+    public static final String FGR = "203";
+    private WarpResponseCode() {
+    }
+}

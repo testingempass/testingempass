@@ -1,0 +1,16 @@
+package com.empass.sdk.utils;
+
+@SuppressWarnings("ALL")
+public class Enums {                        //Class to define enums for slider
+    public Enums() {
+        super();
+    }             //Class Constructor
+
+    public static enum sliderOption {       //Enums For slider
+        Leaderboard, Courses, Jobs, Contribute, Coins, Chat, Help, Tips, Logout
+    }
+
+    public static enum PendingAction {         //declear variable
+        NONE, POST_PHOTO, POST_STATUS_UPDATE
+    }
+}

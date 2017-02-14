@@ -1,0 +1,46 @@
+package com.empass.sdk.utils;
+
+public final class S2Constant {
+
+    //Class for S2 constants  @author Deepak
+    public static final String KEY_SUB_SKILL = "subskill";     //sdkConstant for S2
+    public static final String KEY_SKILL = "skill";
+    public static final String KEY_LEVEL = "level";
+    public static final String KEY_VIRTUAL = "isVirtual";
+    public static final String TRUE = "true";
+    public static final String FALSE = "false";
+    public static final String OPTION_1 = "choice_1";
+    public static final String OPTION_2 = "choice_2";
+    public static final String OPTION_3 = "choice_3";
+    public static final String OPTION_4 = "choice_4";
+    public static final String QUESTION_ID = "QuestionId";
+    public static final String ANSWER = "Answers";
+    public static final String TIME = "Time";
+    public static final String USERNAME = "username";
+    public static final String NO_ANSWER = "No Answer";
+    public static final String TIMER_PATH = "drawable/timer_";
+    public static final String STATUS = "Status";
+    public static final String START_GAME = "Start Game";
+    public static final String ABANDONED_GAME = "Abandoned Game";
+    public static final String WIN = "Win";
+    public static final String LOSS = "Lose";
+    public static final String YOU_WON = "WIN";
+    public static final String YOU_LOST = "LOST";
+    public static final String ABANDONED = "Abandoned";
+    public static final String USER_ANSWER = "User Answer";
+    public static final String OPP_ANSWER = "Opp Answer";
+    public static final String CORRECT_ANSWER = "Correct Answer";
+    public static final String PLAY_NOW = "PLAY NOW";
+    public static final String CURRENT_SCORE = "</font>";
+    public static final String OPPONENT = "0-0-0";
+    public static final int FOUR = 4;
+    public static final int MAX_RECOVERY_ATTEMPT = 25;
+    public static final int MAX_USER = 2;
+    // public static final String START_FONT = "<html><body><font color=#0194DA size=\"9\">";
+    public static final String START_FONT = "<html><body><font color=#000000 size=\"9\">";
+    public static final String START_FONT_F = "<html><body><font color=";
+    public static final String START_FONT_S = " size=\"9\">";
+
+    private S2Constant() {
+    }
+}

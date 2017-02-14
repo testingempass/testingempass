@@ -1,0 +1,165 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.text.Html;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.SkillDataVO;
+import com.squareup.picasso.Picasso;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class SkillButtonAdapter extends ArrayAdapter<SkillDataVO> {
+    /**
+     * declear vabiable
+     */
+    private transient final Context context;
+    /**
+     * declear vabiable
+     */
+    private transient final int subSkillId;
+    /**
+     * declear vabiable
+     */
+    private transient SDKDBHelper dbHelper;
+    /**
+     * declear vabiable
+     */
+    private int[] colorArray = {
+            R.color.c_yellow,
+            R.color.c_greyish,
+            R.color.c_blue,
+            R.color.c_purple,
+            R.color.c_red,
+            R.color.c_teal,
+            R.color.c_green,
+            R.color.c_brown,
+    };
+
+    /**
+     */
+    public SkillButtonAdapter(final Context context, final int resource, final SkillDataVO[] skillDataVO, final int subSkillId) {
+        super(context, resource, skillDataVO);
+        this.context = context;
+        this.subSkillId = subSkillId;
+        dbHelper = SDKDBHelper.getInstance(context);
+
+    }
+
+
+    /**
+     * getView
+     */
+    @SuppressLint({"InflateParams", "SetTextI18n"})
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        final SkillDataVO data = getItem(position);
+        try {
+            final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            final ViewHolder holder;
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = inflater.inflate(R.layout.m_item_skill, parent, false);
+                holder = new ViewHolder();
+                holder.tvSkill = (TextView) convertView.findViewById(R.id.tv_skill);
+                holder.tvSkillId = (TextView) convertView.findViewById(R.id.tv_skillid);
+                holder.tvSkillSubTxt = (TextView) convertView.findViewById(R.id.tv_skill_subtxt);
+                holder.tvCoin = (TextView) convertView.findViewById(R.id.tv_coin);
+                holder.tvSecquer = (TextView) convertView.findViewById(R.id.tv_secquer);
+                holder.tvPaid = (TextView) convertView.findViewById(R.id.tv_paid);
+                holder.tvComming = (TextView) convertView.findViewById(R.id.tv_comingsoon);
+                holder.rlSkill = (RelativeLayout) convertView.findViewById(R.id.rl_skill);
+                holder.ivIcon = (ImageView) convertView.findViewById(R.id.iv_skill_icon);
+                holder.ivCoin = (ImageView) convertView.findViewById(R.id.iv_coin);
+                holder.ivLock = (ImageView) convertView.findViewById(R.id.iv_lock);
+                convertView.setTag(holder);
+            }
+            if (subSkillId == Integer.parseInt(data.getId())) {
+                holder.tvSkill.setText(Html.fromHtml(SDKCommonUtils.getFormatedText(data.getName(), "#000000")));
+                holder.tvSkillSubTxt.setText(Html.fromHtml(SDKCommonUtils.getFormatedText(data.getPromoText1(), "#20000000")));
+                holder.rlSkill.setBackgroundColor(Color.parseColor(SDKCommonUtils.getColorCodeWithLessOpacity(dbHelper.getSkillColor(data.getId()))));
+            } else {
+                holder.tvSkill.setText(Html.fromHtml(SDKCommonUtils.getFormatedText(data.getName(), "#000000")));
+                holder.tvSkillSubTxt.setText(Html.fromHtml(SDKCommonUtils.getFormatedText(data.getPromoText1(), "#d3d3d3")));
+                holder.rlSkill.setBackgroundColor(context.getResources().getColor(R.color.m_white));
+            }
+            holder.tvSkillId.setText(data.getId());
+            final int index = SDKCommonUtils.generateRandomNumber(0, 7);
+            if (null != data.getColor() && !SDKConstant.EMPTY.equalsIgnoreCase(data.getColor())) {
+                holder.ivIcon.setBackgroundColor(Color.parseColor(data.getColor()));
+            } else {
+                holder.ivIcon.setBackgroundColor(context.getResources().getColor(colorArray[index]));
+            }
+
+            holder.tvSecquer.setText(data.getIsSecured());
+            holder.tvPaid.setText(data.getPaymentMode() + "#" + data.getAmount());
+            holder.ivCoin.setVisibility(View.GONE);
+            holder.ivLock.setVisibility(View.GONE);
+            holder.tvCoin.setVisibility(View.GONE);
+            holder.tvComming.setVisibility(View.GONE);
+            if (SDKConstant.YTEXT.equalsIgnoreCase(data.getIsSecured())) {
+                holder.ivLock.setVisibility(View.VISIBLE);
+                holder.ivLock.setImageResource(R.drawable.lock);
+                holder.ivLock.setColorFilter(context.getResources().getColor(R.color.m_red));
+                holder.tvCoin.setVisibility(View.GONE);
+            }
+            if (SDKConstant.PAID.equalsIgnoreCase(data.getPaymentMode())) {
+                holder.ivCoin.setVisibility(View.VISIBLE);
+                holder.ivCoin.setImageResource(R.drawable.paid_icon);
+                holder.ivCoin.setColorFilter(context.getResources().getColor(R.color.sdk_tickcolor));
+                holder.tvCoin.setVisibility(View.VISIBLE);
+                holder.tvCoin.setText(data.getAmount());
+            }
+            if (SDKConstant.ZERO.equalsIgnoreCase(data.getQuestionCount())) {
+                holder.tvComming.setVisibility(View.VISIBLE);
+            }
+            LogUtils.debug(SDKConstant.TAG, "Image:" + data.getLogo());
+            if (data.getLogo().contains("https:")) {
+                if (!SDKConstant.EMPTY.equalsIgnoreCase(data.getLogo()) && data.getLogo().length() > 5) {
+                    Picasso.with(context).load(data.getLogo()).error(R.drawable.ic_launcher).placeholder(R.drawable.m_shape_white_without_border).into(holder.ivIcon);
+                } else {
+                    Picasso.with(context).load(R.drawable.ic_launcher).into(holder.ivIcon);
+                }
+            } else {
+                final String imageName = "drawable/" + data.getLogo();
+                final int imageResource = SDKCommonUtils.getImageResource(context, imageName);
+                holder.ivIcon.setImageResource(imageResource);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    public static class ViewHolder {
+        private transient TextView tvSkill;
+        private transient TextView tvSkillId;
+        private transient TextView tvSkillSubTxt;
+        private transient TextView tvCoin;
+        private transient RelativeLayout rlSkill;
+        private transient ImageView ivIcon;
+        private transient ImageView ivCoin;
+        private transient ImageView ivLock;
+        private transient TextView tvSecquer;
+        private transient TextView tvPaid;
+        private transient TextView tvComming;
+    }
+}

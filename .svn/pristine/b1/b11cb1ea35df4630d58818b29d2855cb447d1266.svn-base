@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/m_white">
+
+    <include
+        android:id="@+id/btn_header"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+    <LinearLayout
+        android:id="@+id/ll_changePwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_60"
+        android:orientation="vertical">
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_password"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hintTextAppearance="@style/orangeTextInputLayout">
+
+            <com.empass.sdk.customview.MobiEditText
+                android:id="@+id/etOldPwd"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_60"
+                android:layout_margin="@dimen/dp_5"
+                android:background="@drawable/m_underline_shape"
+                android:digits="0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM@_%#!*$"
+                android:ems="10"
+                android:hint="@string/m_oldPassword"
+                android:inputType="textVisiblePassword"
+                android:lines="1"
+                android:padding="5dp"
+                android:singleLine="true"
+                android:textSize="@dimen/sp_17" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_npassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hintTextAppearance="@style/orangeTextInputLayout">
+
+            <com.empass.sdk.customview.MobiEditText
+                android:id="@+id/etNewPwd"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_60"
+                android:layout_margin="@dimen/dp_5"
+                android:background="@drawable/m_underline_shape"
+                android:digits="0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM@_%#!*$"
+                android:ems="10"
+                android:hint="@string/m_newPassword"
+                android:inputType="textVisiblePassword"
+                android:lines="1"
+                android:padding="5dp"
+                android:singleLine="true"
+                android:textSize="@dimen/sp_17" />
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/input_layout_cpassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:hintTextAppearance="@style/orangeTextInputLayout">
+
+            <com.empass.sdk.customview.MobiEditText
+                android:id="@+id/etConfirmPwd"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_60"
+                android:layout_margin="@dimen/dp_5"
+                android:background="@drawable/m_underline_shape"
+                android:digits="0123456789qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM@_%#!*$"
+                android:ems="10"
+                android:hint="@string/m_confirmPassword"
+                android:imeOptions="actionDone"
+                android:inputType="textVisiblePassword"
+                android:lines="1"
+                android:padding="5dp"
+                android:singleLine="true"
+                android:textSize="@dimen/sp_17" />
+        </android.support.design.widget.TextInputLayout>
+
+        <LinearLayout
+            android:id="@+id/linearLayout1"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_60"
+            android:orientation="horizontal">
+
+            <com.empass.sdk.customview.MobiButton
+                android:id="@+id/btnChangePwd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_5"
+                android:layout_weight="1"
+                android:background="@drawable/m_info_button"
+                android:onClick="onClickSave"
+                android:text="@string/m_save_small"
+                android:textColor="@drawable/m_orange_text"
+                android:textSize="@dimen/sp_16" />
+
+            <com.empass.sdk.customview.MobiButton
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_5"
+                android:layout_weight="1"
+                android:background="@drawable/m_info_button"
+                android:onClick="onClickCancel"
+                android:text="@string/m_cancel_small"
+                android:textColor="@drawable/m_orange_text"
+                android:textSize="@dimen/sp_16" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
+

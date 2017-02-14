@@ -1,0 +1,272 @@
+package com.empass.sdk.offline;
+
+import com.empass.sdk.utils.SDKConstant;
+import com.google.gson.annotations.Expose;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+/**
+ * Created by Deepak on 9/29/2016.
+ */
+public class OfflinePlayer {
+    /**
+     * declear variable
+     */
+    @Expose(serialize = false)
+    private User user;
+    /**
+     * declear variable
+     */
+    private String username;
+    /**
+     * declear variable
+     */
+    private Map<String, UserAnswer> answerPerQuestion;
+    /**
+     * declear variable
+     */
+    private Map<String, Integer> scorePerQuestion;
+    /**
+     * variable declear
+     */
+    private int bonusCount;
+    /**
+     * declear variable
+     */
+    private int totalSpeedBonus;
+    /**
+     * declear variable
+     */
+    private int totalGamePoint;
+    /**
+     * declear variable
+     */
+    private int winBonus;
+    /**
+     * declear variable
+     */
+    private int completionBonus;
+    /**
+     * declear variable
+     */
+    private int totalTime;
+    /**
+     * declear variable
+     */
+    private String gameStatus = SDKConstant.LOSS_MESSAGE;
+    /**
+     * declear variable
+     */
+    private AtomicBoolean readyToPlay;
+
+    /**
+     * @param user
+     */
+    public OfflinePlayer(User user) {
+        this.user = user;
+        this.username = user.getName();
+        answerPerQuestion = new HashMap<>();
+        scorePerQuestion = new HashMap<>();
+        readyToPlay = new AtomicBoolean(false);
+    }
+
+    /**
+     * @return
+     */
+    public boolean isReadyToPlay() {
+        return readyToPlay.get();
+    }
+
+    /**
+     *
+     */
+    public void setReadyToPlay() {
+        readyToPlay.set(true);
+    }
+
+    /**
+     * @return
+     */
+    public User getUser() {
+        return user;
+    }
+
+    /**
+     * @return
+     */
+    public Map<String, UserAnswer> getAnswerPerQuestion() {
+        return answerPerQuestion;
+    }
+
+    /**
+     * @return
+     */
+    public Map<String, Integer> getScorePerQuestion() {
+        return scorePerQuestion;
+    }
+
+    /**
+     * @param questionId
+     * @return
+     */
+    public UserAnswer getUserAnswerForQuestion(String questionId) {
+        return answerPerQuestion.get(questionId);
+    }
+
+    /**
+     * @param answerPerQuestion
+     */
+    public void setAnswerPerQuestion(Map<String, UserAnswer> answerPerQuestion) {
+        this.answerPerQuestion = answerPerQuestion;
+    }
+
+    /**
+     * @return
+     */
+    public String getUsername() {
+        return username;
+    }
+
+    /**
+     * @param username
+     */
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    /**
+     * @return
+     */
+    public int getTotalScore() {
+        return this.totalSpeedBonus + this.totalGamePoint;
+    }
+
+    /**
+     * @return
+     */
+    public int getTotalGamePoint() {
+        return totalGamePoint;
+    }
+
+    /**
+     * @param totalGamePoint
+     */
+    public void setTotalGamePoint(int totalGamePoint) {
+        this.totalGamePoint = totalGamePoint + this.totalGamePoint;
+    }
+
+    /**
+     * @return
+     */
+    public int getWinBonus() {
+        return winBonus;
+    }
+
+    /**
+     * @param winBonus
+     */
+    public void setWinBonus(int winBonus) {
+        this.winBonus = winBonus;
+    }
+
+    /**
+     * @return
+     */
+    public int getCompletionBonus() {
+        return completionBonus;
+    }
+
+    /**
+     * @param completionBonus
+     */
+    public void setCompletionBonus(int completionBonus) {
+        this.completionBonus = completionBonus;
+    }
+
+    /**
+     * @return
+     */
+    public int getTotalTime() {
+        return totalTime;
+    }
+
+    /**
+     * @param totalTime
+     */
+    public void setTotalTime(int totalTime) {
+        this.totalTime = totalTime + this.totalTime;
+    }
+
+    /**
+     * @return
+     */
+    public String getGameStatus() {
+        return gameStatus;
+    }
+
+    /**
+     * @param gameStatus
+     */
+    public void setGameStatus(String gameStatus) {
+        this.gameStatus = gameStatus;
+    }
+
+    /**
+     * @return
+     */
+    public AtomicBoolean getReadyToPlay() {
+        return readyToPlay;
+    }
+
+    /**
+     * @param readyToPlay
+     */
+    public void setReadyToPlay(AtomicBoolean readyToPlay) {
+        this.readyToPlay = readyToPlay;
+    }
+
+    /**
+     * @param user
+     */
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    /**
+     * @param scorePerQuestion
+     */
+
+    public void setScorePerQuestion(Map<String, Integer> scorePerQuestion) {
+        this.scorePerQuestion = scorePerQuestion;
+    }
+
+    /**
+     * @return
+     */
+    public int getTotalSpeedBonus() {
+        return totalSpeedBonus;
+    }
+
+    /**
+     * @param totalSpeedBonus
+     */
+    public void setTotalSpeedBonus(int totalSpeedBonus) {
+        this.totalSpeedBonus = totalSpeedBonus + this.totalSpeedBonus;
+    }
+
+    /**
+     * variable declear
+     */
+    public int getBonusCount() {
+        return bonusCount;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setBonusCount(int bonusCount) {
+        this.bonusCount = bonusCount + this.bonusCount;
+    }
+}

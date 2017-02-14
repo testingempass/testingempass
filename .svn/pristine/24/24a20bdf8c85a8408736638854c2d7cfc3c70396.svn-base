@@ -1,0 +1,170 @@
+package com.empass.sdk.utils;
+
+
+import java.util.concurrent.atomic.AtomicBoolean;
+
+
+/**
+ * Teaser is use to create a message
+ *
+ * @author Deepak
+ */
+public final class Teaser {
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isWin = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isAllCorrect = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isHatTrick = new AtomicBoolean(false);
+
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isLevelChange = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isStageChangeNA = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isStageChangeAP = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private static AtomicBoolean isStageChangePC = new AtomicBoolean(false);
+
+    private Teaser() {
+    }
+
+    /**
+     * @param point
+     * @param maxPoint
+     * @param subskillType
+     * @return
+     */
+    public static String getMessage(final int correctQue, final String gameStatus, final String strikeRate, final int cLevel,
+                                    final int cNewLevel, final int point, final int maxPoint, final String subskillType) {
+        isAllCorrect.set(false);
+        isWin.set(false);
+        isHatTrick.set(false);
+        isLevelChange.set(false);
+        isStageChangeNA.set(false);
+        isStageChangeAP.set(false);
+        isStageChangePC.set(false);
+        String message = "";
+        /**
+         * user win current game
+         */
+        if (SDKConstant.W.equalsIgnoreCase(gameStatus)) {
+            message = SDKConstant.TEASER_YOU_WIN_GAME;
+            isWin.set(true);
+        }
+        /**
+         * user give correct answer of 10 question.
+         */
+        if (correctQue == SDKConstant.TEN) {
+            message = SDKConstant.TEASER_ALL_QUE_CORRECT;
+            isAllCorrect.set(true);
+        }
+
+        /**
+         * user win continously last three game
+         */
+        if (strikeRate != null && strikeRate.length() > 2) {
+            final String strikeRateNew = strikeRate.substring(strikeRate.length() - 3);
+            if ("WWW".equalsIgnoreCase(strikeRateNew)) {
+                int occurrences = 0;
+                for (final char c : strikeRate.toCharArray()) {
+                    if (c == 'W') {
+                        occurrences++;
+                    } else {
+                        occurrences = 0;
+                    }
+                }
+                LogUtils.debug(SDKConstant.TAG, "Win Count:" + occurrences);
+                if (occurrences % 3 == 0) {
+                    LogUtils.debug(SDKConstant.TAG, "Win Count: HITRICK");
+                    message = SDKConstant.TEASER_YOU_WIN_3_GAME;
+                    isHatTrick.set(true);
+                } else {
+                    message = SDKConstant.TEASER_YOU_WIN_GAME;
+                    isWin.set(true);
+                }
+            }
+        }
+        /**
+         * user current lavel is changes
+         */
+        if (cNewLevel > cLevel && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_LEVEL_CHANGES;
+            isLevelChange.set(true);
+        }
+        /**
+         * user change stage novice to amutore
+         */
+        if (cLevel == 4 && cNewLevel == 5 && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_CHANGES_NTOA;
+            isStageChangeAP.set(true);
+        }
+        /**
+         * user change stage amutore to pro
+         */
+        if (cLevel == 8 && cNewLevel == 9 && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_CHANGES_ATOP;
+            isStageChangeAP.set(true);
+        }
+        /**
+         * user change stage pro to champ
+         */
+        if (cLevel == 12 && cNewLevel == 13 && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_CHANGES_PTOC;
+            isStageChangePC.set(true);
+        }
+        /**
+         * 10 of 10 and hat trick
+         */
+        if (isAllCorrect.get() && isHatTrick.get()) {
+            message = SDKConstant.TEASER_ALL_HAT_TRICK;
+        }
+        /**
+         * 10 of 10 or hat trick and level change
+         */
+        if ((isAllCorrect.get() || isHatTrick.get()) && isLevelChange.get() && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_LEVEL_HAT_TRICK + cNewLevel;
+        }
+        /**
+         * 10 of 10 or hat trick and stage change novice to amutore
+         */
+        if ((isAllCorrect.get() || isHatTrick.get()) && isStageChangeNA.get() && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_AMATEUR;
+        }
+        /**
+         * 10 of 10 or hat trick and stage change amutore to pro
+         */
+        if ((isAllCorrect.get() || isHatTrick.get()) && isStageChangeAP.get() && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_PRO;
+        }
+        /**
+         * 10 of 10 or hat trick and stage change pro to champ
+         */
+        if ((isAllCorrect.get() || isHatTrick.get()) && isStageChangePC.get() && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_STAGE_CHAMP;
+        }
+
+        /**
+         * user achive the target
+         */
+        if (point >= maxPoint && cLevel <= 16 && !SDKConstant.CONTEST.equalsIgnoreCase(subskillType)) {
+            message = SDKConstant.TEASER_ACHIVE_GOAL;
+        }
+
+        return message;
+    }
+}

@@ -1,0 +1,77 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.AchievementDataVO;
+
+
+/**
+ * Adapter for leaderboard activity list
+ *
+ * @author Sandeep
+ */
+@SuppressWarnings("ALL")
+public class AchievementAdapter extends ArrayAdapter<AchievementDataVO> {
+    /**
+     * Context for adapter
+     */
+    private transient final Context context;
+
+    /**
+     *
+     */
+
+    public AchievementAdapter(final Context context, final int txt, final AchievementDataVO[] list) {
+        super(context, txt, list);
+        this.context = context;
+
+    }
+
+    @SuppressLint("InflateParams")
+    /**
+     * list
+     */
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        try {
+            final LayoutInflater mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            final AchievementDataVO data = getItem(position);
+            ViewHolder holder;
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = mInflater.inflate(R.layout.m_list_row_item_achievement, parent, false);
+                holder = new ViewHolder();
+                holder.tvAchivement = (TextView) convertView.findViewById(R.id.tv_achievement);
+                holder.tvCount = (TextView) convertView.findViewById(R.id.tv_count);
+                convertView.setTag(holder);
+            }
+            holder.tvAchivement.setText(data.getAchievementId());
+            holder.tvCount.setText(data.getCount());
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    /**
+     * holder class
+     */
+    public static class ViewHolder {
+        private transient TextView tvAchivement;
+        private transient TextView tvCount;
+
+    }
+}

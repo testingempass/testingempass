@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+   drawable define by Ravi for change custom underline on focus
+   for both grey and Blue Color
+-->
+
+
+<selector
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+            android:state_pressed="true"
+            android:drawable="@drawable/m_underline_blue"
+            />
+        <item
+            android:state_focused="true"
+            android:drawable="@drawable/m_underline_blue"
+            />
+        <item
+            android:drawable="@drawable/m_underline_grey"
+            />
+    </selector>

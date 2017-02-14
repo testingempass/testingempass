@@ -1,0 +1,89 @@
+package com.empass.sdk.s2;
+
+import android.os.Handler;
+
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.shephertz.app42.gaming.multiplayer.client.command.WarpResponseResultCode;
+import com.shephertz.app42.gaming.multiplayer.client.events.ConnectEvent;
+import com.shephertz.app42.gaming.multiplayer.client.listener.ConnectionRequestListener;
+
+import static com.empass.sdk.s2.WarpCallbackMessageCode.AUTH_ERROR;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.BAD_REQUEST;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.CONNECTION_DONE;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.CONNECTION_ERROR;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.C_E_RECOVERABLE;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.ERROR;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.RESOURCE_MOVED;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.RESULT_SIZE_ERROR;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.RES_NOT_FOUND;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.SUCCESS_RECOVERED;
+import static com.empass.sdk.s2.WarpCallbackMessageCode.UNKNOWN_ERROR;
+
+/**
+ * @author Deepak
+ */
+public class WarpConnectionRequestListener implements ConnectionRequestListener {
+    /**
+     *
+     */
+    private transient final Handler handler;
+
+    /**
+     * @param handler
+     */
+    public WarpConnectionRequestListener(final Handler handler) {
+        this.handler = handler;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onConnectDone(final ConnectEvent connectEvent, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "Result: " + connectEvent.getResult());
+        if (connectEvent.getResult() == WarpResponseResultCode.SUCCESS) {
+            handler.sendEmptyMessage(CONNECTION_DONE);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.AUTH_ERROR) {
+            handler.sendEmptyMessage(AUTH_ERROR);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.RESOURCE_NOT_FOUND) {
+            handler.sendEmptyMessage(RES_NOT_FOUND);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.RESOURCE_MOVED) {
+            handler.sendEmptyMessage(RESOURCE_MOVED);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.BAD_REQUEST) {
+            handler.sendEmptyMessage(BAD_REQUEST);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.CONNECTION_ERROR) {
+            handler.sendEmptyMessage(CONNECTION_ERROR);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.UNKNOWN_ERROR) {
+            handler.sendEmptyMessage(UNKNOWN_ERROR);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.RESULT_SIZE_ERROR) {
+            handler.sendEmptyMessage(RESULT_SIZE_ERROR);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.SUCCESS_RECOVERED) {
+            handler.sendEmptyMessage(SUCCESS_RECOVERED);
+        } else if (connectEvent.getResult() == WarpResponseResultCode.CONNECTION_ERROR_RECOVERABLE) {
+            handler.sendEmptyMessage(C_E_RECOVERABLE);
+        } else {
+            handler.sendEmptyMessage(ERROR);
+        }
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onDisconnectDone(final ConnectEvent connectEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onDisconnectDone");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onInitUDPDone(final byte arg0) {
+        LogUtils.debug(SDKConstant.TAG, "onInitUDPDone");
+
+    }
+
+}

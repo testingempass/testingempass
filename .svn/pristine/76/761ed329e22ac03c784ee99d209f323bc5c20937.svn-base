@@ -1,0 +1,187 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class FinalResult {
+	/**
+ * 
+ */
+	@SerializedName("game_status")
+	public String gameStatus;
+	/**
+	 * 
+	 */
+	@SerializedName("win_bonus")
+	public int winBounas;
+	/**
+	 * 
+	 */
+	@SerializedName("total_speed_bonus")
+	public int speedScore;
+	/**
+	 * 
+	 */
+	@SerializedName("total_game_point")
+	public int totalScore;
+	/**
+	 * 
+	 */
+	@SerializedName("completion_bonus")
+	public int completionScore;
+	/**
+ * 
+ */
+	@SerializedName("user_name")
+	public String userName;
+	/**
+ * 
+ */
+	@SerializedName("total_time")
+	public int totalTime;
+
+	public int getGameId() {
+		return gameId;
+	}
+
+	public void setGameId(int gameId) {
+		this.gameId = gameId;
+	}
+
+	@SerializedName("game_id")
+	public int gameId;
+
+	/**
+ * 
+ */
+	public FinalResult() {
+		super();
+
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUserName() {
+		return userName;
+	}
+
+	/**
+	 * 
+	 * @param userName
+	 */
+	public void setUserName(final String userName) {
+		this.userName = userName;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getGameStatus() {
+		return gameStatus;
+	}
+
+	/**
+	 * 
+	 * @param gameStatus
+	 */
+	public void setGameStatus(final String gameStatus) {
+		this.gameStatus = gameStatus;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getWinBounas() {
+		return winBounas;
+	}
+
+	/**
+	 * 
+	 * @param winBounas
+	 */
+	public void setWinBounas(final int winBounas) {
+		this.winBounas = winBounas;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getSpeedScore() {
+		return speedScore;
+	}
+
+	/**
+	 * 
+	 * @param speedScore
+	 */
+	public void setSpeedScore(final int speedScore) {
+		this.speedScore = speedScore;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getTotalScore() {
+		return totalScore;
+	}
+
+	/**
+	 * 
+	 * @param totalScore
+	 */
+	public void setTotalScore(final int totalScore) {
+		this.totalScore = totalScore;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getCompletionScore() {
+		return completionScore;
+	}
+
+	/**
+	 * 
+	 * @param completionScore
+	 */
+	public void setCompletionScore(final int completionScore) {
+		this.completionScore = completionScore;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getTotalTime() {
+		return totalTime;
+	}
+
+	/**
+	 * 
+	 * @param totalTime
+	 */
+	public void setTotalTime(final int totalTime) {
+		this.totalTime = totalTime;
+	}
+
+	/**
+ * 
+ */
+	@Override
+	public String toString() {
+		return " Result [gameStatus=" + gameStatus + ", winBounas=" + winBounas + ", speedScore=" + speedScore + ", totalScore="
+			+ totalScore + ", completionScore=" + completionScore + ", userName=" + userName + ", totalTime=" + totalTime + "]";
+	}
+
+}

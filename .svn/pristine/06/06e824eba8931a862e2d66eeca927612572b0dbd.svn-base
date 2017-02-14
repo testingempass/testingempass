@@ -1,0 +1,122 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+@SuppressWarnings("ALL")
+public class AnswerTimeResponse {
+
+	/**
+	 * 
+	 */
+	@SerializedName("user_name")
+	public
+	String userName;
+	/**
+ * 
+ */
+	@SerializedName("total_time")
+	public String time;
+	/**
+ * 
+ */
+	@SerializedName("correct_answer")
+	public String correctAnswer;
+	/**
+ * 
+ */
+	@SerializedName("total_game_point")
+	public int ponits;
+	/**
+ * 
+ */
+	@SerializedName("user_answer")
+	public String userAnswer;
+
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUserName() {
+		return userName;
+	}
+
+	/**
+	 * 
+	 * @param userName
+	 */
+	public void setUserName(final String userName) {
+		this.userName = userName;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getTime() {
+		return time;
+	}
+
+	/**
+	 * 
+	 * @param time
+	 */
+	public void setTime(final String time) {
+		this.time = time;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getCorrectAnswer() {
+		return correctAnswer;
+	}
+
+	/**
+	 * 
+	 * @param correctAnswer
+	 */
+	public void setCorrectAnswer(final String correctAnswer) {
+		this.correctAnswer = correctAnswer;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getPonits() {
+		return ponits;
+	}
+
+	/**
+	 * 
+	 * @param ponits
+	 */
+	public void setPonits(final int ponits) {
+		this.ponits = ponits;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUserAnswer() {
+		return userAnswer;
+	}
+
+	/**
+	 * 
+	 * @param userAnswer
+	 */
+	public void setUserAnswer(final String userAnswer) {
+		this.userAnswer = userAnswer;
+	}
+
+}

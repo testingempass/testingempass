@@ -1,0 +1,654 @@
+package com.empass.sdk.controller;
+
+import android.content.Context;
+import android.os.AsyncTask;
+
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHelper;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.s2.FinalResult;
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.utils.Urls;
+import com.empass.sdk.vo.AchievementVO;
+import com.empass.sdk.vo.AddGoalVo;
+import com.empass.sdk.vo.AutoResVO;
+import com.empass.sdk.vo.CanPlayResVO;
+import com.empass.sdk.vo.CoinHistoryVO;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.EducationResVO;
+import com.empass.sdk.vo.KeyVO;
+import com.empass.sdk.vo.LeaderboardDataVO;
+import com.empass.sdk.vo.LoginResponseVO;
+import com.empass.sdk.vo.OpponentResponse;
+import com.empass.sdk.vo.OtpResVO;
+import com.empass.sdk.vo.PaymentInitVO;
+import com.empass.sdk.vo.PaymentVO;
+import com.empass.sdk.vo.RefreshGoalVO;
+import com.empass.sdk.vo.RegisterResponseVO;
+import com.empass.sdk.vo.SkillVO;
+import com.empass.sdk.vo.UpdateGoalVO;
+import com.empass.sdk.vo.UserQuestionVO;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class SDKDatabaseController {
+
+    /**
+     * declear variable
+     */
+    private transient final Context context;
+    private transient String error;
+    private transient SDKHttpRequestVO SDKHttpRequestVO;
+
+    /**
+     * declear variable
+     */
+    private transient JSONObject bundleObject;
+
+    /**
+     * @param context
+     */
+    public SDKDatabaseController(final Context context) {
+        this.context = context;
+
+    }
+
+    public CommonResVO handelUserDeatilsResponse(final String response, final SDKHttpRequestVO request) {
+        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+        final CommonResVO commonResVO = new CommonResVO();
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                LogUtils.debug(SDKConstant.TAG, response);
+                final LoginResponseVO loginResponseVO = AbstractBEJsonParser.parseServerResponse(response, LoginResponseVO.class);
+                dbHelper.deleteUser(loginResponseVO.getData().getUsers().get(0).getId());
+                dbHelper.saveLogedUser(loginResponseVO.getData().getUsers().get(0));
+                dbHelper.saveLogedUserProfile(loginResponseVO.getData().getGoals());
+                if (loginResponseVO.getData().getEducation() != null && loginResponseVO.getData().getEducation().size() > 0) {
+                    dbHelper.saveEducationData(loginResponseVO.getData().getEducation());
+                }
+                dbHelper.close();
+                commonResVO.setMultiSkill(loginResponseVO.getData().getUsers().get(0).getMultiSkill());
+                commonResVO.setSkillId(loginResponseVO.getData().getGoals().get(0).getSubSkillId());
+                commonResVO.setStatus(status);
+            } else if (Urls.RESPONSE_COSE_406.matches(status) && !response.contains("No skill found")) {
+                final SkillVO skillVO = AbstractBEJsonParser.parseServerResponse(response, SkillVO.class);
+                dbHelper.saveRefSkill(skillVO.getSkillData());
+                dbHelper.close();
+                commonResVO.setStatus(status);
+            } else {
+                commonResVO.setStatus(Urls.RESPONSE_COSE_404);
+            }
+            commonResVO.setMsg(msg);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(request, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return commonResVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public CommonResVO hanldeRefSkillResponse(final String response, final SDKHttpRequestVO requestVO) {
+        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+        final CommonResVO commonResVO = new CommonResVO();
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                final SkillVO skillVO = AbstractBEJsonParser.parseServerResponse(response, SkillVO.class);
+                if (skillVO.getSkillData().size() > 1) {
+                    commonResVO.setMultiSkill("Y");
+                } else {
+                    commonResVO.setMultiSkill("N");
+                    commonResVO.setSkillId(skillVO.getSkillData().get(0).getId());
+                }
+                dbHelper.saveRefSkill(skillVO.getSkillData());
+                dbHelper.close();
+            }
+            commonResVO.setMsg(msg);
+            commonResVO.setStatus(status);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return commonResVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public RegisterResponseVO hanldeRegisterResponse(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        RegisterResponseVO regVO = new RegisterResponseVO();
+        String msg;
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                regVO = AbstractBEJsonParser.parseServerResponse(response, RegisterResponseVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, msg);
+                regVO.setMsg(msg);
+                regVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return regVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public CommonResVO handelCommonResponse(final String response, final SDKHttpRequestVO requestVO) {
+        CommonResVO commonResVO = new CommonResVO();
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                commonResVO = AbstractBEJsonParser.parseServerResponse(response, CommonResVO.class);
+            }
+            commonResVO.setMsg(msg);
+            commonResVO.setStatus(status);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return commonResVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public AddGoalVo hanldeAddGoalResponse(final String response, final SDKHttpRequestVO requestVO) {
+        LogUtils.debug(SDKConstant.TAG, response);
+        AddGoalVo addGoalVO = new AddGoalVo();
+        String status;
+        String msg;
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            msg = bundleObject.getString(SDKConstant.MSG);
+
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                addGoalVO = AbstractBEJsonParser.parseServerResponse(response, AddGoalVo.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, msg);
+                addGoalVO.setMsg(msg);
+                addGoalVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return addGoalVO;
+    }
+
+
+    /**
+     * opponent response
+     *
+     * @param response
+     * @return
+     */
+    public OpponentResponse parseSearchOpponentResponse(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        OpponentResponse opponentResponse = new OpponentResponse();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                opponentResponse = AbstractBEJsonParser.parseServerResponse(response, OpponentResponse.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, status);
+                opponentResponse.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return opponentResponse;
+    }
+
+    private void sendExceptionOnServer(final SDKHttpRequestVO requestVO, final String response) {
+        try {
+            LogUtils.debug(SDKConstant.TAG, "Error:" + response);
+            error = response;
+            SDKHttpRequestVO = requestVO;
+            new AsyncSendException().execute();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public OpponentResponse parseOpponentResponse(String response) {
+        OpponentResponse opponentResponse = new OpponentResponse();
+        try {
+            opponentResponse = AbstractBEJsonParser.parseServerResponse(response, OpponentResponse.class);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return opponentResponse;
+    }
+
+    public FinalResult[] parseResultResponse(String response) {
+        FinalResult[] opponentResponse = new FinalResult[2];
+        try {
+            opponentResponse = AbstractBEJsonParser.parseServerResponse(response, FinalResult[].class);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return opponentResponse;
+    }
+
+    public UserQuestionVO[] summeryResponse(String value) {
+        UserQuestionVO[] opponentResponse = null;
+        try {
+            opponentResponse = AbstractBEJsonParser.parseServerResponse(value, UserQuestionVO[].class);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return opponentResponse;
+    }
+
+
+    /**
+     * @author Deepak
+     */
+    private class AsyncSendException extends AsyncTask<String, String, String> {
+        /**
+         * constructor
+         *
+         * @param error
+         */
+        public AsyncSendException() {
+            super();
+        }
+
+        /**
+         * doInBackground is use to send request in bg
+         */
+        @Override
+        protected String doInBackground(final String... params) {
+            String response = null;
+            try {
+                final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+                final JSONObject json = new JSONObject();
+                final JSONObject jsondata = new JSONObject();
+                if (null != SDKHttpRequestVO && Urls.REQUEST_POST.equals(SDKHttpRequestVO.requestMethod)) {
+                    for (final String key : SDKHttpRequestVO.params.keySet()) {
+                        json.put(key, String.valueOf(SDKHttpRequestVO.params.get(key)));
+                    }
+                    jsondata.put(SDKConstant.DATA, json);
+                    final String errors = "Error in:" + SDKHttpRequestVO.task + ",Url:" + SDKHttpRequestVO.url + ",Request:" + jsondata.toString() + ",Response :" + error;
+                    response = SDKHttpRequestHelper.sendOKHttpException(EmpassActivity.getUrl(), "1", errors, dbHelper.getRefData(SDKConstant.TOKEN));
+                    LogUtils.debug(SDKConstant.TAG, "response:" + response);
+                }
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+            return response;
+        }
+    }
+    public AchievementVO handelAchievement(final String response, final SDKHttpRequestVO request) {
+        String status;
+        AchievementVO historyVO = new AchievementVO();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            LogUtils.debug(SDKConstant.TAG, status);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                historyVO = AbstractBEJsonParser.parseServerResponse(response, AchievementVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, status);
+                historyVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(request, response);
+        }
+        return historyVO;
+    }
+
+    public RefreshGoalVO hanldeRefreshResponse(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        RefreshGoalVO goalVO = new RefreshGoalVO();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            LogUtils.debug(SDKConstant.TAG, status);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                goalVO = AbstractBEJsonParser.parseServerResponse(response, RefreshGoalVO.class);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+
+        }
+        return goalVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+
+    public UpdateGoalVO hanldeUpdateResponse(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        UpdateGoalVO updateVO = new UpdateGoalVO();
+        String msg;
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                updateVO = AbstractBEJsonParser.parseServerResponse(response, UpdateGoalVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, msg);
+                updateVO.setMsg(msg);
+                updateVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return updateVO;
+    }
+
+    public CoinHistoryVO hanldeCoinResponse(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        CoinHistoryVO historyVO = new CoinHistoryVO();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            LogUtils.debug(SDKConstant.TAG, status);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                historyVO = AbstractBEJsonParser.parseServerResponse(response, CoinHistoryVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, status);
+                historyVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+
+        }
+        return historyVO;
+    }
+
+    public PaymentInitVO hanldePaymentInitVO(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        PaymentInitVO paymentVO = new PaymentInitVO();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            LogUtils.debug(SDKConstant.TAG, status);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                paymentVO = AbstractBEJsonParser.parseServerResponse(response, PaymentInitVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, status);
+                paymentVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+
+        }
+        return paymentVO;
+    }
+
+    public PaymentVO hanldePaymentVO(final String response, final SDKHttpRequestVO requestVO) {
+        String status;
+        PaymentVO paymentVO = new PaymentVO();
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            LogUtils.debug(SDKConstant.TAG, status);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                paymentVO = AbstractBEJsonParser.parseServerResponse(response, PaymentVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, status);
+                paymentVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return paymentVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public LeaderboardDataVO handleLeaderboardResponse(final String response, final SDKHttpRequestVO requestVO) {
+        LeaderboardDataVO commonResVO = new LeaderboardDataVO();
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                commonResVO = AbstractBEJsonParser.parseServerResponse(response, LeaderboardDataVO.class);
+            }
+            commonResVO.setMsg(msg);
+            commonResVO.setStatus(status);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+        }
+        return commonResVO;
+    }
+
+    /**
+     * download key
+     *
+     * @param response
+     */
+    public void hanldeKeyResponse(final String response) {
+        KeyVO keyVO = new KeyVO();
+        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+
+            keyVO.setStatus(msg);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                keyVO = AbstractBEJsonParser.parseServerResponse(response, KeyVO.class);
+                dbHelper.insertKeyData(keyVO.getKeys());
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public EducationResVO hanldeUpadteEductaionResponse(final String response, final SDKHttpRequestVO requestVO) {
+        EducationResVO updateVO = new EducationResVO();
+        String status;
+        String msg;
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                updateVO = AbstractBEJsonParser.parseServerResponse(response, EducationResVO.class);
+            } else {
+                LogUtils.debug(SDKConstant.TAG, msg);
+                updateVO.setMessage(msg);
+                updateVO.setStatus(status);
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return updateVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public ArrayList<String> handelAutoResponse(final String response, final SDKHttpRequestVO requestVO) {
+        final ArrayList<String> list = new ArrayList<>();
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.contains(status)) {
+                final AutoResVO resVO = AbstractBEJsonParser.parseServerResponse(response, AutoResVO.class);
+                if (resVO.getData().length > 0) {
+                    for (int i = 0; i < resVO.getData().length; i++) {
+                        list.add(0, resVO.getData()[i].getName());
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return list;
+    }
+
+    public CanPlayResVO handelCanPlayResponse(String response, SDKHttpRequestVO requestVO) {
+        CanPlayResVO commonResVO = new CanPlayResVO();
+        String msg;
+        String status;
+        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                commonResVO = AbstractBEJsonParser.parseServerResponse(response, CanPlayResVO.class);
+                dbHelper.insertKeyData(SDKConstant.APP_KEY, commonResVO.getS2AppKey());
+                dbHelper.insertKeyData(SDKConstant.HOST_NAME, commonResVO.getS2Host());
+                dbHelper.insertKeyData(SDKConstant.TAO_HOST_NAME, commonResVO.getTaoHost());
+            } else if (Urls.RESPONSE_COSE_000.matches(status)) {
+                commonResVO = AbstractBEJsonParser.parseServerResponse(response, CanPlayResVO.class);
+                dbHelper.insertKeyData(SDKConstant.APP_KEY, commonResVO.getS2AppKey());
+                dbHelper.insertKeyData(SDKConstant.HOST_NAME, commonResVO.getS2Host());
+                dbHelper.insertKeyData(SDKConstant.TAO_HOST_NAME, commonResVO.getTaoHost());
+            }
+            commonResVO.setMsg(msg);
+            commonResVO.setStatus(status);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        }
+        return commonResVO;
+    }
+
+    /**
+     * @param response
+     * @return
+     */
+    public OtpResVO hanldeValidateResponse(final String response, final SDKHttpRequestVO requestVO) {
+        OtpResVO commonResVO = new OtpResVO();
+        String msg;
+        String status;
+        try {
+            bundleObject = new JSONObject(response);
+            msg = bundleObject.getString(SDKConstant.MSG);
+            status = bundleObject.getString(SDKConstant.STATUS);
+            if (Urls.RESPONSE_COSE_201.matches(status)) {
+                commonResVO = AbstractBEJsonParser.parseServerResponse(response, OtpResVO.class);
+            }
+            commonResVO.setMsg(msg);
+            commonResVO.setStatus(status);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+            sendExceptionOnServer(requestVO, response);
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            commonResVO.setStatus(Urls.RESPONSE_COSE_000);
+            commonResVO.setMsg(SDKConstant.TRY_AGAIN);
+        }
+        return commonResVO;
+    }
+}

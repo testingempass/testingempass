@@ -1,0 +1,194 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.SkillDataVO;
+import com.squareup.picasso.Picasso;
+
+import java.text.DecimalFormat;
+
+
+/**
+ * @author Deepak
+ */
+public class SkillItemsAdapter extends ArrayAdapter<SkillDataVO> {
+    /**
+     * declear
+     */
+    private transient final Context context;
+
+    /**
+     * declear
+     */
+
+    public SkillItemsAdapter(final Context context, final int txt, final SkillDataVO[] skillDataContest) {
+        super(context, txt, skillDataContest);
+        this.context = context;
+    }
+
+    /**
+     *
+     */
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(final int position, View rowView, final ViewGroup parent) {
+        LogUtils.debug(SDKConstant.TAG, "Goal possition:" + position);
+        try {
+            final SkillDataVO skill = getItem(position);
+            final LayoutInflater mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            ViewHolder holder;
+            if (rowView != null) {
+                holder = (ViewHolder) rowView.getTag();
+            } else {
+                rowView = mInflater.inflate(R.layout.m_skill_grid_item, parent, false);
+                holder = new ViewHolder();
+                holder.rlAdd = (RelativeLayout) rowView.findViewById(R.id.rl_addedskill);
+                holder.rlNew = (RelativeLayout) rowView.findViewById(R.id.rl_newskill);
+                holder.ivIcon = (ImageView) rowView.findViewById(R.id.iv_icon);
+                holder.ivAdd = (ImageView) rowView.findViewById(R.id.iv_add);
+                holder.ivPlay = (ImageView) rowView.findViewById(R.id.iv_play);
+                holder.ivLock = (ImageView) rowView.findViewById(R.id.iv_lock);
+                holder.ivPaid = (ImageView) rowView.findViewById(R.id.iv_coin);
+                holder.tvSkillId = (TextView) rowView.findViewById(R.id.tvSkillId);
+                holder.tvSkill = (TextView) rowView.findViewById(R.id.tv_skillname);
+                holder.tvSkillName = (TextView) rowView.findViewById(R.id.tv_skill);
+                holder.tvSkillNew = (TextView) rowView.findViewById(R.id.tv_skillnew);
+                holder.tvTargetScore = (TextView) rowView.findViewById(R.id.tvTargetScore);
+                holder.tvCoin = (TextView) rowView.findViewById(R.id.tv_coin);
+                holder.tvScore = (TextView) rowView.findViewById(R.id.tvScore);
+                holder.tvSkillIdPer = (TextView) rowView.findViewById(R.id.tv_skillidcon);
+                holder.pbNovice = (ProgressBar) rowView.findViewById(R.id.pb_novice);
+                holder.pbAmatore = (ProgressBar) rowView.findViewById(R.id.pb_amature);
+                holder.pbPro = (ProgressBar) rowView.findViewById(R.id.pb_pro);
+                holder.pbChamp = (ProgressBar) rowView.findViewById(R.id.pb_champ);
+                holder.pbNovice.setProgress(0);
+                holder.pbAmatore.setProgress(0);
+                holder.pbPro.setProgress(0);
+                holder.pbChamp.setProgress(0);
+                holder.pbAmatore.setVisibility(View.GONE);
+                holder.pbPro.setVisibility(View.GONE);
+                holder.pbChamp.setVisibility(View.GONE);
+                rowView.setTag(holder);
+            }
+            if (SDKConstant.NTEXT.contains(skill.getContestAdded())) {
+                holder.ivLock.setVisibility(View.GONE);
+                holder.rlAdd.setVisibility(View.GONE);
+                holder.rlNew.setVisibility(View.VISIBLE);
+                holder.ivPlay.setVisibility(View.GONE);
+                holder.ivAdd.setVisibility(View.VISIBLE);
+                holder.tvSkillNew.setText(skill.getName());
+                holder.tvSkill.setText(skill.getName());
+                holder.tvSkillId.setText(skill.getId());
+                if (SDKConstant.YTEXT.contains(skill.getIsSecured())) {
+                    holder.ivLock.setVisibility(View.VISIBLE);
+                    holder.ivLock.setColorFilter(context.getResources().getColor(R.color.m_red));
+                }
+                if (SDKConstant.PAID.equalsIgnoreCase(skill.getPaymentMode())) {
+                    holder.ivPaid.setVisibility(View.VISIBLE);
+                    holder.tvCoin.setVisibility(View.VISIBLE);
+                    holder.tvCoin.setText(skill.getAmount());
+                    holder.ivPaid.setColorFilter(context.getResources().getColor(R.color.sdk_tickcolor));
+                }
+            } else {
+                holder.rlAdd.setVisibility(View.VISIBLE);
+                holder.rlNew.setVisibility(View.GONE);
+                holder.ivPlay.setVisibility(View.VISIBLE);
+                holder.ivAdd.setVisibility(View.GONE);
+                holder.tvSkill.setText(skill.getName());
+                holder.tvSkillId.setText(skill.getId());
+                holder.tvSkillIdPer.setText(skill.getId());
+                holder.tvSkillName.setText(skill.getName());
+                final DecimalFormat formatter = new DecimalFormat(SDKConstant.HEX_CODE);
+                holder.tvScore.setText(formatter.format(Integer.parseInt(skill.getContestRules())));
+                holder.tvTargetScore.setText(skill.getContestDetails());
+                holder.pbNovice.setMax(SDKConstant.TWENTYTHOU);
+                holder.pbAmatore.setMax(SDKConstant.TWENTYTHOU);
+                holder.pbPro.setMax(SDKConstant.TWENTYTHOU);
+                holder.pbChamp.setMax(SDKConstant.FOTYTHOU);
+                if (Integer.parseInt(skill.getEndDate()) == SDKConstant.FOTYTHOU) {
+                    holder.pbAmatore.setVisibility(View.VISIBLE);
+                } else if (Integer.parseInt(skill.getEndDate()) == SDKConstant.SIXTYTHOU) {
+                    holder.pbAmatore.setVisibility(View.VISIBLE);
+                    holder.pbPro.setVisibility(View.VISIBLE);
+                } else if (Integer.parseInt(skill.getEndDate()) <= SDKConstant.ONE_LAKH) {
+                    holder.pbAmatore.setVisibility(View.VISIBLE);
+                    holder.pbPro.setVisibility(View.VISIBLE);
+                    holder.pbChamp.setVisibility(View.VISIBLE);
+                }
+                if (Integer.parseInt(skill.getContestRules()) <= SDKConstant.TWENTYTHOU) {
+                    holder.pbNovice.setProgress(Integer.parseInt(skill.getContestRules()));
+                } else if (Integer.parseInt(skill.getContestRules()) > SDKConstant.TWENTYTHOU &&
+                        Integer.parseInt(skill.getContestRules()) <= SDKConstant.FOTYTHOU) {
+                    holder.pbNovice.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbAmatore.setProgress(Integer.parseInt(skill.getContestRules()) - SDKConstant.TWENTYTHOU);
+                } else if (Integer.parseInt(skill.getContestRules()) > SDKConstant.FOTYTHOU &&
+                        Integer.parseInt(skill.getContestRules()) <= SDKConstant.SIXTYTHOU) {
+                    holder.pbNovice.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbAmatore.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbPro.setProgress(Integer.parseInt(skill.getContestRules()) - SDKConstant.FOTYTHOU);
+                } else if (Integer.parseInt(skill.getContestRules()) > SDKConstant.SIXTYTHOU &&
+                        Integer.parseInt(skill.getContestRules()) <= SDKConstant.ONE_LAKH) {
+                    holder.pbNovice.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbAmatore.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbPro.setProgress(SDKConstant.TWENTYTHOU);
+                    holder.pbChamp.setProgress(Integer.parseInt(skill.getContestRules()) - SDKConstant.SIXTYTHOU);
+                }
+            }
+            if (skill.getLogo().contains(SDKConstant.HTTPS)) {
+                if (!SDKConstant.EMPTY.equalsIgnoreCase(skill.getLogo()) && skill.getLogo().length() > 5) {
+                    Picasso.with(context).load(skill.getLogo()).error(R.drawable.ic_launcher).placeholder(R.drawable.ic_launcher).into(holder.ivIcon);
+                } else {
+                    Picasso.with(context).load(R.drawable.ic_launcher).into(holder.ivIcon);
+                }
+            } else {
+                final String imageName = "drawable/" + skill.getLogo();
+                final int imageResource = SDKCommonUtils.getImageResource(context, imageName);
+                holder.ivIcon.setImageResource(imageResource);
+            }
+            holder.ivIcon.setColorFilter(Color.parseColor(skill.getColor()));
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return rowView;
+    }
+
+    public static class ViewHolder {
+
+        public transient RelativeLayout rlAdd;
+        public transient RelativeLayout rlNew;
+        public transient ImageView ivIcon;
+        public transient ImageView ivAdd;
+        public transient ImageView ivPlay;
+        public transient ImageView ivLock;
+        public transient ImageView ivPaid;
+        public transient TextView tvSkillId;
+        public transient TextView tvSkillName;
+        public transient TextView tvSkill;
+        public transient TextView tvSkillNew;
+        public transient TextView tvScore;
+        public transient TextView tvTargetScore;
+        public transient TextView tvCoin;
+        public transient TextView tvSkillIdPer;
+
+        public transient ProgressBar pbAmatore;
+        public transient ProgressBar pbPro;
+        public transient ProgressBar pbChamp;
+        public transient ProgressBar pbNovice;
+    }
+
+}

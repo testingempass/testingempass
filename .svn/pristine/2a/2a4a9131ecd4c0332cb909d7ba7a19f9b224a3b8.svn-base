@@ -1,0 +1,726 @@
+package com.empass.sdk.vo;
+
+import android.graphics.Bitmap;
+
+import com.google.gson.annotations.SerializedName;
+
+public class Goal {                                         // Vo for goals @author Rockstar
+    @SerializedName("goal_id")                              // variable for gole id
+    public String goalId;
+    @SerializedName("domain_id")                            //variable for domain id
+    public String domainId;
+    @SerializedName("domain")                               // variable for domain
+    public String domain;
+    @SerializedName("country_code")                          // variable for country code
+    public String countryCode;
+    @SerializedName("subskill_active")
+    public String subskillActive;
+
+    public String getSubskillActive() {
+        return subskillActive;
+    }
+
+    public void setSubskillActive(String subskillActive) {
+        this.subskillActive = subskillActive;
+    }
+
+    @SerializedName("subskill_id")                                  // variable for subskill id
+    public String subSkillId;
+    @SerializedName("subskill")                                     // variable for subskill
+    public String subSkill;
+    @SerializedName("subskill_type")
+    public String subskillType;
+    @SerializedName("subskill_payment_mode")
+    public String subskillPaymentMode;
+    @SerializedName("subskill_start_date")
+    public String subskillStartDate;
+    @SerializedName("subskill_end_date")
+    public String subskillEndDate;
+
+    public String getHighestPoints() {
+        return highestPoints;
+    }
+    public void setHighestPoints(String highestPoints) {
+        this.highestPoints = highestPoints;
+    }
+    @SerializedName("highest_points")
+    public String highestPoints;
+    public String getSubskillEndDate() {
+        return subskillEndDate;
+    }
+
+    public void setSubskillEndDate(String subskillEndDate) {
+        this.subskillEndDate = subskillEndDate;
+    }
+
+    public String getSubskillType() {
+        return subskillType;
+    }
+
+    public void setSubskillType(String subskillType) {
+        this.subskillType = subskillType;
+    }
+
+    public String getSubskillPaymentMode() {
+        return subskillPaymentMode;
+    }
+
+    public void setSubskillPaymentMode(String subskillPaymentMode) {
+        this.subskillPaymentMode = subskillPaymentMode;
+    }
+
+    public String getSubskillStartDate() {
+        return subskillStartDate;
+    }
+
+    public void setSubskillStartDate(String subskillStartDate) {
+        this.subskillStartDate = subskillStartDate;
+    }
+
+
+    @SerializedName("subskill_logo")
+    public String subskillLogo;
+    @SerializedName("subskill_small_banner")
+    public String subskillSmallBanner;
+    @SerializedName("subskill_large_banner")
+    public String subskillLargeBanner;
+    @SerializedName("subskill_html")
+    public String subskillHtml;
+    @SerializedName("subskill_cf1")
+    public String subskillCf1;
+    @SerializedName("subskill_cf2")
+    public String subskillCf2;
+    @SerializedName("subskill_cf3")
+    public String subskillCf3;
+    @SerializedName("subskill_max_game")
+    public String subskillMaxGame;
+    @SerializedName("subskill_correct_ans_score")
+    public String subskillCorrectAnsScore;
+    @SerializedName("subskill_speed_bonus")
+    public String subskillSpeedBonus;
+    @SerializedName("subskill_finish_bonus")
+    public String subskillFinishBonus;
+    @SerializedName("subskill_winning_bonus")
+    public String subskillWinningBonus;
+    @SerializedName("subskill_created_date")
+    public String subskillCreatedDate;
+    @SerializedName("rlevel_id")                                  // variable for rlevel id
+    public String rLevelId;
+    @SerializedName("rlevel")                                     // variable for rlevel
+    public String rLevel;
+    @SerializedName("rsublevel")                                  // variable for rsublevel
+    public String rSubLevel;
+    @SerializedName("rsublevel_id")                               // variable for rsublevel id
+    public String rSubLevelId;
+    @SerializedName("clevel_id")                                  //variable for clevel id
+    public String cLevelId;
+    @SerializedName("clevel")                                     //variable for clevel
+    public String cLevel;
+    @SerializedName("csublevel")                                  //variable for csub level
+    public String cSubLevel;
+    @SerializedName("csublevel_id")                                // variable for csublevel id
+    public String cSubLevelId;
+    @SerializedName("tlevel_id")                                   //variable for tlevel id
+    public String tLevelId;
+    @SerializedName("tlevel")                                      //variable for tlevel
+    public String tLevel;
+    @SerializedName("tsublevel")                                   // variable for tsublevel
+    public String tSubLevel;
+    @SerializedName("tsublevel_id")                                //variable for tsublevel id
+    public String tSubLevelId;
+    @SerializedName("points")                                      // variable for points
+    public String points;
+    @SerializedName("max_points")                                  // variable for maxpoints
+    public String maxPoints;
+    @SerializedName("strike_rate")                                 //variable for strike rate
+    public String strikeRate;
+    @SerializedName("win_percentage")                              // variable for win percentage
+    public String winPercentage;
+    @SerializedName("avg_points")                                 //avg_points
+    public String avgPoints;
+
+    public String getTotalTie() {
+        return totalTie;
+    }
+
+    public void setTotalTie(String totalTie) {
+        this.totalTie = totalTie;
+    }
+
+    //variable for tatal win
+    @SerializedName("total_tie")
+    public String totalTie;
+    @SerializedName("total_win")
+
+                               //variable for tatal win
+    public String totalWin;
+    @SerializedName("total_lost")                                 //variable for total lost
+    public String totalLost;
+    @SerializedName("total_abandon")                             // variable for total abandon
+    public String totalAbandon;
+    @SerializedName("active")                                    // variable for active
+    public String active;
+    @SerializedName("created_by")                                //variable for created by
+    public String createdBy;
+    @SerializedName("created_date")                               // variable for created date
+    public String createdDate;
+    @SerializedName("updated_by")                                // variable for updated by
+    public String updateBy;
+    @SerializedName("updated_date")                             //variable for updated date
+    public String updateDate;
+    @SerializedName("last_played")                              // variable for last played
+    public String lastPlayed;
+    @SerializedName("expected_date")
+    public String expectedDate;
+    @SerializedName("num_game")
+    public String numGame;
+    @SerializedName("coins")
+    public String coins;
+
+    @SerializedName("color")
+    public String color;
+
+    public String getTick() {
+        return tick;
+    }
+
+    public void setTick(String tick) {
+        this.tick = tick;
+    }
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+
+    public String getDifficultyLvl() {
+        return difficultyLvl;
+    }
+
+    public void setDifficultyLvl(String difficultyLvl) {
+        this.difficultyLvl = difficultyLvl;
+    }
+
+    public String getQuesPerGame() {
+        return quesPerGame;
+    }
+
+    public void setQuesPerGame(String quesPerGame) {
+        this.quesPerGame = quesPerGame;
+    }
+
+    @SerializedName("tick")
+    public String tick;
+    @SerializedName("difficulty_lvl")
+    public String difficultyLvl;
+    @SerializedName("ques_per_game")
+    public String quesPerGame;
+
+    public String getDomainColor() {
+        return domainColor;
+    }
+
+    public void setDomainColor(String domainColor) {
+        this.domainColor = domainColor;
+    }
+
+    @SerializedName("domain_color")
+    public String domainColor;
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
+    }
+
+    public String getCoins() {
+        return coins;
+    }
+
+    public void setCoins(String coins) {
+        this.coins = coins;
+    }
+
+    public String getIsChat() {
+        return isChat;
+    }
+
+    public void setIsChat(String isChat) {
+        this.isChat = isChat;
+    }
+
+    @SerializedName("rank")
+    public String rank;
+    @SerializedName("is_chat")
+    public String isChat;
+
+    public String totalPlayed;
+    public Bitmap bannerBitmap;
+
+    public Goal() {                                        //Class Constructor
+        super();
+    }
+
+    public String getDomainId() {                          //Method to get domain id  @return
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {              // Method to set domain id  @return
+        this.domainId = domainId;
+    }
+
+    public String getDomain() {                                          // Method to get domain  @return
+        return domain;
+    }
+
+    public void setDomain(String domain) {                                // Method to set domain  @return
+        this.domain = domain;
+    }
+
+    public String getCountryCode() {                                     //Method to get country code  @return
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {                     //Method to set country code  @return
+        this.countryCode = countryCode;
+    }
+
+    public String getSubSkillId() {
+        return subSkillId;
+    }      //Method to get sub skill id  @return
+
+    public void setSubSkillId(String subSkillId) {              //Method to set sub skill id
+        this.subSkillId = subSkillId;
+    }
+
+    public String getSubSkill() {                               // Method to get sub skill
+        return subSkill;
+    }
+
+    public void setSubSkill(String subSkill) {                  //Method to set sub skill
+        this.subSkill = subSkill;
+    }
+
+    public String getrLevelId() {                              //Method to get rlevel id
+        return rLevelId;
+    }
+
+    public void setrLevelId(String rLevelId) {                  //Method to set rlevel id
+        this.rLevelId = rLevelId;
+    }
+
+    public String getrLevel() {                                //Method to get rlevel
+        return rLevel;
+    }
+
+    public void setrLevel(String rLevel) {                     //Method to set rlevel
+        this.rLevel = rLevel;
+    }
+
+    public String getrSubLevel() {                            // Method to get rsublevel
+        return rSubLevel;
+    }
+
+    public void setrSubLevel(String rSubLevel) {              // Method to set rsublevel
+        this.rSubLevel = rSubLevel;
+    }
+
+    public String getrSubLevelId() {                         //Method to get rsublevel id
+        return rSubLevelId;
+    }
+
+    public void setrSubLevelId(String rSubLevelId) {        // Method to set rsublevel id
+        this.rSubLevelId = rSubLevelId;
+    }
+
+    public String getcLevelId() {                           //Method to get clevel id
+        return cLevelId;
+    }
+
+    public void setcLevelId(String cLevelId) {               //Method to set clevel id
+        this.cLevelId = cLevelId;
+    }
+
+    public String getcLevel() {                             //Method to get clevel
+        return cLevel;
+    }
+
+    public void setcLevel(String cLevel) {                                  // Method to set clevel
+        this.cLevel = cLevel;
+    }
+
+    public String getcSubLevel() {                                          //Method to csublevel
+        return cSubLevel;
+    }
+
+    public void setcSubLevel(String cSubLevel) {                            //Method to set csublevel
+        this.cSubLevel = cSubLevel;
+    }
+
+    public String getcSubLevelId() {                                       //Method to get csublevel id
+        return cSubLevelId;
+    }
+
+    public void setcSubLevelId(String cSubLevelId) {                       // Method to set csublevel id
+        this.cSubLevelId = cSubLevelId;
+    }
+
+    public String gettLevelId() {                                          //Method to get level id
+        return tLevelId;
+    }
+
+    public void settLevelId(String tLevelId) {                             //Method to set level id
+        this.tLevelId = tLevelId;
+    }
+
+    public String gettLevel() {                                            // Method to get tlevel
+        return tLevel;
+    }
+
+    public void settLevel(String tLevel) {                                // Method to set tlevel
+        this.tLevel = tLevel;
+    }
+
+    public String gettSubLevel() {                                       //Method to get tsublevel
+        return tSubLevel;
+    }
+
+    public void settSubLevel(String tSubLevel) {                         // Method to set tsublevel
+        this.tSubLevel = tSubLevel;
+    }
+
+    public String gettSubLevelId() {                                    // Method to get tsublevel id
+        return tSubLevelId;
+    }
+
+    public void settSubLevelId(String tSubLevelId) {                    //Method to set tsublevelid
+        this.tSubLevelId = tSubLevelId;
+    }
+
+    public String getPoints() {                                         //Method to get points
+        return points;
+    }
+
+    public void setPoints(String points) {                            // Method to set points
+        this.points = points;
+    }
+
+    public String getMaxPoints() {                                    //Method to get max points
+        return maxPoints;
+    }
+
+    public void setMaxPoints(String maxPoints) {                     //Method to set max points
+        this.maxPoints = maxPoints;
+    }
+
+    public String getStrikeRate() {                                  //Method to get strike rate
+        return strikeRate;
+    }
+
+    public void setStrikeRate(String strikeRate) {                    //Method to set strike rate
+        this.strikeRate = strikeRate;
+    }
+
+    public String getWinPercentage() {                                  //Method to get win percentage
+        return winPercentage;
+    }
+
+    public void setWinPercentage(String winPercentage) {                // Method to set win percentage
+        this.winPercentage = winPercentage;
+    }
+
+    public String getTotalWin() {                                      //Method to get total win
+        return totalWin;
+    }
+
+    public void setTotalWin(String totalWin) {                         //Method to set total win
+        this.totalWin = totalWin;
+    }
+
+    public String getTotalLost() {                                     //Method to get total lost
+        return totalLost;
+    }
+
+    public void setTotalLost(String totalLost) {                                    // Method to set total lost
+        this.totalLost = totalLost;
+    }
+
+    public String getTotalAbandon() {                                              // Method to get total abandon
+        return totalAbandon;
+    }
+
+    public void setTotalAbandon(String totalAbandon) {                             //Method to set total abandon
+        this.totalAbandon = totalAbandon;
+    }
+
+    public String getActive() {                                                    //Method to get active
+        return active;
+    }
+
+    public void setActive(String active) {                                         //Method to set active
+        this.active = active;
+    }
+
+    public String getCreatedBy() {                                               //Method to get created by
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {                                  //Method to set created by
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedDate() {                                             //Method to get created date
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {                             // Method to set created date
+        this.createdDate = createdDate;
+    }
+
+    public String getUpdateBy() {                                               //Method to get updated by
+        return updateBy;
+    }
+
+    public void setUpdateBy(String updateBy) {                                  //Method to set updated by
+        this.updateBy = updateBy;
+    }
+
+    public String getUpdateDate() {                                             //Method to get update date
+        return updateDate;
+    }
+
+    public void setUpdateDate(String updateDate) {                             //Method to set update date
+        this.updateDate = updateDate;
+    }
+
+    public String getLastPlayed() {                                           // Method to get last played
+        return lastPlayed;
+    }
+
+    public void setLastPlayed(String lastPlayed) {                            // Method to set last played
+        this.lastPlayed = lastPlayed;
+    }
+
+    public String getAvgPoints() {
+        return avgPoints;
+    }
+
+    public void setAvgPoints(String avgPoints) {
+        this.avgPoints = avgPoints;
+    }
+
+    public String getExpectedDate() {
+        return expectedDate;
+    }
+
+    public void setExpectedDate(String expectedDate) {
+        this.expectedDate = expectedDate;
+    }
+
+    public String getNumGame() {
+        return numGame;
+    }
+
+    public void setNumGame(String numGame) {
+        this.numGame = numGame;
+    }
+
+    public String getTotalPlayed() {
+        return totalPlayed;
+    }
+
+    public void setTotalPlayed(String totalPlayed) {
+        this.totalPlayed = totalPlayed;
+    }
+
+
+    public String getSubskillLogo() {
+        return subskillLogo;
+    }
+
+    public void setSubskillLogo(String subskillLogo) {
+        this.subskillLogo = subskillLogo;
+    }
+
+    public String getSubskillSmallBanner() {
+        return subskillSmallBanner;
+    }
+
+    public void setSubskillSmallBanner(String subskillSmallBanner) {
+        this.subskillSmallBanner = subskillSmallBanner;
+    }
+
+    public String getSubskillLargeBanner() {
+        return subskillLargeBanner;
+    }
+
+    public void setSubskillLargeBanner(String subskillLargeBanner) {
+        this.subskillLargeBanner = subskillLargeBanner;
+    }
+
+
+    public String getSubskillHtml() {
+        return subskillHtml;
+    }
+
+    public void setSubskillHtml(String subskillHtml) {
+        this.subskillHtml = subskillHtml;
+    }
+
+    public String getSubskillCf1() {
+        return subskillCf1;
+    }
+
+    public void setSubskillCf1(String subskillCf1) {
+        this.subskillCf1 = subskillCf1;
+    }
+
+    public String getSubskillCf2() {
+        return subskillCf2;
+    }
+
+    public void setSubskillCf2(String subskillCf2) {
+        this.subskillCf2 = subskillCf2;
+    }
+
+    public String getSubskillCf3() {
+        return subskillCf3;
+    }
+
+    public void setSubskillCf3(String subskillCf3) {
+        this.subskillCf3 = subskillCf3;
+    }
+
+    public String getSubskillMaxGame() {
+        return subskillMaxGame;
+    }
+
+    public void setSubskillMaxGame(String subskillMaxGame) {
+        this.subskillMaxGame = subskillMaxGame;
+    }
+
+    public String getSubskillCorrectAnsScore() {
+        return subskillCorrectAnsScore;
+    }
+
+    public void setSubskillCorrectAnsScore(String subskillCorrectAnsScore) {
+        this.subskillCorrectAnsScore = subskillCorrectAnsScore;
+    }
+
+    public String getSubskillSpeedBonus() {
+        return subskillSpeedBonus;
+    }
+
+    public void setSubskillSpeedBonus(String subskillSpeedBonus) {
+        this.subskillSpeedBonus = subskillSpeedBonus;
+    }
+
+    public String getSubskillFinishBonus() {
+        return subskillFinishBonus;
+    }
+
+    public void setSubskillFinishBonus(String subskillFinishBonus) {
+        this.subskillFinishBonus = subskillFinishBonus;
+    }
+
+    public String getSubskillWinningBonus() {
+        return subskillWinningBonus;
+    }
+
+    public void setSubskillWinningBonus(String subskillWinningBonus) {
+        this.subskillWinningBonus = subskillWinningBonus;
+    }
+
+    public String getSubskillCreatedDate() {
+        return subskillCreatedDate;
+    }
+
+    public void setSubskillCreatedDate(String subskillCreatedDate) {                             //@param subskillCreatedDate
+        this.subskillCreatedDate = subskillCreatedDate;
+    }
+
+    public String getGoalId() {
+        return goalId;
+    }
+
+    public void setGoalId(String goalId) {                                                     //@param goalId
+        this.goalId = goalId;
+    }
+
+    public Bitmap getBannerBitmap() {
+        return bannerBitmap;
+    }
+
+    public void setBannerBitmap(Bitmap bannerBitmap) {                                         //@param bannerBitmap
+        this.bannerBitmap = bannerBitmap;
+    }
+
+    @SerializedName("promo_text1")
+    public String promoText1;
+    @SerializedName("promo_text2")
+    public String promoText2;
+
+    public String getPromoText1() {
+        return promoText1;
+    }
+
+    public void setPromoText1(String promoText1) {
+        this.promoText1 = promoText1;
+    }
+
+    public String getPromoText2() {
+        return promoText2;
+    }
+
+    public void setPromoText2(String promoText2) {
+        this.promoText2 = promoText2;
+    }
+
+    public String getContestType() {
+        return contestType;
+    }
+
+    public void setContestType(String contestType) {
+        this.contestType = contestType;
+    }
+
+    public String getContestDetails() {
+        return contestDetails;
+    }
+
+    public void setContestDetails(String contestDetails) {
+        this.contestDetails = contestDetails;
+    }
+
+    @SerializedName("contest_type")
+    public String contestType;
+    @SerializedName("contest_details")
+    public String contestDetails;
+
+    public String getContestRules() {
+        return contestRules;
+    }
+
+    public void setContestRules(String contestRules) {
+        this.contestRules = contestRules;
+    }
+
+    @SerializedName("contest_rules")
+    public String contestRules;
+
+    public String getReachGoalDate() {
+        return reachGoalDate;
+    }
+
+    public void setReachGoalDate(String reachGoalDate) {
+        this.reachGoalDate = reachGoalDate;
+    }
+
+    @SerializedName("reach_goal_date")
+   public String reachGoalDate;
+
+}

@@ -1,0 +1,52 @@
+package com.empass.sdk.http;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Class for Http data
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class SDKHttpRequestVO {
+    /**
+     * url variable
+     */
+    public transient String url;
+    /**
+     * task
+     */
+    public transient String task;
+    /**
+     * task
+     */
+    public transient String token;
+    /**
+     * request method variable
+     */
+    public transient String requestMethod;
+    /**
+     * map object
+     */
+    public transient Map<String, Object> params;
+    /**
+     * map object
+     */
+    public transient Map<String, String> urlParams;
+
+
+    /**
+     * Class cons
+     */
+    public SDKHttpRequestVO(final String url, final String task, String token) {
+        params = new HashMap<String, Object>();
+        urlParams = new HashMap<String, String>();
+        this.url = url;
+        this.task = task;
+        this.token = token;
+
+    }
+
+
+}

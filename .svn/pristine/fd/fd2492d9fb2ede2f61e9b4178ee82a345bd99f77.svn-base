@@ -1,0 +1,65 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class Option {
+	/**
+	 * 
+	 */
+	@SerializedName("Seq")
+	private String seq;
+	/**
+ * 
+ */
+	@SerializedName("Value")
+	private String value;
+
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getSeq() {
+		return seq;
+	}
+
+	/**
+	 * 
+	 * @param seq
+	 */
+
+	public void setSeq(final String seq) {
+		this.seq = seq;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+
+	public String getValue() {
+		return value;
+	}
+
+	/**
+	 * 
+	 * @param value
+	 */
+	public void setValue(final String value) {
+		this.value = value;
+	}
+
+	/**
+ * 
+ */
+	@Override
+	public String toString() {
+		return "Option [seq=" + seq + ", value=" + value + "]";
+	}
+}

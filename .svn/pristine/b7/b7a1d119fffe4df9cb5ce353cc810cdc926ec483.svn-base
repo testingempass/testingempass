@@ -1,0 +1,136 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 11/28/2015.
+ */
+@SuppressWarnings("ALL")
+public class OpponentVO {
+    public OpponentVO() {
+    }
+
+    @SerializedName("goal_id")
+    public String goalId;
+    @SerializedName("player_id")
+    public String playerId;
+    @SerializedName("player_name")
+    public String playerName;
+    @SerializedName("image")
+    public String image;
+    @SerializedName("clevel_id")
+    public String cLevelId;
+    @SerializedName("clevel")
+    public String cLevel;
+    @SerializedName("csublevel_id")
+    public String cSubLevelId;
+    @SerializedName("csublevel")
+    public String cSubLevel;
+    @SerializedName("country_code")
+    public String countryCode;
+    @SerializedName("subskill")
+    public String subskill;
+    @SerializedName("subskill_id")
+    public String subskillId;
+    @SerializedName("player_email")
+    public String playerEmail;
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
+    }
+
+    public String getGoalId() {
+        return goalId;
+    }
+
+    public void setGoalId(String goalId) {
+        this.goalId = goalId;
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getcLevelId() {
+        return cLevelId;
+    }
+
+    public void setcLevelId(String cLevelId) {
+        this.cLevelId = cLevelId;
+    }
+
+    public String getcLevel() {
+        return cLevel;
+    }
+
+    public void setcLevel(String cLevel) {
+        this.cLevel = cLevel;
+    }
+
+    public String getcSubLevelId() {
+        return cSubLevelId;
+    }
+
+    public void setcSubLevelId(String cSubLevelId) {
+        this.cSubLevelId = cSubLevelId;
+    }
+
+    public String getcSubLevel() {
+        return cSubLevel;
+    }
+
+    public void setcSubLevel(String cSubLevel) {
+        this.cSubLevel = cSubLevel;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+
+    public String getSubskill() {
+        return subskill;
+    }
+
+    public void setSubskill(String subskill) {
+        this.subskill = subskill;
+    }
+
+    public String getSubskillId() {
+        return subskillId;
+    }
+
+    public void setSubskillId(String subskillId) {
+        this.subskillId = subskillId;
+    }
+
+    public String getPlayerEmail() {
+        return playerEmail;
+    }
+
+    public void setPlayerEmail(String playerEmail) {
+        this.playerEmail = playerEmail;
+    }
+
+
+}

@@ -1,0 +1,77 @@
+package com.empass.sdk.adapter;
+
+
+import android.app.Activity;
+import android.os.Parcelable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.TextView;
+
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class ViewPagerContest extends PagerAdapter {
+    /**
+     * declear vabiable
+     */
+    private transient final Activity activity;
+
+    /**
+     * @param act
+     */
+    public ViewPagerContest(final Activity act) {
+        super();
+        activity = act;
+    }
+
+
+    @Override
+    public int getCount() {
+        return 2;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public Object instantiateItem(final View collection, final int position) {
+        TextView view = null;
+        try {
+            view = new TextView(activity);
+            view.setLayoutParams(new LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
+            ((ViewPager) collection).addView(view, 0);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "deprecation", e);
+        }
+        return view;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void destroyItem(final View view, final int index, final Object argument) {
+        ((ViewPager) view).removeView((View) argument);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean isViewFromObject(final View view, final Object argument) {
+        return view == ((View) argument);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public Parcelable saveState() {
+        return null;
+    }
+}

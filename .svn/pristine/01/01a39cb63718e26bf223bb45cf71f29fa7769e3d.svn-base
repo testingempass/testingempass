@@ -1,0 +1,43 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
+public class LoginResponseData {                                              // Class for Login response
+    @SerializedName("master")
+    public List<User> users;
+    @SerializedName("goals")
+    public List<Goal> goals;
+
+    public List<EducationDataVO> getEducation() {
+        return education;
+    }
+
+    public void setEducation(List<EducationDataVO> education) {
+        this.education = education;
+    }
+
+    @SerializedName("education")
+    public List<EducationDataVO> education;
+    public LoginResponseData() {                                              //Class Constructor
+        super();
+    }
+
+    public List<User> getUsers() {                                           //Method to get User details
+        return users;
+    }
+
+    public void setUsers(final List<User> users) {                            //Method to set User details
+        this.users = users;
+    }
+
+    public List<Goal> getGoals() {                                             //Method to get goals array
+        return goals;
+    }
+
+    public void setGoals(final List<Goal> goals) {                            //Method to get goals array
+        this.goals = goals;
+    }
+
+}

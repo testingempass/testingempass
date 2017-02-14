@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="end">
+
+    <include
+        android:id="@+id/btn_header"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+    <RelativeLayout
+        android:id="@+id/rlCommunity"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_45"
+        android:visibility="visible">
+
+        <RelativeLayout
+            android:id="@+id/llItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:background="#4F5760">
+
+            <LinearLayout
+                android:id="@+id/ll_redeem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_margin="@dimen/dp_10"
+                android:background="@drawable/m_shape_white_border"
+                android:clickable="true"
+                android:onClick="redeemClick">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_margin="@dimen/dp_5"
+                    android:background="@drawable/m_gift_icon" />
+
+                <TextView
+                    android:id="@+id/tvredeem"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginRight="@dimen/dp_5"
+                    android:singleLine="true"
+                    android:text="@string/m_redeem"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_14" />
+            </LinearLayout>
+
+
+            <ImageView
+                android:id="@+id/img_coin_bag"
+                android:layout_width="@dimen/dp_80"
+                android:layout_height="@dimen/dp_80"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="@dimen/dp_10"
+                android:background="@drawable/m_coin_in_bag" />
+
+            <TextView
+                android:id="@+id/tv_bal_point"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/img_coin_bag"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_vertical"
+                android:layout_marginBottom="@dimen/dp_10"
+                android:gravity="center"
+                android:singleLine="true"
+                android:textColor="@color/m_white"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <RelativeLayout
+                android:id="@+id/linearLayout_overlap"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_bal_point">
+
+                <TextView
+                    android:id="@+id/txtView_coin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/dp_10"
+                    android:layout_marginRight="@dimen/dp_10"
+                    android:background="@color/m_white"
+                    android:gravity="center"
+                    android:text="@string/m_coin_detail"
+                    android:textColor="@color/m_gray"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </RelativeLayout>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/coin_rellayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/llItems"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:layout_marginRight="@dimen/dp_10"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:weightSum="2.5">
+
+                <ListView
+                    android:id="@+id/my_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1.2"
+                    android:background="@color/m_white" />
+
+                <TextView
+                    android:id="@+id/txtView_purchase"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/my_recycler_view"
+                    android:layout_margin="5dp"
+                    android:gravity="center"
+                    android:text="@string/m_purchase_txt"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <ListView
+                    android:id="@+id/list_coin_puchase"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_below="@+id/txtView_purchase"
+                    android:layout_weight="1.3"
+                    android:cacheColorHint="@android:color/transparent"
+                    android:dividerHeight="0dp" />
+            </LinearLayout>
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>
+

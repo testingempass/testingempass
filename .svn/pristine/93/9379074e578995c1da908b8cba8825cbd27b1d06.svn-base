@@ -1,0 +1,1090 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.s2.WarpCallbackMessageCode;
+import com.empass.sdk.s2.WarpConnectionRequestListener;
+import com.empass.sdk.s2.WarpNotifyListener;
+import com.empass.sdk.s2.WarpZoneRequestListener;
+import com.empass.sdk.utils.CircleTransform;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.OpponentResponse;
+import com.empass.sdk.vo.OpponentVO;
+import com.empass.sdk.vo.User;
+import com.shephertz.app42.gaming.multiplayer.client.WarpClient;
+import com.squareup.picasso.Picasso;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import io.saeid.fabloading.LoadingView;
+
+
+/**
+ * SearchOpponentActivity is use to find opponent
+ *
+ * @author Deepak
+ */
+public class SearchOpponentActivity extends EmpassActivity {
+    /**
+     * declaer variable
+     */
+    private transient WarpClient warpClient;
+    /**
+     * declaer variable
+     */
+    private transient final AtomicBoolean isFindOpponent = new AtomicBoolean(false);
+    /**
+     * declaer variable
+     */
+    private transient final AtomicBoolean isDestroyFlag = new AtomicBoolean(true);
+    /**
+     * declaer variable
+     */
+    private transient final AtomicBoolean isCallBackFlag = new AtomicBoolean(true);
+    /**
+     * declaer variable
+     */
+    private transient final AtomicBoolean isAddListenerFlag = new AtomicBoolean(false);
+    /**
+     * declaer variable
+     */
+    private transient final AtomicBoolean isOffline = new AtomicBoolean(false);
+    /**
+     * declaer variable
+     */
+    private transient final HashMap<String, Object> properties = new HashMap<>();
+    /**
+     * declaer variable
+     */
+    private static final long ENDTIME = 30000;
+    /**
+     * declaer variable
+     */
+    private static final long STARTTIME = 1000;
+    /**
+     * declaer variable
+     */
+    private static final long WENDTIME = 3000;
+    /**
+     * declaer variable
+     */
+    private static final long OFFLINETIME = 5000;
+    /**
+     * declaer variable
+     */
+    private transient SearchOpponentCountDownTimer countDownTimer;
+    /**
+     * declaer variable
+     */
+    private transient WaitCountDownTimer waitDownTimer;
+    /**
+     * declaer variable
+     */
+    private transient OfflileCountDownTimer offlineDownTimer;
+    /**
+     * declaer variable
+     */
+    private transient WarpNotifyListener warpNotListener;
+    /**
+     * declaer variable
+     */
+    private transient WarpZoneRequestListener warpZoneListener;
+    /**
+     * declaer variable
+     */
+    private transient String[] s2Response;
+    /**
+     * declaer variable
+     */
+    private transient TextView tvOppLetters;
+    /**
+     * declear variable
+     */
+    private transient TextView tvSerchOpp;
+    /**
+     * declaer variable
+     */
+    private transient Goal goal;
+    /**
+     * declaer variable
+     */
+    private transient LoadingView mLoadingView;
+    /**
+     * declear variable
+     */
+    private transient RelativeLayout rlRandomImage;
+    /**
+     * declear variable
+     */
+    private transient TextView playname;
+    /**
+     * declear variable
+     */
+    private transient TextView tvUserLetters;
+    /**
+     * declear variable
+     */
+    private transient ImageView ivPlayerimage;
+    /**
+     * declear variable
+     */
+    private transient ImageView playerCountryFlag;
+    /**
+     * declear variable
+     */
+    private transient LinearLayout liOpponent;
+    /**
+     * declear variable
+     */
+    private transient TextView opponentName;
+    /**
+     * declear variable
+     */
+    private transient ImageView opponentImage;
+    /**
+     * declear variable
+     */
+    private transient ImageView opponentBadge;
+    /**
+     * declear variable
+     */
+    private transient ImageView oppCuntyFlg;
+    /**
+     * declear variable
+     */
+    private transient View v;
+    /**
+     * declear variable
+     */
+    private transient ImageView playerBadgeView;
+    /**
+     * declaer variable
+     */
+    private transient WarpConnectionRequestListener warpConneListener;
+    /**
+     * declare variable
+     */
+    private transient MobiTextView tvHeader;
+    private transient User user;
+    private transient Intent intent;
+    private transient String skillId;
+
+    /**
+     * cons
+     */
+    public SearchOpponentActivity() {
+        super();
+    }
+
+    /**
+     * Initialize handler for getting callback of listener
+     */
+    private transient Callback warpCallBack = new Callback() {
+        /**
+         * handle callback of request
+         */
+        @Override
+        public boolean handleMessage(final Message msg) {
+            if (isCallBackFlag.get()) {
+                isCallBackFlag.set(false);
+                LogUtils.debug(sdkConstant.WARP_TAG, "Callback : " + Integer.toString(msg.what));
+                switch (msg.what) {
+                    //this is callback of connectWithUserName
+                    //connection done
+                    case WarpCallbackMessageCode.CONNECTION_DONE:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "CONNECTION_DONE");
+                        //init is use for add listener and get room
+                        initWarpListener();
+                        break;
+                    //this is callback of connectWithUserName
+                    //bad request
+                    case WarpCallbackMessageCode.BAD_REQUEST:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "BAD_REQUEST");
+                        //display error dialog
+                        connectionError("BAD REQUEST");
+                        break;
+                    //this is callback of connectWithUserName
+                    //connection recover error
+                    case WarpCallbackMessageCode.C_E_RECOVERABLE:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "CONNECTION_ERROR_RECOVERABLE");
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                isCallBackFlag.set(true);
+                                warpClient.RecoverConnection();
+                            }
+                        }, 5000);
+                        break;
+                    //this is callback of connectWithUserName
+                    //error
+                    case WarpCallbackMessageCode.ERROR:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "ERROR");
+                        connectionError("ERROR");
+                        break;
+                    //this is a callBack Of onUpdatePeearRecive
+                    //opponent receive
+                    case WarpCallbackMessageCode.MSG_OPP_REC:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "MSG_OPPONENT_RECEIVED");
+                        //findOpponent is true because in 40 second not get opponent display error
+                        isFindOpponent.set(true);
+                        countDownTimer.cancel();
+                        s2Response = (String[]) msg.obj;
+                        getOpponentProfile(s2Response);
+                        break;
+                    //this is callback of connectWithUserName
+                    //Authentication error
+                    case WarpCallbackMessageCode.AUTH_ERROR:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "AUTH_ERROR");
+                        connectionError("AUTH ERROR");
+                        break;
+                    //this is a callBack of findRoom
+                    //room not found
+                    case WarpCallbackMessageCode.MSG_RNOT_FOUND:
+                        createRoom();
+                        break;
+                    //this is callback of connectWithUserName
+                    //resource not found
+                    case WarpCallbackMessageCode.RES_NOT_FOUND:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "RESOURCE NOT FOUND");
+                        break;
+                    //this is callback of connectWithUserName
+                    //resource move
+                    case WarpCallbackMessageCode.RESOURCE_MOVED:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "RESOURCE_MOVED");
+                        connectionError("RESOURCE MOVED");
+                        break;
+                    //this is callback of connectWithUserName
+                    //connection error
+                    case WarpCallbackMessageCode.CONNECTION_ERROR:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "CONNECTION_ERROR");
+                        connectionError("CONNECTION ERROR");
+                        break;
+                    //this is callback of connectWithUserName
+                    //unknown error
+                    case WarpCallbackMessageCode.UNKNOWN_ERROR:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "UNKNOWN_ERROR");
+                        connectionError("UNKNOWN ERROR");
+                        break;
+                    //this is callback of connectWithUserName
+                    //result size error
+                    case WarpCallbackMessageCode.RESULT_SIZE_ERROR:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "RESULT_SIZE_ERROR");
+                        connectionError("RESULT SIZE ERROR");
+                        break;
+                    case WarpCallbackMessageCode.SUCCESS_RECOVERED:
+                        countDownTimer.start();
+                        LogUtils.debug(sdkConstant.WARP_TAG, "SUCCESS RECOVERED");
+                        initWarpListener();
+                        break;
+                    case WarpCallbackMessageCode.MSG_TIMEDIFF:
+                        LogUtils.debug(sdkConstant.WARP_TAG, "MSG_TIMEDIFF");
+                        //findOpponent is true because in 40 second not get opponent display error
+                        isFindOpponent.set(true);
+                        countDownTimer.cancel();
+                        warpClient.disconnect();
+                        removeListener();
+                        final String message = (String) msg.obj;
+                        LogUtils.debug(sdkConstant.TAG, "Res:" + message);
+                        showDateDiffDialog(message);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            return false;
+        }
+    };
+
+    /**
+     * diff date
+     *
+     * @param message
+     */
+    private void showDateDiffDialog(final String message) {
+        try {
+            mLoadingView.pauseAnimation();
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    if (sdkConstant.NTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                        final Intent intents = new Intent(SearchOpponentActivity.this, GoalDetailsActivity.class);
+                        intents.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                        startActivity(intents);
+                        finish();
+                    } else {
+                        final Intent intentDashboard = new Intent(SearchOpponentActivity.this, DashBoardActivity.class);
+                        intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+                        startActivity(intentDashboard);
+                        finish();
+                    }
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+
+        }
+    }
+
+    /**
+     * call handler
+     */
+    private transient Handler handler = new Handler(warpCallBack);
+
+    /**
+     * appExitDialogs for exit app
+     */
+    private void appExitDialogs() {
+        LogUtils.debug(sdkConstant.TAG, "appExitDialogs Start");
+        try {
+            if (!((Activity) context).isFinishing()) {
+                final ProgressDialog progressDialogs = ProgressDialog.show(context, "", "", true);
+                progressDialogs.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressDialogs.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) progressDialogs.findViewById(R.id.tv_loading);
+                tvLoading.setText("Are you sure you wish to abandon the game?");
+                final Button tvYes = (Button) progressDialogs.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        if (isFindOpponent.get()) {
+                            waitDownTimer.cancel();
+                        }
+                        waitDownTimer.cancel();
+                        countDownTimer.cancel();
+                        offlineDownTimer.cancel();
+                        warpClient.disconnect();
+                        removeListener();
+                        if (sdkConstant.NTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                            final Intent intents = new Intent(SearchOpponentActivity.this, GoalDetailsActivity.class);
+                            intents.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                            startActivity(intents);
+                            finish();
+                        } else {
+                            final Intent intentDashboard = new Intent(SearchOpponentActivity.this, DashBoardActivity.class);
+                            intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+                            startActivity(intentDashboard);
+                            finish();
+                        }
+                        progressDialogs.dismiss();
+                    }
+                });
+                final Button tvNo = (Button) progressDialogs.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        progressDialogs.dismiss();
+                    }
+                });
+                progressDialogs.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "appExitDialogs Stop");
+    }
+
+    /**
+     * display error for connection to server
+     *
+     * @param error
+     */
+    public synchronized void connectionError(final String error) {
+        LogUtils.debug(sdkConstant.WARP_TAG, "connectionError Start");
+        //findOpponent is true because in 40 second not get opponent display error
+        try {
+            warpClient.disconnect();
+            isFindOpponent.set(true);
+            countDownTimer.cancel();
+            offlineDownTimer.start();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "connectionError Stop");
+    }
+
+    /**
+     * create room
+     */
+    private synchronized void createRoom() {
+        LogUtils.debug(sdkConstant.WARP_TAG, "createRoom Start");
+        try {
+            //set room property in hashmap
+            properties.put(s2Constant.KEY_LEVEL, goal.cLevelId);
+            properties.put(s2Constant.KEY_SUB_SKILL, goal.subSkill);
+            properties.put(s2Constant.KEY_VIRTUAL, s2Constant.FALSE);
+            LogUtils.debug(sdkConstant.TAG, "Room Property :" + s2Constant.KEY_LEVEL + goal.cLevelId + sdkConstant.HYPHEN
+                    + sdkConstant.HYPHEN + s2Constant.KEY_SUB_SKILL + goal.subSkill);
+            isCallBackFlag.set(true);
+            LogUtils.debug(sdkConstant.TAG, "Date:" + dateFormat.format(new Date()));
+            warpClient.createRoom(goal.getSubSkill(), user.getName(), s2Constant.MAX_USER, properties);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "createRoom Stop");
+    }
+
+    /**
+     * get opponent user from s2 server and get opponent player profile
+     * information and display its profile
+     *
+     * @param response
+     */
+    private void getOpponentProfile(final String[] response) {
+        LogUtils.debug(sdkConstant.TAG, "getOpponentProfile start");
+        try {
+            isOffline.set(false);
+            String opponent;
+            opponent = response[0];
+            if (response[0].equals(user.getId() + sdkConstant.HYPHEN + goal.getGoalId() + sdkConstant.HYPHEN + goal.getcLevelId())) {
+                opponent = response[1];
+            }
+            final String[] tokens = opponent.split(sdkConstant.HYPHEN);
+            if (s2Constant.OPPONENT.equalsIgnoreCase(opponent)) {
+                WarpZoneRequestListener.updateRoomProperties(warpClient, properties);
+            }
+            final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PLAYER_PER, dbHelper.getRefData(sdkConstant.TOKEN));
+            request.params.put(urls.PLAYER_ID, tokens[0]);
+            request.params.put(urls.GOAL_ID, tokens[1]);
+            request.requestMethod = urls.REQUEST_POST;
+            final Callback callback = new Callback() {
+                /**
+                 * call back of request
+                 */
+                @Override
+                public boolean handleMessage(final Message msg) {
+                    final String response = (String) msg.obj;
+                    /**
+                     * display connection slow error
+                     */
+                    if (null == response || sdkConstant.TRY_AGAIN.equals(response)) {
+                        //searchSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN);
+                        LogUtils.debug(sdkConstant.TAG, sdkConstant.DEMO_OOP);
+                        showOpponent(sdkConstant.DEMO_OOP, null);
+                    } else {
+                        LogUtils.debug(sdkConstant.TAG, response);
+                        showOpponent(response, request);
+                    }
+                    return true;
+                }
+            };
+            new SDKHttpRequestHandler(this, new Handler(callback), 0).execute(request);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "getOpponentProfile stop");
+    }
+
+
+    /**
+     * show opponent data
+     *
+     * @param response
+     */
+    @SuppressLint("SetTextI18n")
+    protected void showOpponent(final String response, final SDKHttpRequestVO requestVO) {
+        try {
+            rlRandomImage.setVisibility(View.GONE);
+            tvSerchOpp.setVisibility(View.VISIBLE);
+            tvSerchOpp.setText("Opponent Found");
+            int imageBadge;
+            final SDKDatabaseController oppController = new SDKDatabaseController(context);
+            final OpponentResponse opponentResponse = oppController.parseSearchOpponentResponse(response, requestVO);
+            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(opponentResponse.status)) {
+                final OpponentVO[] opponentPlayer = opponentResponse.getData();
+                //opponent player not null
+                dbHelper.saveOpponentData(sdkConstant.OPPONENTKEY, response);
+                final int imageFlag = sdkCommonUtils.getCountryFlag(context, opponentPlayer[0].getCountryCode());
+                //get opponent player country flag and badge
+                if (opponentPlayer[0].getcLevel().length() > 1 && opponentPlayer[0].getcSubLevel().length() > 1) {
+                    final String badge = "drawable/" + opponentPlayer[0].getcLevel().toLowerCase(Locale.getDefault()) + "_"
+                            + opponentPlayer[0].getcSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+                    imageBadge = sdkCommonUtils.getImageResource(context, badge);
+                } else {
+                    imageBadge = sdkCommonUtils.getImageResource(context, imageName);
+                }
+                liOpponent.setVisibility(View.VISIBLE);
+
+                opponentName.setText(opponentPlayer[0].getPlayerName());
+
+                oppCuntyFlg.setImageResource(imageFlag);
+                opponentBadge.setImageResource(imageBadge);
+                mLoadingView.pauseAnimation();
+                /**
+                 * displayCountDownTimer is call after get opponent and invoke
+                 * another class after 3 seconds
+                 */
+                tvOppLetters.setVisibility(View.VISIBLE);
+                tvOppLetters.setText(sdkCommonUtils.getShortName(opponentPlayer[0].getPlayerName()));
+                if (!sdkConstant.EMPTY.equalsIgnoreCase(opponentPlayer[0].getImage())) {
+                    Picasso.with(context).load(opponentPlayer[0].getImage()).placeholder(R.drawable.m_circle_username_orange).
+                            transform(new CircleTransform()).into(opponentImage, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+                            tvOppLetters.setVisibility(View.GONE);
+                        }
+
+                        @Override
+                        public void onError() {
+                            opponentImage.setVisibility(View.VISIBLE);
+                            tvOppLetters.setVisibility(View.VISIBLE);
+                            opponentImage.setImageResource(R.drawable.m_circle_username_orange);
+                        }
+                    });
+                }
+                waitDownTimer.start();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Initialize listener
+     */
+    private synchronized void initWarpListener() {
+        LogUtils.debug(sdkConstant.WARP_TAG, "initWarpListener start");
+        try {
+            isAddListenerFlag.set(true);
+            warpClient.addZoneRequestListener(warpZoneListener);
+            warpClient.addNotificationListener(warpNotListener);
+            warpClient.addRoomRequestListener(warpZoneListener);
+            //findRoomInRange is use to get room list which have min-user 1 and max-user 1
+            isCallBackFlag.set(true);
+            warpClient.getRoomInRange(1, 1);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+            showMsgWithOk("Exception in Initialization", sdkConstant.TAG);
+        }
+        LogUtils.debug(sdkConstant.TAG, "initWarpListener stop");
+    }
+
+    /**
+     * use for ui content
+     */
+    @SuppressLint("SetTextI18n")
+    public void initUI() {
+        LogUtils.debug(sdkConstant.WARP_TAG, "initUI Start");
+        try {
+            isFindOpponent.set(false);
+            tvSerchOpp.setVisibility(View.VISIBLE);
+            tvSerchOpp.setText("Searching opponent for you...");
+            countDownTimer.start();
+            warpClient.addConnectionRequestListener(warpConneListener);
+            imageName = sdkConstant.COMMON_LEVEL;
+            if (null != goal.getcLevel() && null != goal.getcSubLevel()) {
+                imageName = "drawable/" + goal.getcLevel().toLowerCase(Locale.getDefault()) + "_"
+                        + goal.getcSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+            }
+            if (sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                opponentBadge.setVisibility(View.GONE);
+                playerBadgeView.setVisibility(View.GONE);
+            }
+            tvHeader.setText(goal.getSubSkill());
+            playname.setText(user.getName());
+            //player image not found then display player name
+            if (user.getName() != null) {
+                final String initials = sdkCommonUtils.getShortName(user.getName());
+                tvUserLetters.setText(initials);
+            }
+            //player image found then display
+            if (!sdkConstant.EMPTY.equalsIgnoreCase(imagePath)) {
+                tvUserLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(imagePath).
+                        placeholder(R.drawable.m_circle_username_orange).transform(new CircleTransform()).into(ivPlayerimage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        tvUserLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        ivPlayerimage.setVisibility(View.VISIBLE);
+                        tvUserLetters.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+
+            final int imageBadgeIdLocal = sdkCommonUtils.getImageResource(context, imageName);
+            playerBadgeView.setImageResource(imageBadgeIdLocal);
+            final int imageFlagLocal = sdkCommonUtils.getCountryFlag(context, user.getCountryCode());
+            playerCountryFlag.setImageResource(imageFlagLocal);
+            rlRandomImage.setVisibility(View.VISIBLE);
+            warpZoneListener = new WarpZoneRequestListener(this, warpClient, handler, skillId);
+            showAnimation();
+            isCallBackFlag.set(true);
+            warpClient.connectWithUserName(user.getId() + sdkConstant.HYPHEN + goal.getGoalId() + sdkConstant.HYPHEN + goal.getcLevelId(), Long.toString(System.currentTimeMillis()));
+            final LayerDrawable bgDrawable = (LayerDrawable) v.getBackground();
+            final GradientDrawable shape = (GradientDrawable) bgDrawable.findDrawableByLayerId(R.id.shape_id);
+            shape.setColor(getResources().getColor(R.color.sdk_seconderycolor));
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "initUI Stop");
+    }
+
+    private void showAnimation() {
+        try {
+            final boolean isLollipop = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
+            int marvel_1 = 0, marvel_2 = 0, marvel_3 = 0, marvel_4 = 0, marvel_5 = 0, marvel_6 = 0, marvel_7 = 0, marvel_8 = 0, marvel_9 = 0, marvel_10 = 0;
+            final int index = sdkCommonUtils.generateRandomNumber(0, 4);
+            switch (index) {
+                case 0:
+                    marvel_1 = isLollipop ? R.drawable.photo001 : R.drawable.photo001_normal;
+                    marvel_2 = isLollipop ? R.drawable.photo002 : R.drawable.photo002_normal;
+                    marvel_3 = isLollipop ? R.drawable.photo003 : R.drawable.photo003_normal;
+                    marvel_4 = isLollipop ? R.drawable.photo004 : R.drawable.photo004_normal;
+                    marvel_5 = isLollipop ? R.drawable.photo005 : R.drawable.photo005_normal;
+                    marvel_6 = isLollipop ? R.drawable.photo006 : R.drawable.photo006_normal;
+                    marvel_7 = isLollipop ? R.drawable.photo007 : R.drawable.photo007_normal;
+                    marvel_8 = isLollipop ? R.drawable.photo008 : R.drawable.photo008_normal;
+                    marvel_9 = isLollipop ? R.drawable.photo009 : R.drawable.photo009_normal;
+                    marvel_10 = isLollipop ? R.drawable.photo010 : R.drawable.photo010_normal;
+                    break;
+                case 1:
+                    marvel_1 = isLollipop ? R.drawable.photo011 : R.drawable.photo011_normal;
+                    marvel_2 = isLollipop ? R.drawable.photo012 : R.drawable.photo012_normal;
+                    marvel_3 = isLollipop ? R.drawable.photo013 : R.drawable.photo013_normal;
+                    marvel_4 = isLollipop ? R.drawable.photo014 : R.drawable.photo014_normal;
+                    marvel_5 = isLollipop ? R.drawable.photo015 : R.drawable.photo015_normal;
+                    marvel_6 = isLollipop ? R.drawable.photo016 : R.drawable.photo016_normal;
+                    marvel_7 = isLollipop ? R.drawable.photo017 : R.drawable.photo017_normal;
+                    marvel_8 = isLollipop ? R.drawable.photo018 : R.drawable.photo018_normal;
+                    marvel_9 = isLollipop ? R.drawable.photo019 : R.drawable.photo019_normal;
+                    marvel_10 = isLollipop ? R.drawable.photo020 : R.drawable.photo020_normal;
+                    break;
+                case 2:
+                    marvel_1 = isLollipop ? R.drawable.photo021 : R.drawable.photo021_normal;
+                    marvel_2 = isLollipop ? R.drawable.photo022 : R.drawable.photo022_normal;
+                    marvel_3 = isLollipop ? R.drawable.photo023 : R.drawable.photo023_normal;
+                    marvel_4 = isLollipop ? R.drawable.photo024 : R.drawable.photo024_normal;
+                    marvel_5 = isLollipop ? R.drawable.photo025 : R.drawable.photo025_normal;
+                    marvel_6 = isLollipop ? R.drawable.photo001 : R.drawable.photo001_normal;
+                    marvel_7 = isLollipop ? R.drawable.photo002 : R.drawable.photo002_normal;
+                    marvel_8 = isLollipop ? R.drawable.photo005 : R.drawable.photo005_normal;
+                    marvel_9 = isLollipop ? R.drawable.photo008 : R.drawable.photo008_normal;
+                    marvel_10 = isLollipop ? R.drawable.photo010 : R.drawable.photo010_normal;
+                    break;
+                case 3:
+                    marvel_1 = isLollipop ? R.drawable.photo010 : R.drawable.photo010_normal;
+                    marvel_2 = isLollipop ? R.drawable.photo002 : R.drawable.photo002_normal;
+                    marvel_3 = isLollipop ? R.drawable.photo013 : R.drawable.photo013_normal;
+                    marvel_4 = isLollipop ? R.drawable.photo009 : R.drawable.photo009_normal;
+                    marvel_5 = isLollipop ? R.drawable.photo025 : R.drawable.photo025_normal;
+                    marvel_6 = isLollipop ? R.drawable.photo008 : R.drawable.photo008_normal;
+                    marvel_7 = isLollipop ? R.drawable.photo014 : R.drawable.photo014_normal;
+                    marvel_8 = isLollipop ? R.drawable.photo017 : R.drawable.photo017_normal;
+                    marvel_9 = isLollipop ? R.drawable.photo006 : R.drawable.photo006_normal;
+                    marvel_10 = isLollipop ? R.drawable.photo001 : R.drawable.photo001_normal;
+                    break;
+                case 4:
+                    marvel_1 = isLollipop ? R.drawable.photo025 : R.drawable.photo025_normal;
+                    marvel_2 = isLollipop ? R.drawable.photo024 : R.drawable.photo024_normal;
+                    marvel_3 = isLollipop ? R.drawable.photo023 : R.drawable.photo023_normal;
+                    marvel_4 = isLollipop ? R.drawable.photo022 : R.drawable.photo022_normal;
+                    marvel_5 = isLollipop ? R.drawable.photo021 : R.drawable.photo021_normal;
+                    marvel_6 = isLollipop ? R.drawable.photo020 : R.drawable.photo020_normal;
+                    marvel_7 = isLollipop ? R.drawable.photo019 : R.drawable.photo019_normal;
+                    marvel_8 = isLollipop ? R.drawable.photo018 : R.drawable.photo018_normal;
+                    marvel_9 = isLollipop ? R.drawable.photo017 : R.drawable.photo017_normal;
+                    marvel_10 = isLollipop ? R.drawable.photo016 : R.drawable.photo016_normal;
+                    break;
+            }
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel1), marvel_1,
+                    LoadingView.FROM_LEFT);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel2), marvel_2,
+                    LoadingView.FROM_TOP);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel3), marvel_3,
+                    LoadingView.FROM_RIGHT);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel4), marvel_4,
+                    LoadingView.FROM_BOTTOM);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel3), marvel_5,
+                    LoadingView.FROM_LEFT);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel4), marvel_6,
+                    LoadingView.FROM_TOP);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel3), marvel_7,
+                    LoadingView.FROM_RIGHT);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel4), marvel_8,
+                    LoadingView.FROM_BOTTOM);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel1), marvel_9,
+                    LoadingView.FROM_LEFT);
+            mLoadingView.addAnimation(getResources().getColor(R.color.m_marvel2), marvel_10,
+                    LoadingView.FROM_TOP);
+            mLoadingView.startAnimation();
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * use for initialize s2 server connection
+     */
+    private void initWarp() {
+        LogUtils.debug(sdkConstant.WARP_TAG, "initWarp start");
+        try {
+            WarpClient.initialize(dbHelper.getRefData(sdkConstant.APP_KEY), dbHelper.getRefData(sdkConstant.HOST_NAME));
+            WarpClient.setRecoveryAllowance(s2Constant.MAX_RECOVERY_ATTEMPT);
+            warpClient = WarpClient.getInstance();
+            warpConneListener = new WarpConnectionRequestListener(handler);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.WARP_TAG, "Error while initializing Warp", e);
+            showMsgWithOk("Exception in Initialization", sdkConstant.TAG);
+        }
+        LogUtils.debug(sdkConstant.TAG, "initWarp stop");
+    }
+
+    /**
+     * back
+     */
+    @Override
+    public void onBackPressed() {
+        LogUtils.debug(sdkConstant.TAG, "onBackPressed Start");
+        appExitDialogs();
+        LogUtils.debug(sdkConstant.TAG, "onBackPressed Stop");
+    }
+
+    /**
+     * onclcik
+     *
+     * @param view
+     */
+    public void onClickBack(final View view) {
+        LogUtils.debug(sdkConstant.TAG, "onClick Start");
+        try {
+            if (!((Activity) context).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Are you sure you wish to abandon the game?");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        countDownTimer.cancel();
+                        waitDownTimer.cancel();
+                        warpClient.disconnect();
+                        offlineDownTimer.cancel();
+                        removeListener();
+                        mProgressDialog.dismiss();
+                        final Intent intent = new Intent(SearchOpponentActivity.this, GoalDetailsActivity.class);
+                        intent.putExtra(sdkConstant.GOAL_INTENT, goal.getSubSkillId());
+                        startActivity(intent);
+                        finish();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onCreate for ui content
+     */
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        LogUtils.debug(sdkConstant.TAG, "onCreate Start");
+        super.onCreate(bundle);
+        try {
+            context = this;
+            setContentView(R.layout.m_activity_search_opponent);
+            dbHelper = SDKDBHelper.getInstance(context);
+            warpNotListener = new WarpNotifyListener(handler);
+            countDownTimer = new SearchOpponentCountDownTimer(ENDTIME, STARTTIME);
+            waitDownTimer = new WaitCountDownTimer(WENDTIME, STARTTIME);
+            offlineDownTimer = new OfflileCountDownTimer(OFFLINETIME, STARTTIME);
+            //initWarp is use for initialize warpClient object
+            user = dbHelper.getLogedUser();
+            LogUtils.debug(sdkConstant.TAG, "Country::" + user.getCountryCode());
+            tvOppLetters = (TextView) findViewById(R.id.tvOppLetters);
+            tvSerchOpp = (TextView) findViewById(R.id.tv_serch);
+            mLoadingView = (LoadingView) findViewById(R.id.loading_view);
+            rlRandomImage = (RelativeLayout) findViewById(R.id.rl_randomimg);
+            playname = (TextView) findViewById(R.id.tv_playername);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickBack(v);
+                }
+            });
+            tvUserLetters = (TextView) findViewById(R.id.tvUserLetters);
+            ivPlayerimage = (ImageView) findViewById(R.id.iv_playerimage);
+            playerCountryFlag = (ImageView) findViewById(R.id.iv_playerCountryFlag);
+            liOpponent = (LinearLayout) findViewById(R.id.li_opponent);
+            opponentName = (TextView) findViewById(R.id.tv_opponentName);
+            opponentImage = (ImageView) findViewById(R.id.iv_opponentImage);
+            opponentBadge = (ImageView) findViewById(R.id.iv_opponentBadge);
+            oppCuntyFlg = (ImageView) findViewById(R.id.iv_opponentCountryFlag);
+            v = (View) findViewById(R.id.iv_random);
+            playerBadgeView = (ImageView) findViewById(R.id.iv_playerBadge);
+            initWarp();
+            intent = getIntent();
+            skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+            goal = dbHelper.getGoal(skillId);
+            isInternetAvailable();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } finally {
+            initUI();
+        }
+        LogUtils.debug(sdkConstant.TAG, "onCreate Start");
+    }
+
+    /**
+     * onResume is call resume of parent activity
+     */
+    @Override
+    protected void onResume() {
+        LogUtils.debug(sdkConstant.TAG, "onResume");
+        if (isOffline.get()) {
+            startGameActivity();
+        }
+        super.onResume();
+    }
+
+    /**
+     * remove listener is removing warp listener
+     */
+    public void removeListener() {
+        LogUtils.debug(sdkConstant.TAG, "removeListener Start");
+        try {
+            /**
+             * listener is already added
+             */
+            if (isAddListenerFlag.get()) {
+                warpClient.removeNotificationListener(warpNotListener);
+                warpClient.removeRoomRequestListener(warpZoneListener);
+                warpClient.removeZoneRequestListener(warpZoneListener);
+                isAddListenerFlag.set(false);
+            }
+            warpClient.removeConnectionRequestListener(warpConneListener);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "removeListener Stop");
+    }
+
+    /**
+     * start game activity and remove listener which is adding in init
+     */
+    private synchronized void startGameActivity() {
+        LogUtils.debug(sdkConstant.TAG, "startGameActivity Start");
+        try {
+            removeListener();
+            if (isInternetAvailable()) {
+                if (!isOffline.get()) {
+                    final Intent intents = new Intent(context, GameActivity.class);
+                    intents.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+                    startActivity(intents);
+                    isDestroyFlag.set(false);
+                    finish();//finish current running activity
+                } else {
+                    final Intent intents = new Intent(context, OfflineGameActivity.class);
+                    intents.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+                    startActivity(intents);
+                    isDestroyFlag.set(false);
+                    finish();
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "startGameActivity Stop");
+    }
+
+    /**
+     * destory app
+     */
+    @Override
+    protected void onDestroy() {
+        LogUtils.debug(sdkConstant.TAG, "onDestroy Start");
+        /**
+         * checkm flag for remove listener
+         */
+        try {
+            if (isDestroyFlag.get()) {
+                warpClient.disconnect();
+                removeListener();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        super.onDestroy();
+        LogUtils.debug(sdkConstant.TAG, "onDestroy Stop");
+    }
+
+    /**
+     * SearchOpponentCountDownTimer for oppont countdown
+     *
+     * @author Deepak
+     */
+    public class SearchOpponentCountDownTimer extends CountDownTimer {
+        /**
+         * @param optionStartTime
+         * @param interval
+         */
+        public SearchOpponentCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "SearchOpponentCountDownTimer Finish start");
+            try {
+                /**
+                 * opponent not found
+                 */
+                if (!isFindOpponent.get()) {
+                    LogUtils.debug(sdkConstant.TAG, "Opponent not found ");
+                    warpClient.disconnect();
+                    removeListener();
+                    isOffline.set(true);
+                    final String opponent = SDKCommonUtils.getVirtulUser();
+                    showOpponent(opponent, null);
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "SearchOpponentCountDownTimer Finish stop");
+        }
+
+        /**
+         * onTick
+         */
+        @Override
+        public void onTick(final long tick) {
+            LogUtils.debug(sdkConstant.TAG, "Tick");
+        }
+    }
+
+    /**
+     * WaitCountDownTimer is count down for opponent
+     *
+     * @author Deepak
+     */
+    public class WaitCountDownTimer extends CountDownTimer {
+        /**
+         * @param optionStartTime
+         * @param interval
+         */
+        public WaitCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "WaitCountDownTimer Finish start");
+            try {
+                startGameActivity();
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "WaitCountDownTimer Finish stop");
+        }
+
+        /**
+         * onTick
+         */
+        @Override
+        public void onTick(final long tick) {
+
+        }
+    }
+
+    /**
+     * WaitCountDownTimer is count down for opponent
+     *
+     * @author Deepak
+     */
+    public class OfflileCountDownTimer extends CountDownTimer {
+        /**
+         * @param optionStartTime
+         * @param interval
+         */
+        public OfflileCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "OfflileCountDownTimer Finish start");
+            try {
+                isOffline.set(true);
+                final String opponent = sdkCommonUtils.getVirtulUser();
+                showOpponent(opponent, null);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "WaitCountDownTimer Finish stop");
+        }
+
+        /**
+         * onTick
+         */
+        @Override
+        public void onTick(final long tick) {
+
+        }
+    }
+
+}

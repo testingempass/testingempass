@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer name="database_version">1</integer>
+    <string name="database_name">Empass_sdkdb</string>
+    <string-array name="create_app_tables">
+        <item>@string/create_skill_master_ref</item>
+        <item>@string/user_master</item>
+        <item>@string/reference_master</item>
+        <item>@string/user_master</item>
+        <item>@string/user_profile</item>
+        <item>@string/leaderboard_master</item>
+        <item>@string/progression_master</item>
+        <item>@string/degree_master</item>
+        <item>@string/education_master</item>
+        <item>@string/tempuser_master</item>
+        <item>@string/application_master</item>
+    </string-array>
+    <string-array name="drop_app_tables" />
+     <string name="create_skill_master_ref">CREATE TABLE IF NOT EXISTS SKILL_MASTER_REF (
+                  id INTEGER(11) NOT NULL,
+                  name TEXT(64) NOT NULL,
+                  domain_id INTEGER(11) NOT NULL,
+                  domain_name TEXT(64) NOT NULL,
+                  active TEXT,
+                  type TEXT,
+                  payment_mode TEXT,
+                  logo TEXT,
+ 				  max_game TEXT,
+ 				  is_secured TEXT,
+                  novice_eta TEXT NOT NULL,
+                  amateur_eta TEXT NOT NULL,
+                  pro_eta TEXT NOT NULL,
+                  champ_eta TEXT NOT NULL,
+                  large_banner TEXT NOT NULL,
+                  promo_text1 TEXT NOT NULL,
+                  promo_text2 TEXT NOT NULL,
+                  contest_type TEXT NOT NULL,
+                  contest_rules TEXT NOT NULL,
+                  contest_details TEXT NOT NULL,
+                  max_level TEXT NOT NULL,
+                  color TEXT NOT NULL,
+                  amount TEXT NOT NULL,
+                  question_count TEXT NOT NULL,
+                  flag TEXT NOT NULL,
+                  end_date NOT NULL)
+    </string>
+    <string name="select_contest">select * from SKILL_MASTER_REF where type =? AND active== "'Y'"</string>
+    <string name="select_contest_str">select * from SKILL_MASTER_REF where contest_type=? AND type =="'contest'" AND active== "'Y'"</string>
+    <string name="select_subskill_id_ref">select id from SKILL_MASTER_REF where id=? AND name =?</string>
+    <string name="select_subskill_count">select COUNT(name) name from SKILL_MASTER_REF where id=?</string>
+    <string name="insert_skill">INSERT INTO SKILL_MASTER_REF (id, name,domain_id,domain_name,active,type,logo,payment_mode,max_game,is_secured,novice_eta,amateur_eta,pro_eta,champ_eta,large_banner,promo_text1,promo_text2,contest_type,contest_rules,contest_details,max_level,color,amount,question_count,flag,end_date) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)</string>
+    <string name="select_skill_color">SELECT color FROM SKILL_MASTER_REF WHERE id = ? </string>
+    <string name="update_skill">UPDATE SKILL_MASTER_REF  SET name=?, domain_id=?,domain_name=?,active=?,type=?,logo=?, payment_mode=?,max_game=?,is_secured=?,novice_eta=?, amateur_eta=?, pro_eta=?, champ_eta=?, large_banner=?, promo_text1=?, promo_text2=?,contest_type=?,contest_rules=?,contest_details=?,max_level=?,color=?,amount=?,question_count=?,flag=?,end_date=? WHERE id=?</string>
+    <string name="delete_ref_master">DELETE from SKILL_MASTER_REF WHERE type = ?</string>
+    <string name="delete_ref_master_skill">DELETE from SKILL_MASTER_REF WHERE type = ? AND  domain_id=?</string>
+    <string name="select_domain">SELECT domain_id FROM SKILL_MASTER_REF WHERE id = ? </string>
+    <string name="select_skilldata">SELECT domain_id,name,max_level,novice_eta,amateur_eta,pro_eta,champ_eta,type FROM SKILL_MASTER_REF WHERE id = ? </string>
+    <string name="user_master">CREATE TABLE IF NOT EXISTS USER_MASTER (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 name TEXT(64) NOT NULL,
+                 email TEXT(64) NOT NULL,
+                 mobile TEXT(11) NOT NULL,
+                 gender TEXT(11),
+                 type TEXT(11),
+                 dob TEXT(11),
+                 login_id TEXT NOT NULL,
+                 isLoggedIn TEXT NOT NULL,
+                 countryCode TEXT NOT NULL,
+                 image TEXT,
+                 ccname TEXT,
+                 max_goal TEXT,
+                 is_chat TEXT,
+                 auth_type TEXT,
+                 uuid TEXT,
+                 resume TEXT,
+                 invite_code TEXT,
+                 multiskill TEXT)
+    </string>
+    <string name="insert_user_master">INSERT OR REPLACE  INTO USER_MASTER (name,email,mobile,gender,type,dob,login_id,isLoggedIn,countryCode,image,ccname,max_goal,is_chat,auth_type,uuid,resume,invite_code,multiskill) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)</string>
+    <string name="select_user_master_details"> SELECT * FROM USER_MASTER WHERE login_id = ?</string>
+    <string name="select_isLoggedIn">SELECT * FROM USER_MASTER WHERE isLoggedIn = "'Y'" </string>
+    <string name="get_isLoggedIn">SELECT isLoggedIn FROM USER_MASTER WHERE email = ?</string>
+
+    <string name="update_user_master_logged"> UPDATE USER_MASTER SET isLoggedIn = "'N'" WHERE login_id = ?</string>
+    <string name="update_user_master_image"> UPDATE USER_MASTER SET image = ? WHERE login_id = ?</string>
+    <string name="update_user_detils"> UPDATE USER_MASTER SET dob = ? , gender = ?, type = ? ,ccname = ? WHERE login_id = ?</string>
+
+    <string name="delete_user"> DELETE from USER_MASTER WHERE login_id = ?</string>
+    <string name="update_user_master_resume"> UPDATE USER_MASTER SET resume = ? WHERE login_id = ?</string>
+    <string name="select_currentstate"> SELECT isLoggedIn from USER_MASTER</string>
+    <string name="reference_master">CREATE TABLE IF NOT EXISTS REFERENCE_MASTER (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 key TEXT,
+                 value TEXT)
+     </string>
+    <string name="insert_reference_master">INSERT OR REPLACE  INTO REFERENCE_MASTER (key,value) VALUES (?,?)</string>
+    <string name="delete_reference_master_data">DELETE from REFERENCE_MASTER</string>
+    <string name="select_appkey"> SELECT * FROM REFERENCE_MASTER WHERE key = ?</string>
+      <string name="application_master">CREATE TABLE IF NOT EXISTS APPLICATION_MASTER (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 key TEXT,
+                 value TEXT)
+     </string>
+    <string name="insert_appliaction_master">INSERT OR REPLACE  INTO APPLICATION_MASTER (key,value) VALUES (?,?)</string>
+    <string name="delete_appliaction_data">DELETE from APPLICATION_MASTER</string>
+    <string name="select_appliaction"> SELECT * FROM APPLICATION_MASTER WHERE key = ?</string>
+    <string name="delete_appliaction_key"> DELETE FROM APPLICATION_MASTER WHERE key = ?</string>
+
+     <string name="progression_master">CREATE TABLE IF NOT EXISTS PROGRESSION_MASTER(
+                  id INTEGER(11) NOT NULL,
+                  level TEXT NOT NULL,
+                  sub_level TEXT NOT NULL,
+                  min_score INTEGER NOT NULL,
+                  max_score INTEGER NOT NULL)
+    </string>
+    <string name="delete_progression_master">DELETE FROM PROGRESSION_MASTER</string>
+     <string name="user_profile">CREATE TABLE IF NOT EXISTS USER_PROFILE (
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  goal_id TEXT NOT NULL,
+                  domain_id TEXT NOT NULL,
+                  domain TEXT NOT NULL,
+                  subskill_id TEXT NOT NULL,
+                  subskill TEXT NOT NULL,
+                  subskill_type TEXT,
+                  subskill_payment_mode TEXT,
+                  subskill_start_date TEXT,
+                  subskill_end_date TEXT,
+                  subskill_logo TEXT,
+                  subskill_small_banner TEXT,
+                  subskill_large_banner TEXT,
+                  promo_text1 TEXT,
+                  promo_text2 TEXT,
+                  contest_type TEXT,
+                  contest_details TEXT,
+                  contest_rules TEXT,
+                  subskill_html TEXT,
+                  subskill_cf1 TEXT,
+                  subskill_cf2 TEXT,
+                  subskill_cf3 TEXT,
+                  subskill_max_game TEXT,
+                  subskill_correct_ans_score TEXT,
+                  subskill_speed_bonus TEXT,
+                  subskill_finish_bonus TEXT,
+                  subskill_winning_bonus TEXT,
+                  subskill_created_date TEXT,
+                  rlevel_id TEXT NOT NULL,
+                  rlevel TEXT NOT NULL,
+                  rsublevel TEXT NOT NULL,
+                  rsublevel_id TEXT NOT NULL,
+                  clevel_id TEXT NOT NULL,
+                  clevel TEXT NOT NULL,
+                  csublevel TEXT NOT NULL,
+                  csublevel_id TEXT NOT NULL,
+                  tlevel_id TEXT NOT NULL,
+                  tlevel TEXT NOT NULL,
+                  tsublevel TEXT NOT NULL,
+                  tsublevel_id TEXT NOT NULL,
+                  points TEXT NOT NULL,
+                  maxPoints TEXT NOT NULL,
+                  countryCode TEXT NOT NULL,
+                  strike_rate TEXT NOT NULL,
+                  winPercent TEXT NOT NULL,
+                  avgPoint TEXT NOT NULL,
+                  total_win TEXT NOT NULL,
+                  total_lost TEXT NOT NULL,
+                  total_abandon TEXT NOT NULL,
+                  total_tie TEXT NOT NULL,
+                  total_played TEXT NOT NULL,
+                  active TEXT NOT NULL,
+                  created_by TEXT NOT NULL,
+                  created_date TEXT NOT NULL,
+                  updated_by TEXT NOT NULL,
+                  updated_date TEXT NOT NULL,
+                  last_played TEXT NOT NULL,
+                  expected_date TEXT NOT NULL,
+                  num_game TEXT NOT NULL,
+                  subskill_active TEXT NOT NULL,
+                  coins TEXT NOT NULL,
+                  rank TEXT NOT NULL,
+                  is_chat TEXT NOT NULL,
+                  color TEXT NOT NULL,
+                  tick TEXT NOT NULL,
+                  difficulty_lvl TEXT NOT NULL,
+                  ques_per_game TEXT NOT NULL,
+                  domain_color TEXT NOT NULL,
+                  reach_goal_date TEXT NOT NULL,
+                  highest_points TEXT NOT NULL,
+                  is_achv TEXT NOT NULL)
+     </string>
+    <string name="insert_user_profile">INSERT OR REPLACE  INTO USER_PROFILE (goal_id,domain_id,domain,subskill_id,subskill,subskill_type,subskill_payment_mode,subskill_start_date,subskill_end_date,subskill_logo,subskill_small_banner,subskill_large_banner,promo_text1,promo_text2,contest_type,contest_details,contest_rules,subskill_html,subskill_cf1,subskill_cf2,subskill_cf3,subskill_max_game,subskill_correct_ans_score,subskill_speed_bonus,subskill_finish_bonus,subskill_winning_bonus,subskill_created_date,rlevel_id,rlevel,rsublevel,rsublevel_id,clevel_id,clevel,csublevel,csublevel_id,tlevel_id,tlevel,tsublevel,tsublevel_id,points,maxPoints,countryCode,strike_rate,winPercent,avgPoint,total_win,total_lost,total_abandon,total_tie,total_played,active,created_by,created_date,updated_by,updated_date,last_played,expected_date,num_game,subskill_active,coins,rank,is_chat,color,tick,difficulty_lvl,ques_per_game,domain_color,reach_goal_date,highest_points,is_achv) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+    </string>
+    <string name="select_LoggedInProfile"> SELECT * FROM USER_PROFILE</string>
+    <string name="select_goal"> SELECT * FROM USER_PROFILE WHERE subskill_id = ?</string>
+    <string name="delete_profile"> DELETE from USER_PROFILE</string>
+    <string name="update_totalscore"> UPDATE USER_PROFILE SET points = ? WHERE subskill_id = ?</string>
+    <string name="update_lastplayed"> UPDATE USER_PROFILE SET last_played = ? WHERE subskill_id = ?</string>
+    <string name="update_level"> UPDATE USER_PROFILE SET clevel_id = ?,csublevel_id = ?,clevel = ?,csublevel = ? WHERE subskill_id = ?</string>
+    <string name="update_score"> UPDATE USER_PROFILE SET num_game = ?,total_played = ?,avgPoint = ?,winPercent = ?,strike_rate = ? WHERE subskill_id = ?</string>
+
+    <string name="update_win"> UPDATE USER_PROFILE SET total_win = ? WHERE subskill_id = ?</string>
+    <string name="update_loss"> UPDATE USER_PROFILE SET total_lost = ? WHERE subskill_id = ?</string>
+    <string name="update_abondon"> UPDATE USER_PROFILE SET total_abandon = ? WHERE subskill_id = ?</string>
+    <string name="update_tie"> UPDATE USER_PROFILE SET total_tie = ? WHERE subskill_id = ?</string>
+    <string name="update_goal"> UPDATE USER_PROFILE SET tlevel_id = ?,tsublevel_id = ?,tlevel = ?,tsublevel = ?,expected_date = ?,max_points = ?,clevel_id = ?,csublevel_id = ?,clevel = ?,csublevel = ? WHERE subskill_id = ?</string>
+    <string name="delete_and_update_goal">DELETE from USER_PROFILE WHERE subskill_id = ?</string>
+    <string name="update_coin"> UPDATE USER_PROFILE SET coins = ?</string>
+
+     <string name="leaderboard_master">CREATE TABLE IF NOT EXISTS LEADERBOARD_MASTER (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 key TEXT,
+                 value TEXT,
+                 date TEXT,
+                 type TEXT)
+    </string>
+    <string name="insert_leaderboard_master">INSERT OR REPLACE  INTO LEADERBOARD_MASTER (key,value,date,type) VALUES (?,?,?,?)</string>
+    <string name="delete_leaderboard_master">DELETE from LEADERBOARD_MASTER WHERE key = ? AND type = ?</string>
+    <string name="select_leaderboard_master"> SELECT key,value,date,type FROM LEADERBOARD_MASTER WHERE key = ? AND type = ?</string>
+    <string name="education_master">CREATE TABLE IF NOT EXISTS EDUCATION_MASTER (
+                 id INTEGER,
+                 college TEXT,
+                 from_year TEXT,
+                 to_year TEXT,
+                 degree TEXT,
+                 branch TEXT,
+                 percent TEXT,
+                 player TEXT)
+    </string>
+    <string name="insert_education_master">INSERT OR REPLACE  INTO EDUCATION_MASTER (id,college,from_year,to_year,degree,branch,percent,player) VALUES (?,?,?,?,?,?,?,?)
+    </string>
+    <string name="select_education_master">SELECT * FROM  EDUCATION_MASTER  WHERE player = ?  ORDER BY from_year ASC</string>
+    <string name="delete_education_master">DELETE from EDUCATION_MASTER </string>
+    <string name="update_education_master"> UPDATE EDUCATION_MASTER SET college = ? , from_year = ?, to_year = ?, degree = ?, branch = ?, percent = ?, player = ? WHERE id = ?</string>
+ <string name="degree_master">CREATE TABLE IF NOT EXISTS DEGREE_MASTER (
+                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                 degreename TEXT,
+                 coursename TEXT)
+    </string>
+    <string name="insert_degree_master">INSERT OR REPLACE  INTO DEGREE_MASTER (degreename,coursename) VALUES (?,?)</string>
+    <string name="select_degree_from_degree_master">SELECT DISTINCT degreename FROM DEGREE_MASTER</string>
+    <string name="select_course_from_degree_master">SELECT DISTINCT coursename FROM DEGREE_MASTER WHERE degreename=</string>
+    <string name="delete_degree_master">DELETE from DEGREE_MASTER </string>
+      <string name="tempuser_master">CREATE TABLE IF NOT EXISTS TEMPUSER_MASTER(
+                  id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name TEXT NOT NULL,
+                  email TEXT NOT NULL,
+                  mobile TEXT NOT NULL,
+                  auth_type TEXT NOT NULL)
+    </string>
+    <string name="insert_tempuser_master">INSERT OR REPLACE  INTO TEMPUSER_MASTER (name,email,mobile,auth_type) VALUES (?,?,?,?)</string>
+    <string name="select_tempuser_master"> SELECT * FROM TEMPUSER_MASTER</string>
+    <string name="delete_tempuser_master">DELETE from TEMPUSER_MASTER </string>
+</resources>

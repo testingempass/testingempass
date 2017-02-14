@@ -1,0 +1,49 @@
+package com.empass.sdk.vo;                     // @author Deepak
+
+import com.google.gson.annotations.SerializedName;
+
+public class ProgressionVO {
+	public ProgressionVO() {
+	}
+
+	@SerializedName("id")
+	private int id;
+	@SerializedName("level")   // Variable for id
+	private String level;
+	@SerializedName("subLevel")
+	private String subLevel;
+	@SerializedName("minScore")
+	private int minScore;
+	@SerializedName("maxScore")
+	private int maxScore;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getLevel() {
+		return level;
+	}
+	public void setLevel(String level) {
+		this.level = level;
+	}
+	public String getSubLevel() {
+		return subLevel;
+	}
+	public void setSubLevel(String subLevel) {
+		this.subLevel = subLevel;
+	}
+	public int getMinScore() {
+		return minScore;
+	}
+	public void setMinScore(int minScore) {
+		this.minScore = minScore;
+	}
+	public int getMaxScore() {
+		return maxScore;
+	}
+	public void setMaxScore(int maxScore) {
+		this.maxScore = maxScore;
+	}
+}

@@ -1,0 +1,39 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class Question {
+	/**
+	 * 
+	 */
+	@SerializedName("Question")
+	private String questionString;
+	/**
+ * 
+ */
+	@SerializedName("Options")
+	public Option[] options;
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getQuestionString() {
+		return questionString;
+	}
+
+	/**
+	 * 
+	 * @param questionString
+	 */
+	public void setQuestionString(final String questionString) {
+		this.questionString = questionString;
+	}
+
+}

@@ -1,0 +1,89 @@
+package com.empass.sdk.adapter;
+
+
+import android.app.Activity;
+import android.os.Parcelable;
+import android.support.v4.view.PagerAdapter;
+import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class ViewPagerGetStartedAdapter extends PagerAdapter {
+
+    /**
+     * declear vabiable
+     */
+    private transient final Activity activity;
+    private static int imageArray[] = {R.drawable.screen1, R.drawable.screen2, R.drawable.screen3, R.drawable.screen4};
+
+    /**
+     * @param act
+     */
+    public ViewPagerGetStartedAdapter(final Activity act) {
+        super();
+        activity = act;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public int getCount() {
+        return imageArray.length;
+    }
+
+    /**
+     *
+     */
+    @SuppressWarnings("deprecation")
+    @Override
+    public Object instantiateItem(final View collection, final int position) {
+        ImageView view = null;
+        try {
+            view = new ImageView(activity);
+            view.setLayoutParams(new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+            view.setScaleType(ScaleType.FIT_XY);
+            view.setAdjustViewBounds(true);
+            view.setImageResource(imageArray[position]);
+            ((ViewPager) collection).addView(view, 0);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return view;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void destroyItem(final View view, final int index, final Object argument) {
+        ((ViewPager) view).removeView((View) argument);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean isViewFromObject(final View view, final Object argument) {
+        return view == ((View) argument);
+    }
+
+    /**
+     *
+     */
+    @Override
+    public Parcelable saveState() {
+        return null;
+    }
+}

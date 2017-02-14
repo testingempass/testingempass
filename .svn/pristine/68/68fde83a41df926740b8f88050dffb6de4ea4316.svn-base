@@ -1,0 +1,36 @@
+package com.empass.sdk.utils;
+
+/**
+ * Created by Deepak on 3/7/2016.
+ */
+public class Keys {
+    /**
+     *
+     */
+    public static final String METADATA_JSON = "{" +
+            "\"status\":\"201\"," +
+            "\"requestId\":\"\"," +
+            "\"msg\":\"Success\"," +
+            "\"last_updated_date\":\"\"," +
+            "\"data\":[" +
+             "{\"category\":\"PLAY_STORE_URL\",\"value\":\"http:\\/\\/bit.ly\\/empassappinvite\"}," +
+            "{\"category\":\"BE_APP_URL\",\"value\":\"http:\\/\\/buildemploy.com\"}," +
+            "{\"category\":\"S3_RESUME_BUCKET\",\"value\":\"be-profileresume\"}," +
+            "{\"category\":\"S3_IMAGE_BUCKET\",\"value\":\"be-profileimage\"}," +
+            "{\"category\":\"S3_RESUME_SIGNATURE\",\"value\":\"ltVJFvKNtqJW1tSiJEqMV27Lsz4=\"}," +
+            "{\"category\":\"S3_IMAGE_SIGNATURE\",\"value\":\"HrYrKuiseB\\/faGgJGORz8uG1c9M=\"}," +
+            "{\"category\":\"S3_RESUME_POLICY\",\"value\":\"eyAiZXhwaXJhdGlvbiI6ICIyMDE3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiYmUtcHJvZmlsZXJlc3VtZSJ9LAogICAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgIiJdLAogICAgeyJhY2wiOiAicHVibGljLXJlYWQifSwKICAgIHsic3VjY2Vzc19hY3Rpb25fc3RhdHVzIjogIjIwMCJ9LAogICAgWyJzdGFydHMtd2l0aCIsICIkQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL3BkZiJdCiAgXQp9\"}," +
+            "{\"category\":\"S3_IMAGE_POLICY\",\"value\":\"eyAiZXhwaXJhdGlvbiI6ICIyMDE3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiYmUtcHJvZmlsZWltYWdlIn0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiRrZXkiLCAiIl0sCiAgICB7ImFjbCI6ICJwdWJsaWMtcmVhZCJ9LAogICAgeyJzdWNjZXNzX2FjdGlvbl9zdGF0dXMiOiAiMjAwIn0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiRDb250ZW50LVR5cGUiLCAiaW1hZ2UvcG5nIl0KICBdCn0=\"}," +
+            "{\"category\":\"S3_RESUME_UPLOAD_URL\",\"value\":\"https:\\/\\/be-profileresume.s3.amazonaws.com\\/\"},{\"category\":\"S3_IMAGE_UPLOAD_URL\",\"value\":\"https:\\/\\/be-profileimage.s3.amazonaws.com\\/\"}," +
+            "{\"category\":\"S3_DOWNLOAD_URL\",\"value\":\"https:\\/\\/s3-us-west-2.amazonaws.com\\/\"}," +
+            "{\"category\":\"AWSAccessKeyId\",\"value\":\"AKIAJWDEYVSOGO5Z465A\"}," +
+            "{\"category\":\"BE_WEBSITE\",\"value\":\"http:\\/\\/www.empass.mobi\\/\"}," +
+            "{\"category\":\"BE_POLICY\",\"value\":\"http:\\/\\/empass.mobi\\/privacypolicy\"}," +
+            "{\"category\":\"BE_CONDITION\",\"value\":\"http:\\/\\/empass.mobi\\/termsofservice\"}," +
+            "{\"category\":\"IC_LAUNCHER\",\"value\":\"http:\\/\\/52.25.188.36\\/be-server\\/ic_launcher.png\"}" +
+            "]}";
+
+    private Keys() {
+    }
+}
+

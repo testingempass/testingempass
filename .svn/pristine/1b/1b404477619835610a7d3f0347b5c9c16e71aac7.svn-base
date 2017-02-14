@@ -1,0 +1,65 @@
+package com.empass.sdk.adapter;
+
+
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
+
+import com.empass.sdk.fragment.LeaderboardGlobleFragment;
+import com.empass.sdk.utils.SDKConstant;
+
+
+/**
+ * Created by Deepak on 11/4/2016.
+ */
+
+public class LeaderboardTabAdapter extends FragmentStatePagerAdapter {
+    int mNumOfTabs;
+    int goalIndex;
+    String skillId;
+    String color;
+
+    public LeaderboardTabAdapter(FragmentManager fm, int NumOfTabs, String skillId, String color, int goalIndex) {
+        super(fm);
+        this.mNumOfTabs = NumOfTabs;
+        this.skillId = skillId;
+        this.color = color;
+        this.goalIndex = goalIndex;
+
+    }
+
+    @Override
+    public Fragment getItem(int position) {
+        Bundle bundle = new Bundle();
+        bundle.putString(SDKConstant.SKILL_ID, skillId);
+        bundle.putString(SDKConstant.COLOR, color);
+        bundle.putInt(SDKConstant.GOALINDEX, goalIndex);
+        switch (position) {
+            case 0:
+                bundle.putString(SDKConstant.INDEX, SDKConstant.ZERO);
+                LeaderboardGlobleFragment frgmnt1 = new LeaderboardGlobleFragment();
+                frgmnt1.setArguments(bundle);
+                return frgmnt1;
+            case 1:
+                bundle.putString(SDKConstant.INDEX, SDKConstant.ONE);
+                LeaderboardGlobleFragment frgmnt2 = new LeaderboardGlobleFragment();
+                frgmnt2.setArguments(bundle);
+                return frgmnt2;
+            case 2:
+                bundle.putString(SDKConstant.INDEX, SDKConstant.TWOVALUE);
+                LeaderboardGlobleFragment frgmnt3 = new LeaderboardGlobleFragment();
+                frgmnt3.setArguments(bundle);
+                return frgmnt3;
+
+        }
+        return null;
+    }
+
+    @Override
+    public int getCount() {
+
+        return mNumOfTabs;
+    }
+
+}

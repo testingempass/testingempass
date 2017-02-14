@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/TestingEmpass.iml" filepath="$PROJECT_DIR$/TestingEmpass.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/empass-sdk/empass-sdk.iml" filepath="$PROJECT_DIR$/empass-sdk/empass-sdk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/testingsdk/testingsdk.iml" filepath="$PROJECT_DIR$/testingsdk/testingsdk.iml" />
+    </modules>
+  </component>
+</project>

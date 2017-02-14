@@ -1,0 +1,33 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class UserOption {
+	@SerializedName("seq")
+	private String seq;
+	@SerializedName("value")   //declear variable
+	private String value;
+	@SerializedName("flag")
+	private String flag;
+	public UserOption() {
+		super();
+	}
+	public String getSeq() {
+		return seq;
+	}
+	public void setSeq(String seq) {
+		this.seq = seq;
+	}
+	public String getValue() {
+		return value;
+	}
+	public void setValue(String value) {
+		this.value = value;
+	}
+	public String getFlag() {
+		return flag;
+	}
+	public void setFlag(String flag) {
+		this.flag = flag;
+	}
+}

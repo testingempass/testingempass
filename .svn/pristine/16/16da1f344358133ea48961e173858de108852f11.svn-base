@@ -1,0 +1,57 @@
+package com.empass.sdk.offline;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public final class VirtualUserOptions {
+	/**
+	 * declear variable
+	 */
+	public static final String OPTION_1 = "choice_1";
+	/**
+	 * declear variable
+	 */
+	public static final String OPTION_2 = "choice_2";
+	/**
+	 * declear variable
+	 */
+	public static final String OPTION_3 = "choice_3";
+	/**
+	 * declear variable
+	 */
+	public static final String OPTION_4 = "choice_4";
+	/**
+	 * cons
+	 */
+	private VirtualUserOptions() {
+		super();
+	}
+	/**
+	 * 
+	 * @param answer
+	 * @return
+	 */
+	public static String getWrongAnswerForVirtualPlayer(final String answer) {
+		String virtualPlayerAns = null;
+		switch (answer) {
+		case VirtualUserOptions.OPTION_1:
+			virtualPlayerAns = VirtualUserOptions.OPTION_2;
+			break;
+		case VirtualUserOptions.OPTION_2:
+			virtualPlayerAns = VirtualUserOptions.OPTION_3;
+			break;
+		case VirtualUserOptions.OPTION_3:
+			virtualPlayerAns = VirtualUserOptions.OPTION_4;
+			break;
+		case VirtualUserOptions.OPTION_4:
+			virtualPlayerAns = VirtualUserOptions.OPTION_1;
+			break;
+		default:
+			virtualPlayerAns = VirtualUserOptions.OPTION_1;
+			break;
+		}
+		return virtualPlayerAns;
+	}
+}

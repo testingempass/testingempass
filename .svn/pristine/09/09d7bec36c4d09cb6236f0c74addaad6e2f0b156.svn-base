@@ -1,0 +1,40 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class UpdateGoalVO {
+    @SerializedName("status")
+    //{"status":"201","msg":"Player Goal Updated Successfully."}  @author Deepak
+    private String status;
+    @SerializedName("msg")   // Variable for status in response
+    private String msg;                                                         //Variable for msg in response
+    @SerializedName("expected_date")
+    private String expectedDate;
+
+    public String getStatus() {                             //  @return
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getExpectedDate() {
+        return expectedDate;
+    }
+
+    public void setExpectedDate(String expectedDate) {
+        this.expectedDate = expectedDate;
+    }
+
+    public UpdateGoalVO() {
+    }
+}

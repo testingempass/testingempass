@@ -1,0 +1,44 @@
+package com.empass.sdk.utils;
+
+import android.util.Log;
+
+
+public class LogUtils {
+
+
+    private LogUtils() {
+    }
+
+    /**
+     * /**
+     *
+     * @param message
+     */
+    public static void error(final String tag, String message) {
+        if (null != message) {
+            Log.e(tag, message);
+        }
+    }
+
+
+    public static void error(final String tag, String message, final Exception e) {
+        if (null != message) {
+            Log.e(SDKConstant.TAG, message, e);
+        }
+
+    }
+
+
+    /**
+     * @param message
+     */
+    public static void debug(final String tag, String message) {
+
+        if (null != message) {
+            Log.d(SDKConstant.TAG, message);
+        }
+
+    }
+
+
+}

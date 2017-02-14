@@ -1,0 +1,358 @@
+package com.empass.sdk.main;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.StrictMode;
+import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.empass.sdk.R;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.S2Constant;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.utils.Urls;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.UserQuestionVO;
+
+import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.TimeZone;
+
+/**
+ * Created by Deepak on 9/12/2016.
+ */
+public class EmpassActivity extends AppCompatActivity {
+    /**
+     * declear varibale
+     */
+    protected transient Goal[] goalArray;
+    /**
+     * object of database controller class
+     */
+    protected SDKDatabaseController dbController;
+    /**
+     * variable to check for Internet
+     */
+    /**
+     * variable for image name
+     */
+    protected String imageName;
+    /**
+     * variable for image path source
+     */
+    protected transient String imagePathSource = sdkConstant.PATH;
+    /**
+     * variable for
+     */
+    protected transient String image;
+    /**
+     * variable for image uri
+     */
+    protected Uri selectedImageUri;
+    /**
+     * variable for image file
+     */
+    protected static File imageFile;
+    /**
+     * variable for image path
+     */
+    protected static String imagePath;
+
+    /**
+     * variable for image path
+     */
+    protected static String appVersion;
+    /**
+     * object of database empassHelper class
+     */
+    protected static transient SDKDBHelper dbHelper;
+    /**
+     * Activity context
+     */
+    protected static transient Activity context;
+    /**
+     * date formate
+     */
+    protected DateFormat dateFormat;
+    /**
+     * time formate
+     */
+    protected DateFormat dateTimeFormat;
+    /**
+     * declear variable
+     */
+    protected static ArrayList<UserQuestionVO> summary;
+
+    /**
+     * create object of sdkConstant
+     */
+    public static transient SDKConstant sdkConstant;
+
+    /**
+     * create object of sdkConstant
+     */
+    public static transient S2Constant s2Constant;
+    /**
+     * create object of commonutils
+     */
+    public static transient SDKCommonUtils sdkCommonUtils;
+    /**
+     * create object of commonutils
+     */
+    public static transient Urls urls;
+    protected static SharedPreferences prefs;
+
+    /**
+     * oncreate method for activity
+     *
+     * @param bundel
+     */
+    @SuppressLint("SimpleDateFormat")
+    @Override
+    protected void onCreate(final Bundle bundel) {
+        super.onCreate(bundel);
+        try {
+            if (android.os.Build.VERSION.SDK_INT > sdkConstant.NINE) {
+                final StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+                StrictMode.setThreadPolicy(policy);
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                Window w = getWindow();
+                w.setStatusBarColor(getResources().getColor(R.color.statusbarcolor));
+            }
+            context = this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            dbController = new SDKDatabaseController(context);
+            dateFormat = new SimpleDateFormat(sdkConstant.DATE_FORMATE);
+            dateFormat.setTimeZone(TimeZone.getTimeZone(sdkConstant.TIME_ZONE));
+            dateTimeFormat = new SimpleDateFormat(sdkConstant.DATE_TIME_FORMATE);
+            dateTimeFormat.setTimeZone(TimeZone.getTimeZone(sdkConstant.TIME_ZONE));
+            prefs = getSharedPreferences(sdkConstant.PKZ, MODE_PRIVATE);
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * Method to Check Internet Connectivity
+     *
+     * @return
+     */
+    public boolean isInternetAvailable() {
+        boolean isInternetPresent = false;
+        try {
+            isInternetPresent = isNetworkAvailable(this);
+            /**
+             * if internet is not present show message
+             */
+            if (!isInternetPresent) {
+                showInternetDialog();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return isInternetPresent;
+    }
+
+    /**
+     * Method to get Image uri Path
+     *
+     * @param uri
+     * @return
+     */
+    public String getPath(final Uri uri) {
+        Cursor cursor = null;
+        int columnIndex;
+        String path = null;
+        try {
+            final String[] projection = {MediaStore.Images.Media.DATA};
+            cursor = getContentResolver().query(uri, projection, null, null, null);
+            //noinspection ConstantConditions
+            columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+            cursor.moveToFirst();
+            path = cursor.getString(columnIndex);
+        } catch (IllegalArgumentException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return path;
+    }
+
+    /**
+     *
+     */
+
+    protected void showInternetDialog() {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText("No connection available. Please enable internet!");
+            final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOk.setText(R.string.m_enable);
+            tvOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mProgressDialog.dismiss();
+                    startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                }
+            });
+            mProgressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        try {
+                            mProgressDialog.dismiss();
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exce", e);
+                        }
+                    }
+                    return false;
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * no response is coming
+     *
+     * @param message
+     */
+    protected static void slowInternet(String message) {
+        try {
+            try {
+                final LayoutInflater inflater = LayoutInflater.from(context);
+                final View layout = inflater.inflate(R.layout.m_dialog_message, null);
+                final TextView text = (TextView) layout.findViewById(R.id.tv_loading);
+                text.setText(message);
+                final Toast toast = new Toast(context);
+                toast.setDuration(Toast.LENGTH_SHORT);
+                toast.setView(layout);
+                toast.setGravity(Gravity.CENTER, 0, 0);
+                toast.show();
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method to check Network Availability
+     *
+     * @param activity
+     * @return
+     */
+    public static boolean isNetworkAvailable(final Activity activity) {
+        boolean condition = false;
+        try {
+            final ConnectivityManager connectivity = (ConnectivityManager) activity.getSystemService(Context.CONNECTIVITY_SERVICE);
+            // if connected return true else return false
+            if (connectivity == null) {
+                condition = false;
+            }
+            assert connectivity != null;
+            final NetworkInfo[] info = connectivity.getAllNetworkInfo();
+            // if network info not null then return true else false
+            if (info != null) {
+                for (int i = 0; i < info.length; i++) {
+                    // if state is connected then return true
+                    if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+                        condition = true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return condition;
+    }
+
+
+    /**
+     * @param message
+     * @param title
+     */
+    protected static void showMsgWithOk(String message, String title) {
+        try {
+
+            LogUtils.debug(sdkConstant.TAG, "message-" + message);
+            final ProgressDialog progressDialog = ProgressDialog.show(context, "", "", true);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) progressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvOk = (Button) progressDialog.findViewById(R.id.tv_ok);
+            tvOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    progressDialog.dismiss();
+                }
+            });
+            progressDialog.show();
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * check gps status
+     *
+     * @return
+     */
+    public boolean isGpsPresent(Context context) {
+        final LocationManager manager = (LocationManager) context
+                .getSystemService(Context.LOCATION_SERVICE);
+        return manager
+                .isProviderEnabled(LocationManager.GPS_PROVIDER);
+    }
+
+    public static String getUrl() {
+        String url = "http://52.25.188.36/beapi/index.php/v3/SDK2_Data";
+        try {
+            url = "http://" + dbHelper.getRefData(sdkConstant.SDK_HOST_NAME) + "/beapi/index.php/v3/SDK2_Data";
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return url;
+    }
+}

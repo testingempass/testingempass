@@ -1,0 +1,62 @@
+package com.empass.sdk.customview;
+
+import android.content.Context;
+import android.graphics.Typeface;
+import android.util.AttributeSet;
+import android.widget.Button;
+
+import com.empass.sdk.utils.SDKConstant;
+
+
+/**
+ * @author deepak
+ *
+ */
+public class MobiButton extends Button {
+	/**
+ * 
+ */
+	/**
+	 *
+	 */
+
+	public transient Typeface defaultTypeface = Typeface.createFromAsset(getContext().getAssets(), SDKConstant.ROBOTO);
+
+	/**
+	 * 
+	 * @param context
+	 */
+	public MobiButton(final Context context) {
+		super(context);
+		initNQButton();
+	}
+
+	/**
+	 * 
+	 * @param context
+	 * @param attrs
+	 */
+	public MobiButton(final Context context, final AttributeSet attrs) {
+		super(context, attrs);
+		initNQButton();
+	}
+
+	/**
+	 * 
+	 * @param context
+	 * @param attrs
+	 * @param defStyle
+	 */
+	public MobiButton(final Context context, final AttributeSet attrs, final int defStyle) {
+		super(context, attrs, defStyle);
+		initNQButton();
+	}
+
+	/**
+ * 
+ */
+	private void initNQButton() {
+		setTypeface(defaultTypeface);
+	}
+
+}

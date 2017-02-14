@@ -1,0 +1,1223 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.DatePickerDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.provider.MediaStore;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiEditText;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestHelper;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.AbstractValidationField;
+import com.empass.sdk.utils.CircleTransform;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.User;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Class for user to edit profile
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class ProfileActivity extends EmpassActivity {
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText etUsername;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText etEmail;
+    /**
+     * Declear variable
+     */
+    public transient TextView txtMobile;
+    /**
+     * Declear variable
+     */
+    public transient TextView btnDob;
+    /**
+     * Declear variable
+     */
+    private transient String gender;
+    /**
+     * Declear variable
+     */
+    private transient String dob;
+    /**
+     * Declear variable
+     */
+    private transient String ccName;
+    /**
+     * Declear variable
+     */
+    private String profileType;
+
+    /**
+     * Declear variable
+     */
+    public transient AutoCompleteTextView etSchool;
+    /**
+     * Declear variable
+     */
+    public transient AutoCompleteTextView etCompany;
+    /**
+     * Declear variable
+     */
+    public transient ArrayAdapter<String> nameAdapter;
+    /**
+     * Declear variable
+     */
+    public transient ArrayList<String> list;
+    /**
+     * Declear variable
+     */
+    public transient boolean isCollageFlag;
+    /**
+     * Declear variable
+     */
+    public transient boolean isCompanyFlag;
+    /**
+     *
+     */
+    public transient ImageView ibUserImage;
+    /**
+     * Declaer variable
+     */
+    public transient TextView tvUserLetters;
+    /**
+     * Declear variable
+     */
+    private transient double latitude = sdkConstant.ZERO_INDEX;
+    /**
+     *
+     */
+    private transient double longitude = sdkConstant.ZERO_INDEX;
+    /**
+     * Declear variable
+     */
+    public transient RelativeLayout rlSchool;
+    /**
+     * Declear variable
+     */
+    public transient RelativeLayout rlCompany;
+    /**
+     * Declear variable
+     */
+    public transient ProgressBar barProgressCompany;
+    /**
+     * Declear variable
+     */
+    public transient ProgressBar barProgressSchool;
+    /**
+     * Declear variable
+     */
+    public transient String tempDate = sdkConstant.EMPTY;
+    /**
+     *
+     */
+    public transient String type, path, name, email, urlExe;
+    /**
+     * Declear variable
+     */
+    public transient TextView btnMale;
+    /**
+     * Declear variable
+     */
+    public transient TextView btnFemale;
+    /**
+     * Declear variable
+     */
+    public transient TextView btnStudent;
+    /**
+     * Declear variable
+     */
+    public transient TextView btnProfessional;
+    /**
+     * Declear variable
+     */
+    public transient SharedPreferences prefs;
+    /**
+     * Declear variable
+     */
+    public transient TextView tvTxt;
+    /**
+     * Declear variable
+     */
+    public transient ImageView ivIcon;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    public transient User user;
+
+    /**
+     * Class constructor
+     */
+    public ProfileActivity() {
+        super();
+    }
+
+    /**
+     * onCreate
+     */
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_profile);
+        try {
+            LogUtils.debug(sdkConstant.TAG, "Profile OnCreate");
+            context = ProfileActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            etUsername = (MobiEditText) findViewById(R.id.et_username);
+            etEmail = (MobiEditText) findViewById(R.id.et_email);
+            txtMobile = (TextView) findViewById(R.id.txt_login_id);
+            btnDob = (TextView) findViewById(R.id.btnDob);
+            etSchool = (AutoCompleteTextView) findViewById(R.id.mobiEditTextSchool);
+            etCompany = (AutoCompleteTextView) findViewById(R.id.mobiEditTextCompany);
+            ibUserImage = (ImageView) findViewById(R.id.ibUserImage);
+            tvUserLetters = (TextView) findViewById(R.id.tvUserLetters);
+            rlSchool = (RelativeLayout) findViewById(R.id.rlSchool);
+            rlCompany = (RelativeLayout) findViewById(R.id.rlCompany);
+            barProgressCompany = (ProgressBar) findViewById(R.id.progressLoadingCompany);
+            barProgressSchool = (ProgressBar) findViewById(R.id.progressLoadingSchool);
+            btnMale = (TextView) findViewById(R.id.btnMale);
+            btnFemale = (TextView) findViewById(R.id.btnFemale);
+            btnStudent = (TextView) findViewById(R.id.btnStudent);
+            btnProfessional = (TextView) findViewById(R.id.btnProfessional);
+            tvTxt = (TextView) findViewById(R.id.txt_login_idtxt);
+            ivIcon = (ImageView) findViewById(R.id.iv_icon);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            user = dbHelper.getLogedUser();
+            profileType = sdkConstant.EMPTY;
+            isCollageFlag = true;
+            isCompanyFlag = false;
+            this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            dbController = new SDKDatabaseController(context);
+            prefs = getSharedPreferences(sdkConstant.PKZ, MODE_PRIVATE);
+            barProgressSchool.setVisibility(View.GONE);
+            barProgressCompany.setVisibility(View.GONE);
+            final SDKCommonUtils utility = new SDKCommonUtils();
+            utility.makeDir(imagePathSource);
+            isInternetAvailable();
+            /**
+             * Set profile
+             */
+            if (null != user.getId()) {
+                image = "BuildEmploy_" + user.getId() + ".JPG";
+                imagePath = dbHelper.profileImage(user.getId());
+            }
+            /**
+             * player name is not null
+             */
+            if (null != user.getName()) {
+                final String initials = sdkCommonUtils.getShortName(user.getName());
+                tvUserLetters.setText(initials);
+            }
+            if (!sdkConstant.EMPTY.equalsIgnoreCase(imagePath)) {
+                tvUserLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(imagePath).placeholder(R.drawable.m_circle_username_orange).transform(new CircleTransform()).into(ibUserImage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        LogUtils.debug(sdkConstant.TAG, "Success");
+                        tvUserLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        LogUtils.debug(sdkConstant.TAG, "Error");
+                        tvUserLetters.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+            tvHeader.setText("Profile");
+            gender = user.getGender();
+            if (sdkConstant.EMPTY.equals(gender) || null == gender) {
+                gender = sdkConstant.EMPTY;
+            }
+            dob = user.getDob();
+
+            etSchool.addTextChangedListener(new TextWatcher() {
+                /**
+                 * onTextChanged of edittext
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    etSchool.setError(null);
+                    if (count > before && sequence.length() >= sdkConstant.THREE && etSchool.isFocused()) {
+                        callApi(sequence.toString());
+                    }
+                }
+
+                /**
+                 * brfore text change
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                }
+
+                /**
+                 * after text chnage
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+
+                }
+            });
+
+            etEmail.addTextChangedListener(new TextWatcher() {
+                /**
+                 * on text change of email
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                }
+
+                /**
+                 * before text change of email
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+
+                }
+
+                /**
+                 * after text change
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+                    if (!etEmail.getText().toString().trim().matches(sdkConstant.EMAIL_PATTERN)) {
+                        LogUtils.debug(sdkConstant.TAG, "afterTextChanged");
+                        etEmail.requestFocus();
+                        etEmail.setError("Invalid email");
+                    }
+                }
+            });
+            etCompany.addTextChangedListener(new TextWatcher() {
+                /**
+                 * onTextChanged of edittext
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    etCompany.setError(null);
+                    if (count > before && sequence.length() >= sdkConstant.THREE && etCompany.isFocused()) {
+                        callApi(sequence.toString());
+                    }
+                }
+
+                /**
+                 * brfore text change
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                    LogUtils.debug(sdkConstant.TAG, "beforeTextChanged");
+                }
+
+                /**
+                 * after text chnage
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+
+                }
+            });
+            etSchool.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                    etSchool.setSelection(0);
+                    etSchool.requestFocus(0);
+                }
+            });
+            etCompany.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                    etCompany.setSelection(0);
+                    etCompany.requestFocus(0);
+                }
+            });
+            etSchool.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        onClickNextButton();
+                    }
+                    return false;
+                }
+            });
+            etCompany.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        onClickNextButton();
+                    }
+                    return false;
+                }
+            });
+            showProfile();
+            nameAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, list);
+            etSchool.setAdapter(nameAdapter);
+            etCompany.setAdapter(nameAdapter);
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private void onClickNextButton() {
+        try {
+            final InputMethodManager inputManager = (InputMethodManager)
+                    getSystemService(Context.INPUT_METHOD_SERVICE);
+            //noinspection ConstantConditions
+            inputManager.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(),
+                    InputMethodManager.HIDE_NOT_ALWAYS);
+            if (isCollageFlag) {
+                ccName = etSchool.getText().toString();
+            }
+            if (isCompanyFlag) {
+                ccName = etCompany.getText().toString();
+            }
+            name = etUsername.getText().toString();
+            email = etEmail.getText().toString();
+            if (sdkConstant.EMPTY.equalsIgnoreCase(gender)) {
+                slowInternet("Select gender");
+            } else if (sdkConstant.EMPTY.equalsIgnoreCase(profileType)) {
+                slowInternet("Select profile type");
+            } else if (isCompanyFlag && (sdkConstant.EMPTY.equalsIgnoreCase(ccName) || ccName.length() < 3)) {
+                etCompany.setError(context.getResources().getString(R.string.m_provide_company));
+                etCompany.requestFocus();
+            } else if (isCollageFlag && (sdkConstant.EMPTY.equalsIgnoreCase(ccName) || ccName.length() < 3)) {
+                etSchool.setError(context.getResources().getString(R.string.m_provide_college));
+                etSchool.requestFocus();
+            } else if ((isInternetAvailable() && AbstractValidationField.hasText(etUsername) && AbstractValidationField.isEmailAddress(etEmail,
+                    true))) {
+                updateProfile(name, email, ccName);
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, " validateProfile Exception " + e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, " validateProfile Exception " + e);
+        }
+    }
+
+    /**
+     * callApi
+     *
+     * @param strName
+     */
+    private void callApi(final String strName) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_CCLIST, dbHelper.getRefData(sdkConstant.TOKEN));
+                if (isCollageFlag) {
+                    request.params.put(sdkConstant.TYPE, sdkConstant.COLLAGE);
+                    //code by Ravi
+                    barProgressSchool.setVisibility(View.VISIBLE);
+                }
+                if (isCompanyFlag) {
+                    request.params.put(sdkConstant.TYPE, sdkConstant.COMPANY);
+                    //code by Ravi
+                    barProgressCompany.setVisibility(View.VISIBLE);
+                }
+                request.params.put(sdkConstant.NAME, strName);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet("Slow internet");
+                        } else {
+                            LogUtils.error(sdkConstant.TAG, "response:" + response);
+                            list = dbController.handelAutoResponse(response, request);
+                            showList(list);
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(ProfileActivity.this, new Handler(callback), 0).execute(request);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    /**
+     * showList
+     *
+     * @param list
+     */
+    private void showList(final ArrayList<String> list) {
+        try {
+            nameAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, list);
+            etSchool.setAdapter(nameAdapter);
+            etCompany.setAdapter(nameAdapter);
+            barProgressCompany.setVisibility(View.GONE);
+            barProgressSchool.setVisibility(View.GONE);
+            nameAdapter.notifyDataSetChanged();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * To populate all views with Values in Profile Activity
+     */
+    @SuppressLint("SetTextI18n")
+    public void showProfile() {
+        try {
+            etUsername.setText(user.getName());
+            etEmail.setText(user.getEmail());
+            ivIcon.setVisibility(View.GONE);
+            tvTxt.setText(R.string.m_your_login_id);
+            txtMobile.setVisibility(View.VISIBLE);
+            txtMobile.setText("+" + user.getCountryCode() + user.getPhone());
+            etEmail.setEnabled(true);
+            // Condition for dob either to set dob or select dob if not updated
+            // yet
+            btnDob.setText("Date of Birth");
+
+            if (null != user.getDob() && !sdkConstant.EMPTY.equalsIgnoreCase(user.getDob())) {
+                btnDob.setText(user.getDob());
+            }
+            // Condition for gender either to set gender value or select gender
+            // if not updated yet
+            LogUtils.debug(sdkConstant.TAG, "Gender " + user.getGender());
+            if (null != user.getGender() || !sdkConstant.EMPTY.equalsIgnoreCase(user.getGender())) {
+                gender = user.getGender();
+                if ("Female".equalsIgnoreCase(gender)) {
+                    setFemaleButton();
+                } else if ("Male".equalsIgnoreCase(gender)) {
+                    setMaleButton();
+                }
+            }
+
+            // condition for profile type either to set type to selected type or
+            // select to update new one if not updated yet
+            profileType = user.getType();
+            if ("Student".equalsIgnoreCase(user.getType())) {
+                setStudenteButton();
+                etSchool.setText(user.getCcName());
+                isCollageFlag = true;
+                isCompanyFlag = false;
+            } else if ("Professional".equalsIgnoreCase(user.getType())) {
+                setProfessionalButton();
+                etCompany.setText(user.getCcName());
+                isCollageFlag = false;
+                isCompanyFlag = true;
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * setFemaleButton
+     */
+    private void setFemaleButton() {
+        try {
+            btnMale.setBackgroundResource(R.drawable.m_tongglebacground_normal_left);
+            btnMale.setTextColor(getResources().getColor(R.color.dark_grey));
+            btnFemale.setBackgroundResource(R.drawable.m_tongglebacground_active_right);
+            btnFemale.setTextColor(getResources().getColor(R.color.m_white));
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * setStudenteButton
+     */
+    private void setStudenteButton() {
+        try {
+            btnStudent.setBackgroundResource(R.drawable.m_tongglebacground_active_left);
+            btnStudent.setTextColor(getResources().getColor(R.color.m_white));
+            btnProfessional.setBackgroundResource(R.drawable.m_tongglebacground_normal_right);
+            btnProfessional.setTextColor(getResources().getColor(R.color.dark_grey));
+            rlSchool.setVisibility(View.VISIBLE);
+            rlCompany.setVisibility(View.GONE);
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * setMaleButton
+     */
+    private void setMaleButton() {
+        try {
+            btnMale.setBackgroundResource(R.drawable.m_tongglebacground_active_left);
+            btnMale.setTextColor(getResources().getColor(R.color.m_white));
+            btnFemale.setBackgroundResource(R.drawable.m_tongglebacground_normal_right);
+            btnFemale.setTextColor(getResources().getColor(R.color.dark_grey));
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    public void onClickImage(View view) {
+        userProfileImage();
+
+    }
+
+    public void onClickMale(View view) {
+        setMaleButton();
+        gender = "Male";
+    }
+
+    public void onClickFemail(View view) {
+        setFemaleButton();
+        gender = "Female";
+    }
+
+    public void onClickStu(View view) {
+        setStudenteButton();
+        profileType = "Student";
+        isCollageFlag = true;
+        isCompanyFlag = false;
+    }
+
+    public void onClickPro(View view) {
+        setProfessionalButton();
+        profileType = "Professional";
+        isCollageFlag = false;
+        isCompanyFlag = true;
+    }
+
+
+    /**
+     * setProfessionalButton
+     */
+    private void setProfessionalButton() {
+        try {
+            btnProfessional.setBackgroundResource(R.drawable.m_tongglebacground_active_right);
+            btnProfessional.setTextColor(getResources().getColor(R.color.m_white));
+            btnStudent.setBackgroundResource(R.drawable.m_tongglebacground_normal_left);
+            btnStudent.setTextColor(getResources().getColor(R.color.dark_grey));
+            rlCompany.setVisibility(View.VISIBLE);
+            rlSchool.setVisibility(View.GONE);
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * Date of birth to pick DatePicker and set dob
+     *
+     * @author Sandeep
+     */
+
+    public void onClickDob(final View view) {
+        try {
+            showDatePicker();
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    private void showDatePicker() {
+        try {
+            int mYear;
+            /**
+             * Declear variable
+             */
+            int mMonth;
+            /**
+             * Declear variable
+             */
+            int mDay;
+            /**
+             * null date
+             */
+            if (null == user.getDob()) {
+                final Calendar cal = Calendar.getInstance();
+                mYear = cal.get(Calendar.YEAR);
+                mMonth = cal.get(Calendar.MONTH);
+                mDay = cal.get(Calendar.DAY_OF_MONTH);
+            } else if (sdkConstant.EMPTY.equals(user.getDob())) {
+                LogUtils.debug(sdkConstant.TAG, "Empty date");
+                final Calendar cal = Calendar.getInstance();
+                mYear = cal.get(Calendar.YEAR);
+                mMonth = cal.get(Calendar.MONTH);
+                mDay = cal.get(Calendar.DAY_OF_MONTH);
+            } else if (!sdkConstant.EMPTY.equalsIgnoreCase(tempDate)) {
+                LogUtils.debug(sdkConstant.TAG, "date:" + tempDate);
+                final String[] date = tempDate.split("-");
+                mYear = Integer.parseInt(date[2]);
+                mMonth = Arrays.asList(sdkConstant.MONTH_ARRAY).indexOf(date[1]);
+                mDay = Integer.parseInt(date[0]);
+            } else {
+                LogUtils.debug(sdkConstant.TAG, "date:" + user.getDob());
+                final String[] date = user.getDob().split("-");
+                mYear = Integer.parseInt(date[2]);
+                mMonth = Arrays.asList(sdkConstant.MONTH_ARRAY).indexOf(date[1]);
+                mDay = Integer.parseInt(date[0]);
+            }
+
+            final DatePickerDialog dpd = new DatePickerDialog(context, R.style.date_picker, new DatePickerDialog.OnDateSetListener() {
+                /**
+                 * onDateSet
+                 */
+                @SuppressLint("SetTextI18n")
+                @Override
+                public void onDateSet(final DatePicker view, final int year, final int monthOfYear, final int dayOfMonth) {
+                    if (view.isShown()) {
+                        dob = String.valueOf(dayOfMonth).concat("-").concat(sdkConstant.MONTH_ARRAY[monthOfYear]).concat("-").concat(String.valueOf(year));
+                        Calendar calendar = Calendar.getInstance();
+                        int curentYear = calendar.get(Calendar.YEAR);
+                        if (curentYear - year < sdkConstant.THERTEN) {
+                            dob = "";
+                            showDobInvalidPopup();
+                            btnDob.setText("Date of Birth");
+                        } else {
+                            tempDate = dob;
+                            btnDob.setText(dob);
+                        }
+                    }
+                }
+            }, mYear, mMonth, mDay);
+            dpd.getDatePicker().setMaxDate(System.currentTimeMillis());
+            dpd.show();
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showDobInvalidPopup
+     */
+    @SuppressLint("SetTextI18n")
+    protected void showDobInvalidPopup() {
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(R.string.m_invalid_dob_message);
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setText(getResources().getString(R.string.m_ok));
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        showDatePicker();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setText(getResources().getString(R.string.m_cancel));
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @author Sandeep For validating values entered in edittexts for updating
+     * profile
+     */
+
+    public void onClickNext(final View view) {
+        onClickNextButton();
+    }
+
+    /**
+     * @param view
+     */
+    public void onClickCancel(final View view) {
+        try {
+            final Intent intentDashboard = new Intent(ProfileActivity.this, DashBoardActivity.class);
+            intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+            startActivity(intentDashboard);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Update user profile with available fields and call update profile api
+     */
+    private void updateProfile(final String name, final String email, final String ccName) {
+        try {
+            if (isInternetAvailable()) {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_P, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.ID, user.getId());
+                request.params.put(sdkConstant.USER_NAME, name);
+                request.params.put(sdkConstant.EMAIL, email);
+                request.params.put(sdkConstant.TYPE, profileType);
+                request.params.put(sdkConstant.GENDER, gender);
+                request.params.put(sdkConstant.DOB, dob);
+                request.params.put(sdkConstant.CCNAME, ccName);
+                request.params.put(sdkConstant.LATITUDE, latitude);
+                request.params.put(sdkConstant.LONGITUDE, longitude);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of http
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        // if response from server is not null then update table in
+                        // db else show error message
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            profileSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ONE_INDEX);
+                        } else {
+                            LogUtils.debug("Update Profile Response", response);
+                            CommonResVO resVO = dbController.handelCommonResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(resVO.getStatus())) {
+                                dbHelper.updateProfile(dob, gender, profileType, ccName, user.getId());
+                            }
+                            showMsgWithOk(resVO.getMsg(), "PROFILE");
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method for user profile picture selection to choose fro camera or gallery
+     */
+    public void userProfileImage() {
+        if (!(this).isFinishing()) {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText("Choose an image or click one now");
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setText("CAMERA");
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View view) {
+                    mProgressDialog.dismiss();
+                    callCamera();
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setText("GALLERY");
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View view) {
+                    mProgressDialog.dismiss();
+                    final Intent intent = new Intent();
+                    intent.setType(sdkConstant.IMAGE_JPEG);
+                    intent.setAction(Intent.ACTION_PICK);
+                    startActivityForResult(Intent.createChooser(intent, "Select picture"), 1);
+                }
+            });
+            mProgressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(final DialogInterface dialog, final int keyCode, final KeyEvent event) {
+
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        try {
+                            mProgressDialog.dismiss();
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exce", e);
+                        }
+                    }
+                    return false;
+                }
+            });
+            mProgressDialog.show();
+        }
+    }
+
+    /**
+     * callCamera
+     */
+    private void callCamera() {
+        try {
+            final File myImage = new File(imagePathSource + image);
+            final Uri uri = Uri.fromFile(myImage);
+            final Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+            startActivityForResult(cameraIntent, 1337);
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "ExceptionINuserProfileImage " + e);
+        } catch (Exception e) {
+            showMsgWithOk("Unable to access your camera. Try again", "PROFILE");
+            LogUtils.error(sdkConstant.TAG, "ExceptionINuserProfileImage " + e);
+        }
+    }
+
+    /**
+     * onActivityResult is use to display image
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            /**
+             * get pic from gallery
+             */
+            if (requestCode == 1 && resultCode == -1) {
+                selectedImageUri = data.getData();
+                LogUtils.debug("selectedImageUri", selectedImageUri.toString());
+                sdkCommonUtils.fileCopy(imagePathSource + image, getPath(selectedImageUri));
+                imageFile = new File(imagePathSource + image);
+                if (isInternetAvailable()) {
+                    uploadFile(imageFile.getName(), imagePathSource + image, user.getId(), sdkConstant.IMAGE_PNG,
+                            dbHelper.getRefData(sdkConstant.S3_IMAGE_POLICY), dbHelper.getRefData(sdkConstant.S3_IMAGE_SIGNATURE),
+                            dbHelper.getRefData(sdkConstant.S3_IMAGE_UPLOAD_URL), dbHelper.getRefData(sdkConstant.S3_IMAGE_BUCKET), sdkConstant.IMAGE);
+                }
+            } else if (requestCode == 1337 && resultCode == -1) {
+                imageFile = new File(imagePathSource + image);
+                if (isInternetAvailable()) {
+                    uploadFile(imageFile.getName(), imagePathSource + image, user.getId(), sdkConstant.IMAGE_PNG,
+                            dbHelper.getRefData(sdkConstant.S3_IMAGE_POLICY), dbHelper.getRefData(sdkConstant.S3_IMAGE_SIGNATURE),
+                            dbHelper.getRefData(sdkConstant.S3_IMAGE_UPLOAD_URL), dbHelper.getRefData(sdkConstant.S3_IMAGE_BUCKET), sdkConstant.IMAGE);
+                }
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intentDashboard = new Intent(ProfileActivity.this, DashBoardActivity.class);
+            intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+            startActivity(intentDashboard);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * update profile
+     */
+    public void uploadFile(final String fileName, final String pathUri, final String uploadFileName, final String contentType,
+                           final String policy, final String signature, final String url, final String bucketName, final String typeStr) {
+        if (isInternetAvailable()) {
+            try {
+                final ProgressDialog progressSending = ProgressDialog.show(context, "", "", true);
+                progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressSending.setContentView(R.layout.m_dialog_message_connecting);
+                type = typeStr;
+                path = pathUri;
+                progressSending.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(final DialogInterface dialog, final int keyCode, final KeyEvent event) {
+
+                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                            try {
+                                progressSending.dismiss();
+                            } catch (Exception e) {
+                                LogUtils.error(sdkConstant.TAG, "Exce", e);
+                            }
+                        }
+                        return false;
+                    }
+                });
+                OkHttpClient okHttpClient;
+                okHttpClient = new OkHttpClient();
+                okHttpClient.setRetryOnConnectionFailure(true);
+                okHttpClient.setConnectTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                okHttpClient.setReadTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                okHttpClient.setWriteTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                final MediaType MEDIA_TYPE_PNG = MediaType.parse("*");
+
+                final RequestBody requestBody = new MultipartBuilder()
+                        .type(MultipartBuilder.FORM)
+                        .addFormDataPart(urls.TASK_KEY, user.getId())
+                        .addFormDataPart(urls.S3_ACL, urls.S3_PUBLIC_READ)
+                        .addFormDataPart(urls.S3_SUCCESS_ACTION_STATUS, urls.RESPONSE_COSE_200)
+                        .addFormDataPart(urls.S3_CONTENT_TYPE, contentType)
+                        .addFormDataPart(urls.S3_AWS_ACCESS_KEY, dbHelper.getRefData(urls.S3_AWS_ACCESS_KEY))
+                        .addFormDataPart(urls.S3_POLICY, policy)
+                        .addFormDataPart(urls.S3_SIGNATURE, signature)
+                        .addFormDataPart(urls.S3_FILE, fileName, RequestBody.create(MEDIA_TYPE_PNG, new File(path)))
+                        .build();
+                final Request request = new Request.Builder()
+                        .url(url)
+                        .post(requestBody)
+                        .build();
+                okHttpClient.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
+                    @Override
+                    public void onFailure(final Request request, final IOException e) {
+                        LogUtils.debug(sdkConstant.TAG, "onFailure:" + e);
+                        progressSending.dismiss();
+                    }
+
+                    @Override
+                    public void onResponse(final Response response) throws IOException {
+                        try {
+                            progressSending.dismiss();
+                            LogUtils.debug(sdkConstant.TAG, "response:" + response);
+                            if (response.isSuccessful()) {
+                                final String path = dbHelper.getRefData(sdkConstant.S3_DOWNLOAD_URL) + bucketName + "/" + uploadFileName;
+                                LogUtils.debug(sdkConstant.TAG, "Path:" + path);
+                                progressSending.dismiss();
+                                callUploadDoc(type, path);
+                            }
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exception", e);
+                        }
+                    }
+                });
+            } catch (IllegalArgumentException e) {
+                sendExceptionOnServer(url);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * @param type
+     * @param path
+     */
+    private void callUploadDoc(final String type, final String path) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_P, dbHelper.getRefData(sdkConstant.TOKEN));
+                if (sdkConstant.IMAGE.equalsIgnoreCase(type)) {
+                    request.params.put(sdkConstant.IMAGE, path);
+                }
+                request.params.put(sdkConstant.ID, user.getId());
+                request.params.put(sdkConstant.EMAIL, user.getEmail());
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            profileSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ZERO_INDEX);
+                        } else {
+                            CommonResVO commonResVO = dbController.handelCommonResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                showMsgWithOk(commonResVO.getMsg(), "PROFILE");
+                                if (sdkConstant.IMAGE.equalsIgnoreCase(type)) {
+                                    if (null != user.getName()) {
+                                        final String initials = sdkCommonUtils.getShortName(user.getName());
+                                        tvUserLetters.setText(initials);
+                                    }
+                                    Picasso.with(context).invalidate(imagePath);
+                                    tvUserLetters.setVisibility(View.VISIBLE);
+                                    Picasso.with(context).load(path).placeholder(R.drawable.m_circle_username_orange).transform(new CircleTransform()).into(ibUserImage, new com.squareup.picasso.Callback() {
+                                        @Override
+                                        public void onSuccess() {
+                                            tvUserLetters.setVisibility(View.INVISIBLE);
+                                        }
+
+                                        @Override
+                                        public void onError() {
+                                            tvUserLetters.setVisibility(View.VISIBLE);
+                                        }
+                                    });
+                                    dbHelper.updateImage(path, user.getId());
+                                }
+                            } else {
+                                slowInternet("Image upload failed");
+                            }
+                        }
+                        return true;
+                    }
+                };
+                this.runOnUiThread(new Runnable() {
+                    public void run() {
+                        new SDKHttpRequestHandler(ProfileActivity.this, new Handler(callback), 0).execute(request);
+                    }
+                });
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private void profileSlowInternet(final String message, final int index) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    if (sdkConstant.ZERO_INDEX == index) {
+                        callUploadDoc(type, path);
+                    } else {
+                        updateProfile(name, email, ccName);
+                    }
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param url
+     */
+    private void sendExceptionOnServer(final String url) {
+        try {
+            if (isInternetAvailable()) {
+                urlExe = url;
+                new AsyncSendException().execute();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @author Deepak
+     */
+    private class AsyncSendException extends AsyncTask<String, String, String> {
+
+        /**
+         * constructor
+         */
+        public AsyncSendException() {
+            super();
+
+        }
+
+        /**
+         * doInBackground is use to send request in bg
+         */
+        @Override
+        protected String doInBackground(final String... params) {
+            String response = null;
+            try {
+                if (null != user.getId()) {
+                    response = SDKHttpRequestHelper.sendOKHttpException(getUrl(), user.getId(), urlExe, dbHelper.getRefData(sdkConstant.TOKEN));
+                } else {
+                    response = SDKHttpRequestHelper.sendOKHttpException(getUrl(), "1", urlExe, dbHelper.getRefData(sdkConstant.TOKEN));
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            return response;
+        }
+    }
+
+
+}

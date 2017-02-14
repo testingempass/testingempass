@@ -1,0 +1,296 @@
+package com.empass.sdk.s2;
+
+import android.app.Activity;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
+
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.S2Constant;
+import com.empass.sdk.utils.SDKConstant;
+import com.shephertz.app42.gaming.multiplayer.client.events.ChatEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.LobbyData;
+import com.shephertz.app42.gaming.multiplayer.client.events.MoveEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.RoomData;
+import com.shephertz.app42.gaming.multiplayer.client.events.UpdateEvent;
+import com.shephertz.app42.gaming.multiplayer.client.listener.NotifyListener;
+
+import org.json.JSONObject;
+
+import java.util.HashMap;
+
+/**
+ * @author Deepak
+ */
+public class WarpGameNotifyListener implements NotifyListener {
+
+    /**
+     *
+     */
+    private transient final Handler handler;
+    /**
+     *
+     */
+    private transient BENotifyTimer bENotifyTimer;
+    /**
+     *
+     */
+    private transient static long startTime = 25000;
+    /**
+     *
+     */
+    private transient static long interval = 1000;
+    /**
+     *
+     */
+    private transient Activity context;
+
+
+    /**
+     * @param handler
+     * @param context
+     */
+    public WarpGameNotifyListener(final Handler handler, final Activity context) {
+        this.handler = handler;
+        this.context = context;
+        bENotifyTimer = new BENotifyTimer(startTime, interval);
+        bENotifyTimer.start();
+    }
+
+    /**
+     *
+     */
+    public void startTimer() {
+        bENotifyTimer = new BENotifyTimer(startTime, interval);
+        bENotifyTimer.start();
+    }
+
+    /**
+     *
+     */
+    public void stopTimer() {
+        bENotifyTimer.cancel();
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onChatReceived(final ChatEvent onChatReceived) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGameStarted(final String onGameStarted, final String onGameStarted1, final String onGameStarted2) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGameStopped(final String onGameStopped, final String onGameStopped1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onMoveCompleted(final MoveEvent moveEvent) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onPrivateChatReceived(final String onPrivateChatReceived, final String onPrivateChatReceived1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onRoomCreated(final RoomData roomData) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onRoomDestroyed(final RoomData roomData) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUpdatePeersReceived(final UpdateEvent updateEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onUpdatePeersReceived");
+        String response = null;
+        try {
+            response = new String(updateEvent.getUpdate(), "UTF-8");
+            String tag = response.substring(1, response.length() - 1);
+            if (response != null && !S2Constant.START_GAME.equalsIgnoreCase(response)) {
+                if (WarpResponseCode.NO_QUESTION_MSG.equalsIgnoreCase(tag)) {
+                    LogUtils.debug(SDKConstant.TAG, "Response: " + response);
+                    final Message msg = handler.obtainMessage(WarpCallbackMessageCode.MSG_NO_QUESTION);
+                    bENotifyTimer.cancel();
+                    handler.sendMessage(msg);
+                } else if (response.contains(SDKConstant.STATUS)) {
+                    LogUtils.debug(SDKConstant.TAG, "Response: " + response);
+                    JSONObject bundleObject = new JSONObject(response);
+                    String status = bundleObject.getString(SDKConstant.STATUS);
+                    switch (status) {
+                        case WarpResponseCode.QUE:
+                            LogUtils.debug(SDKConstant.TAG, "Question");
+                            final ApiQuestion question = AbstractBEJsonParser.parseServerResponse(bundleObject.getString("data"), ApiQuestion.class);
+                            final Message msgQue = handler.obtainMessage(WarpCallbackMessageCode.MSG_QUE_REC);
+                            msgQue.obj = question;
+                            bENotifyTimer.cancel();
+                            handler.sendMessage(msgQue);
+                            break;
+                        case WarpResponseCode.ANS:
+                            LogUtils.debug(SDKConstant.TAG, "Answer");
+                            final AnswerTimeResponse[] answerTimeResponses = AbstractBEJsonParser.parseServerResponse(bundleObject.getString("data"), AnswerTimeResponse[].class);
+                            final Message msgAns = handler.obtainMessage(WarpCallbackMessageCode.MSG_ANS_REC);
+                            msgAns.obj = answerTimeResponses;
+                            bENotifyTimer.cancel();
+                            handler.sendMessage(msgAns);
+                            break;
+                        case WarpResponseCode.FGR:
+                            LogUtils.debug(SDKConstant.TAG, "Final game result");
+                            final FinalResult[] finalResult = AbstractBEJsonParser.parseServerResponse(bundleObject.getString("data"), FinalResult[].class);
+                            final Message msgFgr = handler.obtainMessage(WarpCallbackMessageCode.MSG_FINAL_RESULT);
+                            msgFgr.obj = finalResult;
+                            bENotifyTimer.cancel();
+                            handler.sendMessage(msgFgr);
+                            break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "exc", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserChangeRoomProperty(final RoomData roomData, final String data, final HashMap<String, Object> hashMap,
+                                         final HashMap<String, String> hashMap1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserJoinedLobby(final LobbyData lobbyData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserJoinedRoom(final RoomData roomData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserLeftLobby(final LobbyData lobbyData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserLeftRoom(final RoomData roomData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserPaused(final String data, final boolean arg, final String data1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserResumed(final String data, final boolean arg, final String data1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     * BECountDownTimer is use to display watch and user and opponent ring
+     *
+     * @author Deepak
+     */
+    public class BENotifyTimer extends CountDownTimer {
+        /**
+         * @param startTime
+         * @param interval
+         */
+        public BENotifyTimer(final long startTime, final long interval) {
+            super(startTime, interval);
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(SDKConstant.TAG, "BENotifyTimer Finish start");
+            try {
+                final Message msg = handler.obtainMessage(WarpCallbackMessageCode.MSG_S2_DISCONNECT);
+                handler.sendMessage(msg);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(SDKConstant.TAG, "BENotifyTimer Finish stop");
+        }
+
+        /**
+         *
+         */
+        @Override
+        public void onTick(final long millisUntilFinished) {
+            try {
+                final int timeElapsed = 20 - (int) (millisUntilFinished / 1000);
+                if (timeElapsed == 15 && !EmpassActivity.isNetworkAvailable(context)) {
+                    final Message msg = handler.obtainMessage(WarpCallbackMessageCode.MSG_NO_INTERNET);
+                    handler.sendMessage(msg);
+                }
+                LogUtils.debug(SDKConstant.TAG, "Elapsed time : " + timeElapsed);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+}

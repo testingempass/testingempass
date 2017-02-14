@@ -1,0 +1,214 @@
+package com.empass.sdk.offline;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * @author Deepak
+ */
+public class Data {
+
+    @SerializedName("max_game")
+    /**
+     * variable declear
+     */
+    private String maxGame;
+    @SerializedName("correct_answer_score")
+    /**
+     * variable declear
+     */
+    private String correctSnswerScore;
+    @SerializedName("speed_bonus")
+    /**
+     * variable declear
+     */
+    private String speedBonus;
+    @SerializedName("finish_bonus")
+    /**
+     * variable declear
+     */
+    private String finishBonus;
+    @SerializedName("winning_bonus")
+    /**
+     * variable declear
+     */
+    private String winningBonus;
+    /**
+     * variable declear
+     */
+    @SerializedName("tick")
+    private String tick;
+    /**
+     * variable declear
+     */
+    @SerializedName("difficulty_lvl")
+    private String difficultyLvl;
+    /**
+     * variable declear
+     */
+    @SerializedName("ques_per_game")
+    public String quesPerGame;
+    /**
+     * variable declear
+     */
+    @SerializedName("skill_id")
+    private String skillId;
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public int level;
+
+    public String getSkillName() {
+        return skillName;
+    }
+
+    public void setSkillName(String skillName) {
+        this.skillName = skillName;
+    }
+
+    @SerializedName("skill_id")
+    public String skillName;
+
+    /**
+     *
+     */
+
+    public Data() {
+        super();
+    }
+
+    /**
+     * variable declear
+     */
+    public String getMaxGame() {
+        return maxGame;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setMaxGame(String maxGame) {
+        this.maxGame = maxGame;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getCorrectSnswerScore() {
+        return correctSnswerScore;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setCorrectSnswerScore(String correctSnswerScore) {
+        this.correctSnswerScore = correctSnswerScore;
+    }
+
+    /**
+     * variable declear
+     */
+
+    public String getSpeedBonus() {
+        return speedBonus;
+    }
+
+    /**
+     * variable declear
+     */
+
+    public void setSpeedBonus(String speedBonus) {
+        this.speedBonus = speedBonus;
+    }
+
+    /**
+     * variable declear
+     */
+
+    public String getFinishBonus() {
+        return finishBonus;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setFinishBonus(String finishBonus) {
+        this.finishBonus = finishBonus;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getWinningBonus() {
+        return winningBonus;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setWinningBonus(String winningBonus) {
+        this.winningBonus = winningBonus;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getTick() {
+        return tick;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setTick(String tick) {
+        this.tick = tick;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getDifficultyLvl() {
+        return difficultyLvl;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setDifficultyLvl(String difficultyLvl) {
+        this.difficultyLvl = difficultyLvl;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getQuesPerGame() {
+        return quesPerGame;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setQuesPerGame(String quesPerGame) {
+        this.quesPerGame = quesPerGame;
+    }
+
+    /**
+     * variable declear
+     */
+    public String getSkillId() {
+        return skillId;
+    }
+
+    /**
+     * variable declear
+     */
+    public void setSkillId(String skillId) {
+        this.skillId = skillId;
+    }
+
+}

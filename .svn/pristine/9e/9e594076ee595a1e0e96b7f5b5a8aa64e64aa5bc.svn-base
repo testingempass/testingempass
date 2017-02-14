@@ -1,0 +1,291 @@
+package com.empass.sdk.activity;
+
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.customview.MobiEditText;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.User;
+
+import java.util.Locale;
+
+
+/**
+ * apply android annotation for version 2.5
+ * Class for change user password
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class ChangePasswordActivity extends EmpassActivity {
+
+
+    /**
+     * declare variable
+     */
+    public transient MobiEditText etConfirmPwd;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declare variable
+     */
+    public transient MobiEditText etOldPwd;
+    /**
+     * declare variable
+     */
+    public transient MobiEditText etNewPwd;
+    /**
+     * declare variable
+     */
+    private transient String oldPwd, newPwd;
+    /**
+     * declare variable
+     */
+    private transient User user;
+
+    /**
+     * constructor
+     */
+
+    public ChangePasswordActivity() {
+        super();
+    }
+
+    /**
+     * onCreate is to instance of ui
+     */
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_change_password);
+        try {
+            context = ChangePasswordActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            user = dbHelper.getLogedUser();
+            etConfirmPwd = (MobiEditText) findViewById(R.id.etConfirmPwd);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            etOldPwd = (MobiEditText) findViewById(R.id.etOldPwd);
+            etNewPwd = (MobiEditText) findViewById(R.id.etNewPwd);
+            this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            tvHeader.setText("Change Password");
+            etConfirmPwd.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                /*
+                 * @return
+                 */
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        changePassword();
+                    }
+                    return false;
+                }
+            });
+            final ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onBackPressed();
+                }
+            });
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "", e);
+        }
+    }
+
+    public void onClickSave(View view) {
+        changePassword();
+
+    }
+
+    public void onClickCancel(View view) {
+        onBackPressed();
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intentDashboard = new Intent(context, DashBoardActivity.class);
+            intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+            startActivity(intentDashboard);
+            finish();
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "", e);
+        }
+    }
+
+    /**
+     * Method for change password is use to change current password
+     *
+     * @author deepak
+     */
+    public void changePassword() {
+        try {
+            etConfirmPwd.setImeOptions(EditorInfo.IME_ACTION_DONE);
+            oldPwd = etOldPwd.getText().toString();
+            newPwd = etNewPwd.getText().toString();
+            final String confirmPwd = etConfirmPwd.getText().toString();
+            final Boolean isEditFlag = checkEditTextNotEmpity(oldPwd, newPwd, confirmPwd);
+            if (isEditFlag) {
+                if (oldPwd.equals(newPwd)) {
+                    etNewPwd.setError("Your old password and new password should be different");
+                    etNewPwd.requestFocus();
+                } else if (confirmPwd.equals(newPwd)) {
+                    changePasswordRequest(oldPwd, newPwd);
+                } else {
+                    etConfirmPwd.setError("Passwords don't match");
+                    etConfirmPwd.requestFocus();
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "", e);
+        }
+    }
+
+    /**
+     * check enter field data is valid or not
+     *
+     * @param oldPwd
+     * @param newPwd
+     * @param confirmPwd
+     * @return
+     */
+    private Boolean checkEditTextNotEmpity(final String oldPwd, final String newPwd, final String confirmPwd) {
+        boolean flag = true;
+        try {
+            if (sdkConstant.EMPTY.equalsIgnoreCase(oldPwd)) {
+                etOldPwd.setError("Required");
+                etOldPwd.requestFocus();
+                flag = false;
+            } else if (sdkConstant.EMPTY.equalsIgnoreCase(newPwd)) {
+                etNewPwd.setError("Required");
+                etNewPwd.requestFocus();
+                flag = false;
+            } else if (sdkConstant.EMPTY.equalsIgnoreCase(confirmPwd)) {
+                etConfirmPwd.setError("Required");
+                etConfirmPwd.requestFocus();
+                flag = false;
+            } else if (sdkConstant.EMPTY.equalsIgnoreCase(newPwd) || newPwd.length() < 6) {
+                etNewPwd.setError("Password should be alphanumeric and at least 6 characters long");
+                etNewPwd.requestFocus();
+                flag = false;
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "", e);
+        }
+        return flag;
+    }
+
+    /**
+     * changePasswordRequest is use to change password request to server
+     *
+     * @param oldPwd
+     * @param newPwd
+     */
+    private void changePasswordRequest(final String oldPwd, final String newPwd) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_CHANGE_PASS, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.OLD_PASSWORD, SDKCommonUtils.encryptPassword(oldPwd));
+                request.params.put(sdkConstant.NEW_PASSWORD, SDKCommonUtils.encryptPassword(newPwd));
+                request.params.put(sdkConstant.ID, user.getId());
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            changePasswordSlowInternet();
+                        } else {
+                            CommonResVO resVO = dbController.handelCommonResponse(response, request);
+                            // slowInternet(resVO.getMsg());
+                            showMsgWithOk(resVO.getMsg(), sdkConstant.PASSWORD.toUpperCase(Locale.ENGLISH));
+                            /**
+                             * change password response in success
+                             */
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(resVO.getStatus())) {
+                                startActivity(new Intent(ChangePasswordActivity.this, DashBoardActivity.class));
+                                finish();
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "", e);
+            }
+        }
+    }
+
+    /**
+     * show slow internet
+     */
+    private void changePasswordSlowInternet() {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    changePasswordRequest(oldPwd, newPwd);
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "", e);
+        }
+    }
+
+
+}

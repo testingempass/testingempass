@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/uploadresume"
+        android:icon="@drawable/orange_resume"
+        android:title="Upload CV" />
+    <item
+        android:id="@+id/eduacation"
+        android:icon="@drawable/orange_education"
+        android:title="Education" />
+    <item
+        android:id="@+id/changepwd"
+        android:icon="@drawable/orange_password"
+        android:title="Change password" />
+    <item
+        android:id="@+id/logout"
+        android:icon="@drawable/logout_orange"
+        android:title="Logout" />
+</menu>

@@ -1,0 +1,227 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class DataVO {
+    @SerializedName("id")                                       // Variable for id
+    private String id;
+    @SerializedName("player_id")                                //Variable for player id
+    private String playerId;
+    @SerializedName("player_name")                             //Variable for player name
+    private String playerName;
+    @SerializedName("player_profile_id")                        //Variable for player profile id
+    private String playerProfileId;
+    @SerializedName("subskill_id")                             // Variable for subskill id
+    private String subSkillId;
+    @SerializedName("subskill_name")                           // Variable for sub skill name
+    private String subSkillName;
+    @SerializedName("player_country")                          //Variable for player country
+    private String playerCountry;
+    @SerializedName("player_city")                                //Variable for player city
+    private String playerCity;
+    @SerializedName("total_game")                               // Variable for total games
+    private String totalGame;
+    @SerializedName("total_score")                              // Variable for total score
+    private String totalScore;
+    @SerializedName("avg_score")                                //Variable for avg score
+    private String avgScore;
+    @SerializedName("leaderboard_type")                        //Variable for leaderboard type
+    private String leaderboardType;
+    @SerializedName("domain_id")                                // Variable for domain_id
+    private String domainId;
+    @SerializedName("clevel_id")                                //Variable for clevelid
+    private String cLevelId;
+    @SerializedName("clevel")                                   //Variable for clevel
+    private String cLevel;
+    @SerializedName("csublevel_id")                             // Variable for csublevelid
+    private String cSublevelId;
+    @SerializedName("csublevel")                                // Variable for csublevel
+    private String cSublevel;
+    @SerializedName("created_date")                                // Variable for csublevel
+    private String createdDate;
+    @SerializedName("ccname")                                // Variable for csublevel
+    private String ccname;
+    @SerializedName("image")                                // Variable for csublevel
+    private String image;
+    @SerializedName("coins")                                // Variable for csublevel
+    private String coins;
+    @SerializedName("rank")                                // Variable for csublevel
+    private String rank;
+
+    public String getCoins() {
+        return coins;
+    }
+
+    public void setCoins(String coins) {
+        this.coins = coins;
+    }
+
+    public String getRank() {
+        return rank;
+    }
+
+    public void setRank(String rank) {
+        this.rank = rank;
+    }
+
+    public String getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
+    }
+
+    public String getId() {                       //Method to get id  @return
+        return id;
+    }
+
+    public String getcLevelId() {                // Method to get clevelid  @return
+        return cLevelId;
+    }
+
+    public void setcLevelId(String cLevelId) {       //Method to set clevelid  @return
+        this.cLevelId = cLevelId;
+    }
+
+    public String getcLevel() {                      // Method to get clevel  @return
+        return cLevel;
+    }
+
+    public void setcLevel(String cLevel) {            // Method to set clevel  @return
+        this.cLevel = cLevel;
+    }
+
+    public String getcSublevelId() {                  // Method to get csublevelid  @return
+        return cSublevelId;
+    }
+
+    public void setcSublevelId(String cSublevelId) {              //Method to set csublevelid   @return
+        this.cSublevelId = cSublevelId;
+    }
+
+    public String getcSublevel() {                                 //Method to get csublevel  @return
+        return cSublevel;
+    }
+
+    public void setcSublevel(String cSublevel) {                   //Method to set csublevel  @return
+        this.cSublevel = cSublevel;
+    }
+
+    public void setId(String id) {                                 // Method to set id @return
+        this.id = id;
+    }
+
+    public String getPlayerId() {                                 // Method to get player id  @return
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {                     // Method to set player id   @return
+        this.playerId = playerId;
+    }
+
+    public String getPlayerName() {                                 // Method to get playername  @return
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {                  // Method to set playername  @return
+        this.playerName = playerName;
+    }
+
+    public String getPlayerProfileId() {                             // Method to get player profile id @return
+        return playerProfileId;
+    }
+
+    public void setPlayerProfileId(String playerProfileId) {         // Method to set player profile id  @return
+        this.playerProfileId = playerProfileId;
+    }
+
+
+    public String getSubSkillId() {                                   // Method to get subskillid  @return
+        return subSkillId;
+    }
+
+    public void setSubSkillId(String subSkillId) {                   //Method to set subskillid  @return
+        this.subSkillId = subSkillId;
+    }
+
+    public String getSubSkillName() {                                //Method to get subskillname  @return
+        return subSkillName;
+    }
+
+    public void setSubSkillName(String subSkillName) {              //Method to set subskillname  @return
+        this.subSkillName = subSkillName;
+    }
+
+    public String getPlayerCountry() {                              //Method to get player country @return
+        return playerCountry;
+    }
+
+    public void setPlayerCountry(String playerCountry) {                 //Method to set player country  @return
+        this.playerCountry = playerCountry;
+    }
+
+    public String getPlayerCity() {                                      // Method to get player city  @return
+        return playerCity;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    public String getCcname() {
+        return ccname;
+    }
+
+    public void setCcname(String ccname) {
+        this.ccname = ccname;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public void setPlayerCity(String playerCity) {                      //Method to set player city  @return
+        this.playerCity = playerCity;
+    }
+
+    public String getTotalGame() {                                      // Method to get total game @return
+        return totalGame;
+    }
+
+    public void setTotalGame(String totalGame) {                        //Method to set total game  @return
+        this.totalGame = totalGame;
+    }
+
+    public String getTotalScore() {                                      // Method to get total score @return
+        return totalScore;
+    }
+
+    public void setTotalScore(String totalScore) {                        // Method to set total score  @return
+        this.totalScore = totalScore;
+    }
+
+    public String getAvgScore() {                                         //Method to get avg score  @return
+        return avgScore;
+    }
+
+    public void setAvgScore(String avgScore) {                           // Method to set avg score  @return
+        this.avgScore = avgScore;
+    }
+
+    public String getLeaderboardType() {                                 //Method to get leaderboard type  @return
+        return leaderboardType;
+    }
+
+    public void setLeaderboardType(String leaderboardType) {            //Method to set leaderboard type  @return
+        this.leaderboardType = leaderboardType;
+    }
+}

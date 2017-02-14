@@ -1,0 +1,372 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.PaymentAdapter;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.PaymentDataVO;
+import com.empass.sdk.vo.PaymentInitVO;
+import com.empass.sdk.vo.PaymentVO;
+import com.empass.sdk.vo.User;
+import com.razorpay.Checkout;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
+
+/**
+ * Created by Deepak on 3/10/2016.
+ */
+public class PaymentActivity extends EmpassActivity {
+
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declear variable
+     */
+    public transient String URL, strContent;
+    /**
+     * declear variable
+     */
+    public transient ArrayList<String> list;
+    /**
+     * declear variable
+     */
+    public transient ListView lvPayment;
+    /**
+     * declear variable
+     */
+    public transient TextView tvLoading;
+    /**
+     * declear variable
+     */
+    public transient int amount = 0;
+    /**
+     * declear variable
+     */
+    public transient String coinCount = "";
+    /**
+     * declear variable
+     */
+    public transient String itemName = "", coinValue = "", discount = "", listValue = "";
+    /**
+     * declear variable
+     */
+    public transient PaymentInitVO paymentInitVO;
+    /**
+     * declear variable
+     */
+    public transient boolean isPaymentSuccess;
+    public transient User user;
+
+    /**
+     * cons
+     */
+    public PaymentActivity() {
+        super();
+    }
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.m_activity_payment);
+        try {
+            context = PaymentActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            final Intent intent = getIntent();
+            URL = intent.getStringExtra(sdkConstant.URLS);
+            strContent = intent.getExtras().getString(sdkConstant.TITLE);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            lvPayment = (ListView) findViewById(R.id.payment_list);
+            tvHeader.setText("Purchase");
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            isPaymentSuccess = false;
+            callPaymentApi();
+            user = dbHelper.getLogedUser();
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * callPaymentApi
+     */
+    private void callPaymentApi() {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PAYMENT_LIST, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.requestMethod = urls.REQUEST_GET;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            PaymentVO paymentVO = dbController.hanldePaymentVO(response, request);
+                            LogUtils.debug(sdkConstant.TAG, "paymentVO" + paymentVO.getStatus());
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(paymentVO.getStatus())) {
+                                showPaymentData(paymentVO.getData());
+                            } else {
+                                slowInternet("No History Available");
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void showPaymentData(final PaymentDataVO[] data) {
+        try {
+            final PaymentAdapter paymentAdapter = new PaymentAdapter(this, R.layout.m_activity_payment, data);
+            paymentAdapter.notifyDataSetChanged();
+            lvPayment.setAdapter(paymentAdapter);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    public void onClickCoinRow(View v) {
+        final LinearLayout linearpayment = (LinearLayout) v.getParent();
+        final LinearLayout linear = (LinearLayout) linearpayment.findViewById(R.id.ll_payment_data);
+        final TextView tvCoinCount = (TextView) linear.findViewById(R.id.tv_coinvalue);
+        final TextView tvDiscount = (TextView) linear.findViewById(R.id.tv_discountper);
+        final TextView tvRemainValue = (TextView) linear.findViewById(R.id.tv_remainvalue);
+        final TextView tvCoinvalue = (TextView) linear.findViewById(R.id.tv_originalvalue);
+        coinCount = tvCoinCount.getText().toString();
+        discount = tvDiscount.getText().toString().replace(sdkConstant.PER, "");
+        coinValue = tvCoinvalue.getText().toString().replace(sdkConstant.RS, "");
+        listValue = tvRemainValue.getText().toString().replace(sdkConstant.RS, "");
+        amount = Integer.parseInt(listValue) * 100;
+        sendPaymentInfoServer();
+    }
+
+    /**
+     * sendPaymentInfoServer
+     */
+    private void sendPaymentInfoServer() {
+        if (isInternetAvailable()) {
+            try {
+                itemName = coinCount + "Coins";
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PAYMENT, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.USER_NAME, user.getName());
+                request.params.put(sdkConstant.EMAIL, user.getEmail());
+                request.params.put(sdkConstant.CONTACT, user.getPhone());
+                request.params.put(sdkConstant.CURRENCY, sdkConstant.INR);
+                request.params.put(sdkConstant.COINS, coinCount);
+                request.params.put(sdkConstant.ITEM_NAM, itemName);
+                request.params.put(sdkConstant.COINE_VALUE, coinValue);
+                request.params.put(sdkConstant.COUPON_CODE, sdkConstant.TEST_CAP);
+                request.params.put(sdkConstant.DISCOUNT, discount);
+                request.params.put(sdkConstant.LIST_VALUE, listValue);
+                request.params.put(sdkConstant.TYPE, sdkConstant.INITIATED);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle call back message
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            paymentInitVO = dbController.hanldePaymentInitVO(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(paymentInitVO.getStatus())) {
+                                startPayment();
+                            } else if (urls.RESPONSE_COSE_404.equalsIgnoreCase(String.valueOf(paymentInitVO.getStatus()))) {
+                                Toast.makeText(getApplicationContext(), "Server Error. Try later.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        return true;
+                    }
+
+
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * startPayment
+     */
+
+    private void startPayment() {
+        final EmpassActivity activity = this;
+        final Checkout co = new Checkout();
+        co.setPublicKey(dbHelper.getRefData(sdkConstant.RAZOR_PAY_KEY));
+        try {
+            final JSONObject options = new JSONObject(sdkConstant.DESCRIPTION + coinCount + sdkConstant.COINS_SLESH +
+                    sdkConstant.IMAGE_DOT + sdkConstant.EMPASS_IMAGE + sdkConstant.SLACE +
+                    sdkConstant.CURRENCEY);
+            options.put(sdkConstant.AMOUNT, amount);
+            options.put(sdkConstant.USER_NAME, sdkConstant.TAG);
+            options.put(sdkConstant.PREFILL, new JSONObject(sdkConstant.EMAIL_DOT + user.getEmail() + sdkConstant.CONTACT_DOT + user.getPhone() + sdkConstant.BRACKET_CLOSE));
+            co.open(activity, options);
+        } catch (Exception e) {
+            Toast.makeText(activity, e.getMessage(), Toast.LENGTH_SHORT).show();
+            LogUtils.error(sdkConstant.TAG, "Exce", e);
+        }
+    }
+
+    public void onPaymentSuccess(final String razorpayPaymentID) {
+        try {
+            sendPaymentId(razorpayPaymentID);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * The name of the function has to be
+     * onPaymentError
+     * Wrap your code in try catch, as shown, to ensure that this method runs correctly
+     */
+    public void onPaymentError(final int code, final String response) {
+        try {
+            paymentDialog("Payment Failed");
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * sendPaymentId
+     *
+     * @param razorpayPaymentID
+     */
+    private void sendPaymentId(final String razorpayPaymentID) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PAYMENT, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.ID, paymentInitVO.getPaymentId());
+                request.params.put(sdkConstant.PAYMENT_ID, razorpayPaymentID);
+                request.params.put(sdkConstant.TYPE, sdkConstant.AUTHORIZED);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle call back message
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            paymentInitVO = dbController.hanldePaymentInitVO(response, request);
+                            isPaymentSuccess = true;
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(paymentInitVO.getStatus())) {
+                                paymentDialog("Payment done successfully");
+                            } else if (urls.RESPONSE_COSE_404.equalsIgnoreCase(String.valueOf(paymentInitVO.getStatus()))) {
+                                paymentDialog("Server Error. Try later.");
+                            }
+                        }
+                        return true;
+                    }
+
+
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intent = new Intent(PaymentActivity.this, PurchaseActivity.class);
+            intent.putExtra(sdkConstant.DEEP_LINKING, sdkConstant.ALL);
+            intent.putExtra(sdkConstant.GOAL_INTENT, strContent);
+            startActivity(intent);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void paymentDialog(String status) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(status);
+            final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    if (isPaymentSuccess) {
+                        final Intent intent = new Intent(PaymentActivity.this, PurchaseActivity.class);
+                        intent.putExtra(sdkConstant.DEEP_LINKING, sdkConstant.ALL);
+                        startActivity(intent);
+                        finish();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+}

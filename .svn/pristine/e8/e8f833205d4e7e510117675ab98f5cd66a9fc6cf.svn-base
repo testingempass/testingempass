@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="m_gray">#808080</color>
+    <color name="m_light_gray2">#D3D3D3</color>
+    <color name="m_black_dark">#1A1A1A</color>
+    <color name="m_white">#FFFFFF</color>
+    <color name="m_red">#EE3042</color>
+    <color name="m_blue">#0095DA</color>
+    <color name="m_black_light">#4D4D4D</color>
+    <color name="m_dialog_primary">#FF5722</color>
+    <color name="m_grey_85">#D9efefef</color>
+    <color name="m_light_gray">#F2F2F2</color>
+    <color name="m_color1">#64BF95</color>
+    <color name="m_color2">#F67456</color>
+    <color name="m_color3">#F5F5F5</color>
+    <color name="m_color4">#D9efefef</color>
+    <color name="c_yellow">#f6cd28</color>
+    <color name="c_greyish">#858e93</color>
+    <color name="c_purple">#9f5cb8</color>
+    <color name="c_teal">#3dd8c0</color>
+    <color name="c_red">#ff8543</color>
+    <color name="c_green">#35b252</color>
+    <color name="c_blue">#8fa7bd</color>
+    <color name="c_brown">#e5bb71</color>
+    <color name="m_marvel1">#FFD200</color>
+    <color name="m_marvel2">#2F5DA9</color>
+    <color name="m_marvel3">#FF0000</color>
+    <color name="m_marvel4">#C7E7FB</color>
+    <color name="m_gray_colr">#D3D3D3</color>
+    <color name="m_yellow">#F0A03C</color>
+    <color name="m_Gold">#FFD700</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="teal">#008080</color>
+    <color name="dark_grey">#A2A2A2</color>
+    <color name="header_color">#FF7700</color>
+    <color name="header_textcolor">#FFFFFF</color>
+    <color name="guest_btn_bg">#eb8c00</color>
+    <!--solid Tangerin-->
+    <color name="statusbarcolor">#a32020</color>
+    <!--burgundy-->
+    <color name="sdk_seconderycolor">#FF6600</color>
+    <color name="sdk_primarycolor">#770077</color>
+    <color name="sdk_tickcolor">#669933</color>
+</resources>

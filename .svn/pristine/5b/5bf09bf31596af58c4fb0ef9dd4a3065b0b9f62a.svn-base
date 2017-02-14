@@ -1,0 +1,199 @@
+package com.empass.sdk.utils;
+
+import android.app.Activity;
+import android.view.GestureDetector;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.MotionEvent;
+
+/**
+ * @author Deepak
+ */
+public class SimpleGestureFilter extends SimpleOnGestureListener {
+    /**
+     * declear variable
+     */
+    public final static int SWIPE_UP = 1;
+    /**
+     * declear variable
+     */
+    public final static int SWIPE_DOWN = 2;
+    /**
+     * declear variable
+     */
+    public final static int SWIPE_LEFT = 3;
+    /**
+     * declear variable
+     */
+    public final static int SWIPE_RIGHT = 4;
+    /**
+     * declear variable
+     */
+    /**
+     * declear variable
+     */
+    public final static int MODE_SOLID = 1;
+    /**
+     * declear variable
+     */
+    public final static int MODE_DYNAMIC = 2;
+    /**
+     * declear variable
+     */
+    private final static int ACTION_FAKE = -13; //just an unlikely number
+    /**
+     * declear variable
+     */
+    private int swipeMinDistance = 100;
+    /**
+     * declear variable
+     */
+    private int swipeMaxDistance = 350;
+    /**
+     * declear variable
+     */
+    private int swipeMinVelocity = 100;
+    /**
+     * declear variable
+     */
+    private int mode = MODE_DYNAMIC;
+    /**
+     * declear variable
+     */
+    private transient boolean running = true;
+    /**
+     * declear variable
+     */
+    private transient boolean tapIndicator;
+    /**
+     * declear variable
+     */
+    private transient final Activity context;
+    /**
+     * declear variable
+     */
+    private transient final GestureDetector detector;
+    /**
+     * declear variable
+     */
+    private transient final SimpleGestureListener listener;
+
+    /**
+     * declear variable
+     */
+    public SimpleGestureFilter(final Activity context, final SimpleGestureListener sgl) {
+        super();
+        this.context = context;
+        this.detector = new GestureDetector(context, this);
+        this.listener = sgl;
+        tapIndicator = false;
+    }
+
+    /**
+     * @param event
+     */
+    public void onTouchEvent(final MotionEvent event) {
+        if (!this.running) {
+            return;
+        }
+        final boolean result = this.detector.onTouchEvent(event);
+        if (this.mode == MODE_SOLID) {
+            event.setAction(MotionEvent.ACTION_CANCEL);
+        } else if (this.mode == MODE_DYNAMIC) {
+
+            if (event.getAction() == ACTION_FAKE) {
+                event.setAction(MotionEvent.ACTION_UP);
+            } else if (result) {
+                event.setAction(MotionEvent.ACTION_CANCEL);
+            } else if (this.tapIndicator) {
+                event.setAction(MotionEvent.ACTION_DOWN);
+                this.tapIndicator = false;
+            }
+        }
+    }
+
+
+    /**
+     * onFling
+     */
+    @Override
+    public boolean onFling(final MotionEvent e1, final MotionEvent e2, float velocityX, float velocityY) {
+        boolean result = false;
+        final double xDistance = Math.abs(e1.getX() - e2.getX());
+        final double yDistance = Math.abs(e1.getY() - e2.getY());
+        if (xDistance > this.swipeMaxDistance || yDistance > this.swipeMaxDistance) {
+            result = false;
+        }
+        velocityX = Math.abs(velocityX);
+        velocityY = Math.abs(velocityY);
+        if (velocityX > this.swipeMinVelocity && xDistance > this.swipeMinDistance) {
+            if (e1.getX() > e2.getX()) { // right to left
+                this.listener.onSwipe(SWIPE_LEFT);
+            } else {
+                this.listener.onSwipe(SWIPE_RIGHT);
+            }
+            result = true;
+        } else if (velocityY > this.swipeMinVelocity && yDistance > this.swipeMinDistance) {
+            if (e1.getY() > e2.getY()) { // bottom to up
+                this.listener.onSwipe(SWIPE_UP);
+            } else {
+                this.listener.onSwipe(SWIPE_DOWN);
+            }
+            result = true;
+        }
+        return result;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean onSingleTapUp(final MotionEvent e) {
+        this.tapIndicator = true;
+        return false;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean onDoubleTap(final MotionEvent arg) {
+        this.listener.onDoubleTap();
+        return true;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean onDoubleTapEvent(final MotionEvent arg) {
+        return true;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public boolean onSingleTapConfirmed(final MotionEvent arg) {
+        if (this.mode == MODE_DYNAMIC) { // we owe an ACTION_UP, so we fake an
+            arg.setAction(ACTION_FAKE); //action which will be converted to an ACTION_UP later.
+            this.context.dispatchTouchEvent(arg);
+        }
+        return false;
+    }
+
+    /**
+     * @author Deepak
+     */
+    public interface SimpleGestureListener {
+        /**
+         * @param direction
+         */
+        void onSwipe(final int direction);
+
+        /**
+         * onDoubleTap
+         */
+        void onDoubleTap();
+    }
+
+}

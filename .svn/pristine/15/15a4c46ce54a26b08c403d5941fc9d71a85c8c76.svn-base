@@ -1,0 +1,127 @@
+package com.empass.sdk.http;
+
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+
+/**
+ * Class for ASYNC TASK
+ *
+ * @author Deepak
+ */
+public class SDKHttpRequestHandler extends AsyncTask<SDKHttpRequestVO, Integer, String> {
+    /**
+     * object for dialog box
+     */
+    private transient ProgressDialog dialog;
+    /**
+     * activity object
+     */
+    private transient Activity activity;
+    /**
+     * handler object
+     */
+    private transient Handler handler;
+    /**
+     * handler object
+     */
+    private transient int requestCode;
+    /**
+     * check dialog
+     */
+    private transient boolean isShowDialog = true;
+    /**
+     * varable for data
+     */
+
+    /**
+     * Class cons
+     *
+     * @param activity
+     * @param handler
+     * @param requestCode
+     */
+    public SDKHttpRequestHandler(final Activity activity, final Handler handler, final int requestCode) {
+        super();
+        this.activity = activity;
+        this.handler = handler;
+        this.requestCode = requestCode;
+    }
+
+    /**
+     * Method on pre execute
+     */
+    @Override
+    protected void onPreExecute() {
+        try {
+            if (requestCode == 1 && isShowDialog && !(activity).isFinishing()) {
+                dialog = ProgressDialog.show(activity, "", "", true);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                dialog.setContentView(R.layout.m_dialog_message_connecting);
+            }
+            if (requestCode == 2 && isShowDialog && !(activity).isFinishing()) {
+                dialog = ProgressDialog.show(activity, "", "", true);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+                dialog.setContentView(R.layout.m_dialog_first_connecting);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * method for background process
+     */
+    @Override
+    protected String doInBackground(final SDKHttpRequestVO... request) {
+
+        String response = null;
+        // if response is not null
+        if (request != null && request.length > 0) {
+
+            try {
+                response = SDKHttpRequestHelper.executeOKHttpRequest(request[0], 0);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+        return response;
+    }
+
+    /**
+     * post exec method
+     */
+    @Override
+    protected void onPostExecute(final String result) {
+        /**
+         * if dialog is visible the dismiss
+         */
+        if (dialog != null && dialog.isShowing() && !(activity).isFinishing()) {
+            try {
+                dialog.dismiss();
+                dialog = SDKConstant.HTTP_NULL;
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+        Message msg;
+        try {
+            msg = handler.obtainMessage();
+            final Bundle bundle = new Bundle();
+            bundle.putString(SDKConstant.DATA, result);
+            msg.setData(bundle);
+            msg.obj = result;
+            handler.sendMessage(msg);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+}

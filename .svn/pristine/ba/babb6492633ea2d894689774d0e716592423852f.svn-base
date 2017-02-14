@@ -1,0 +1,346 @@
+package com.empass.sdk.utils;
+
+import android.app.ProgressDialog;
+import android.os.Environment;
+
+/**
+ * Created by Deepak on 9/12/2016.
+ */
+public final class SDKConstant {
+    public static final String TAG = "Empass";
+    public static final ProgressDialog HTTP_NULL = null;
+    public static final String PUBLISH_ACTIONS = "publish_actions";
+    public static final String IC_LUNCHER = "http://52.45.155.128/pwc/web/pwc-gst-logo.png";
+    public static final String WEB_URL = "http://www.pwc.in/";
+    public static final String EMPTY = "";
+    public static final String PKZ = "com.empass.sdk";
+    public static final String BLANK = " ";  //Empty String
+    public static final String GAME_ID = "game_id";
+    public static final String ID = "id";                              //id key for api
+    public static final String NTEXT = "N";                        //key for api
+    public static final String DEEP_LINKING = "deep_linking";                              //id key for api
+    public static final String HYPHEN = "-";
+    public static final String PHONE = "phone";
+    public static final String IS_DOWNLOAD = "isDownload";
+    public static final String LOGIN_USER = "username";                                           //key for api
+    public static final String DEFAULT_OTP = "1026";                                    //SDKConstant used in Application for default otp verification
+    public static final String AUTH = "auth";
+    public static final String TXT_PRIVECY = "By pressing 'SUBMIT' you agree to our <a href=\"http://empass.mobi/privacypolicy\">Privacy Policy</a> and";
+    public static final String TXT_CONDITION = "<a href=\"http://empass.mobi/termsofservice\"> Terms and Conditions.</a>";
+    public static final String BE_CONDITION = "BE_CONDITION";
+    public static final String INTENT = "msgIntent";
+    public static final String OLD_PASSWORD = "old_password";          // Old Password key
+    public static final String NEW_PASSWORD = "new_password";          // New Password key
+    public static final String OTP_VERIFY = "otp_verify";                              //id key for api
+
+    // Hyphen Used in Application
+    //sdkConstant used in Application
+    public static final String IMAGE_JPEG = "image/jpeg";             //sdkConstant used in Application for image
+    public static final String IMAGE_PNG = "image/png"; //sdkConstant used in Application for image
+    public static final String SHOW = "Show";
+    public static final String HIDE = "Hide";
+    // sdkConstant for key
+    public static final String MSG = "msg";
+    public static final String COUNTRY_CODE = "country_code";                            //key for api
+    public static final String COUNTRY = "country";                                     //key for api
+    public static final String DATA = "data";
+    public static final String UUID = "uuid";
+    public static final String HTTPS = "https:";
+    public final static String LOGGEDIN_TRUE = "Y";
+    //key for api
+    public static final String WARP_TAG = "Warp";                                       // sdkConstant used in Application
+    public static final String YTEXT = "Y";                                            // sdkConstant used in Application
+    public static final String IMAGE = "image";
+    public static final String RESUME = "resume";
+    public static final String ZERO = "0";                                             //sdkConstant Used In Application
+    public static final String TYPE = "type";
+    public static final String GENDER = "gender";
+    public static final String CCNAME = "ccname";
+    public static final String DOB = "dob";
+    public static final String AUTHORIZED = "authorized";
+    public static final String PAYMENT_ID = "payment_id";
+    public static final String STATUS = "status";                                                //key for api
+    public static final String PASSWORD = "password";
+    public static final String USER_NAME = "name";
+    public static final String EMAIL = "email";
+    public static final String MOBILE = "phone";
+    public static final String DOMAIN_ID = "domain_id";
+    public static final String SKILL_ID = "skill_id";
+    public static final String AUTH_KEY = "auth_key";
+    public static final String IS_VALIDATE = "is_validate";
+    public static final String SUB_SKILL_ID = "subskill_id";
+    public static final String R_LEVEL = "rlevel";
+    public static final String C_LEVEL = "clevel";
+    public static final String T_LEVEL = "tlevel";
+    public static final String LATITUDE = "latitude";
+    public static final String LONGITUDE = "longitude";
+    public static final String CITY = "city";
+    public static final String EXPECTED_DATE = "expected_date";
+    public static final String IS_BACK = "is_back";
+    public static final String IS_DIRECTREG = "is_directreg";
+
+    public static final String NAME = "name";
+    public static final String WIN_GAME = "WIN-GAME";                        //mixpanel
+    public static final String LOST_GAME = "LOST-GAME";                       //mixpanel
+    public static final String TIE_GAME = "TIE-GAME";                       //mixpanel
+    public static final String ABANDON_GAME = "ABANDON-GAME";
+    //mixpanel
+    public static final String W = "W";                                         //mixpanel
+    //sdkConstant Used In Application
+    public static final String PLAY_STORE_URL = "PLAY_STORE_URL";                                  //Declear variable
+    public static final String PLAYER_ID = "player_id";                                  //Declear variable
+    public static final String DEGREE = "degree";
+    public static final String FROM_YEAR = "from_year";
+    public static final String TO_YEAR = "to_year";
+    public static final String BRANCH = "branch";
+    public static final String PERCENT = "percent";
+    public static final String COLLAGE = "college";
+    public static final String COMPANY = "company";
+    public static final String CREATED_DATE = "created_date";
+    public static final String UPDATED_DATE = "updated_date";
+    public static final String NO_IMAGE = "no_image.png";
+    public static final String ALL = "All";
+    public static final String POINTS = "points";
+    public static final String STRIKE_RAKE = "strike_rate";
+    public static final String WIN_PERCENTAGE = "win_percentage";
+    public static final String AVG_POINT = "avg_points";
+    public static final String TOTAL_WIN = "total_win";
+    public static final String TOTAL_LOST = "total_lost";
+    public static final String TOTAL_ABANDON = "total_abandon";
+    public static final String APP_VERSION = "app_version";
+    public static final String DRAWABLE = "drawable/";
+    public static final String INDEX = "_index";
+    public static final String APP_KEY = "APP_KEY";                           //key sdkConstant
+    public static final String HOST_NAME = "HOST_NAME";
+    public static final String HOST_TYPE = "HOST_TYPE";
+    public static final String TAO_HOST_NAME = "TAO_HOST_NAME";
+    public static final String SDK_HOST_NAME = "SDK_HOST_NAME";
+    public static final String HOST_IP = "HOST_IP";
+    public static final String PLAYER_PROFILE_ID = "player_profile_id";
+    public static final String ACHIEVEMENT_ID = "achievement_id";
+    public static final String FOUR = "4";
+    public static final String EIGHT = "8";
+    public static final String TWEEL = "12";
+    public static final String SIXTEN = "16";
+    public static final String NINTYNINE = "99";
+
+    public static final String INSERT_1 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (1, 'Novice', 'Bronze', 0, 5000)";          //sdkConstant used in Application for skills
+    public static final String INSERT_2 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (2, 'Novice', 'Silver', 5000, 10000)";
+    public static final String INSERT_3 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (3, 'Novice', 'Gold', 10000, 15000)";
+    public static final String INSERT_4 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (4, 'Novice', 'Diamond', 15000, 20000)";
+    public static final String INSERT_5 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (5, 'Amateur', 'Bronze', 20000, 25000)";
+    public static final String INSERT_6 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (6, 'Amateur', 'Silver', 25000, 30000)";
+    public static final String INSERT_7 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (7, 'Amateur', 'Gold', 30000, 35000)";
+    public static final String INSERT_8 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (8, 'Amateur', 'Diamond', 35000, 40000)";
+    public static final String INSERT_9 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (9, 'Pro', 'Bronze', 40000, 45000)";
+    public static final String INSERT_10 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (10, 'Pro', 'Silver', 45000, 50000)";
+    public static final String INSERT_11 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (11, 'Pro', 'Gold', 50000, 55000)";
+    public static final String INSERT_12 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (12, 'Pro', 'Diamond', 55000, 60000)";
+    public static final String INSERT_13 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (13, 'Champ', 'Bronze', 60000, 70000)";
+    public static final String INSERT_14 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (14, 'Champ', 'Silver', 70000, 80000)";
+    public static final String INSERT_15 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (15, 'Champ', 'Gold', 80000, 90000)";
+    public static final String INSERT_16 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (16, 'Champ', 'Diamond', 90000, 100000)";
+    public static final String INSERT_99 = "INSERT INTO 'PROGRESSION_MASTER' ('id', 'level', 'sub_level', 'min_score','max_score') VALUES (99, 'Champ', 'Free', 100000, 9900000)";
+    public static final String[] MONTH_ARRAY = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    public static final String COMMON_LEVEL = "drawable/novice_diamond_index";
+    public static final String PATH = Environment.getExternalStorageDirectory().getAbsolutePath() + "/Empass/";                     //sdkConstant Used In Application for BE folder path
+    public static final String BE_POLICY = "BE_POLICY";         //BuildEmploy URL
+    public static final String EMAIL_PATTERN = "[a-zA-Z0-9._-][a-zA-Z0-9._-]+@[a-z]+\\.+[a-z]+";
+    public static final String COMEFROMLOGIN = "comingFromLoginDetails";
+    public static final String GOAL_INTENT = "goal_intent";
+    public static final String BE_EMAIL = "play@empass.mobi";
+    public static final String DEAR_TEAM = "Dear Team,\n\n";
+    public static final String TIME_ZONE = "UTC";
+    public static final String DATE_FORMATE = "yyyy-MM-dd";
+    public static final String DATE_TIME_FORMATE = "yyyy-MM-dd HH:mm:ss";
+    public static final String EXP_DATE_FOR = "MMM dd, yyyy";
+    public static final String VIEW_RESUME = "Resume";
+    public static final String S3_RESUME_BUCKET = "S3_RESUME_BUCKET";
+    public static final String S3_IMAGE_BUCKET = "S3_IMAGE_BUCKET";
+    public static final String S3_RESUME_SIGNATURE = "S3_RESUME_SIGNATURE";
+    public static final String S3_IMAGE_SIGNATURE = "S3_IMAGE_SIGNATURE";
+    public static final String S3_RESUME_POLICY = "S3_RESUME_POLICY";
+    public static final String S3_IMAGE_POLICY = "S3_IMAGE_POLICY";
+    public static final String S3_RESUME_UPLOAD_URL = "S3_RESUME_UPLOAD_URL";
+    public static final String S3_IMAGE_UPLOAD_URL = "S3_IMAGE_UPLOAD_URL";
+    public static final String S3_DOWNLOAD_URL = "S3_DOWNLOAD_URL";
+    public static final String TEASER_ALL_QUE_CORRECT = "TEASER_ALL_QUE_CORRECT";
+    public static final String TEASER_YOU_WIN_GAME = "TEASER_YOU_WIN_GAME";
+    public static final String TEASER_YOU_WIN_3_GAME = "TEASER_YOU_WIN_3_GAME";
+    public static final String TEASER_LEVEL_CHANGES = "TEASER_LEVEL_CHANGES";
+    public static final String TEASER_STAGE_CHANGES_NTOA = "TEASER_STAGE_CHANGES_NTOA";
+    public static final String TEASER_STAGE_CHANGES_ATOP = "TEASER_STAGE_CHANGES_ATOP";
+    public static final String TEASER_STAGE_CHANGES_PTOC = "TEASER_STAGE_CHANGES_PTOC";
+    public static final String TEASER_ACHIVE_GOAL = "TEASER_ACHIVE_GOAL";     // Congrats You Have Achieved Your Goal
+    public static final String TEASER_STAGE_AMATEUR = "TEASER_STAGE_AMATEUR";     // Congrats You Have Achieved Your Goal
+    public static final String TEASER_STAGE_PRO = "TEASER_STAGE_PRO";             // Congrats You Have Achieved Your Goal
+    public static final String TEASER_STAGE_CHAMP = "TEASER_STAGE_CHAMP";         // Congrats You Have Achieved Your Goal
+    public static final String TEASER_LEVEL_HAT_TRICK = "TEASER_LEVEL_HAT_TRICK";                              // Congrats You Have Achieved Your Goal
+    public static final String TEASER_ALL_HAT_TRICK = "TEASER_ALL_HAT_TRICK";
+    public static final String ROBOTO = "fonts/Roboto-Regular.ttf";
+    public static final String URLS = "URL";
+    public static final String HEADING = "Heading";
+    public static final String PAID = "paid";
+    public static final String TEST = "test";
+    public static final String CONTEST = "contest";
+    public static final String TEXT_HTML = "text/html";
+    public static final String TEXT_PLAIN = "text/plain";
+    public static final String GM = ".gm";
+    public static final String GMAIL = "gmail";
+    public static final String UTF = "utf-8";
+    public static final String UPDATE = "UPDATE";
+    public static final String HEX_CODE = "#,##,###";
+    public static final String PRIVACY_POLICY = "<a href=\"http://empass.mobi/privacypolicy.html\">Privacy Policy</a>";
+    public static final String EMPASS_WEB = "<a href=\"http://empass.mobi\">Powered By Empass</a>";
+
+    public static final String RAZOR_PAY_KEY = "RAZOR_PAY_KEY";
+    public static final String A = "A";
+    public static final String L = "L";
+    public static final String T = "T";
+    public static final String WWW = "WWW";
+    public static final String DOT_PDF = ".pdf";
+    public static final String NULL = "NULL";
+    public static final String NULL_SMALL = "null";
+    public static final String END_HERE = "End Here.";
+    public static final String DEMO_TXT = "Demo";
+    public static final String DRIVE_URL = "http://docs.google.com/gview?embedded=true&url=";
+    public static final String DESCRIPTION = "{description: 'Coins Purchase:";
+    public static final String COINS_SLESH = " coins ',";
+    public static final String IMAGE_DOT = "image: '";
+    public static final String SLACE = "',";
+    public static final String CURRENCEY = "currency: 'INR'}";
+    public static final String AMOUNT = "amount";
+    public static final String PREFILL = "prefill";
+    public static final String EMAIL_DOT = "{email: '";
+    public static final String CONTACT_DOT = "', contact: '";
+    public static final String BRACKET_CLOSE = "'}";
+    public static final String CONTACT = "contact";
+    public static final String CURRENCY = "currency";
+    public static final String COINS = "coins";
+    public static final String ITEM_NAM = "item_name";
+    public static final String COINE_VALUE = "coinvalue";
+    public static final String COUPON_CODE = "coupon_code";
+    public static final String DISCOUNT = "discount";
+    public static final String LIST_VALUE = "listvalue";
+    public static final String INR = "INR";
+    public static final String INITIATED = "initiated";
+    public static final String TEST_CAP = "TEST";
+    public static final String RS = "Rs.";
+    public static final String PER = "%";
+    public static final String EMPASS_IMAGE = "https://s3-us-west-2.amazonaws.com/be-staticimage/empass_logo.png";
+    public static final String TITLE = "title";                       //sdkConstant used in Application
+    public static final String ADD_SKILL_INTENT = "ADD SKILL";
+    public static final String DASHBOARD_INTENT = "dashboard_intent";
+    public static final String SLOW_INTERNET_AND_TRY_AGAIN = "Slow internet connection. Try again?";
+    public static final String TRY_AGAIN = "Try again!";     //Message used in Application
+    public static final String GRADE = "GRADE / %- ";
+    public static final int FIVE_INDEX = 5;
+    public static final int MINUS_ONE = -1;                                            //sdkConstant Used In Application
+    public static final int ONE_INDEX = 1;
+    public static final String ONE = "1";
+    public static final int TWO_INDEX = 2;
+    public static final int FOUR_INDEX = 4;
+    public static final int SIX_INDEX = 6;
+    public static final int TEN = 10;
+    public static final int THREE = 3;
+    public static final int THERTEN = 13;
+    public static final int NINE = 9;
+    public static final int ONE_LAKH = 100000;
+    public static final int ZERO_INDEX = 0;
+    public static final int ZERO_VALUE = 0;
+    public static final int OKHTPP_TIME_OUT = 30000;
+    public static final int FIVE_HUNDERED = 500;
+    public static final int FOURTY = 40;
+    public static final int FIFTEN = 15;
+    public static final int THREE_HUND = 342;
+    public static final long STARTTIME = 1000;
+    public static final int TWENTYTHOU = 20000;
+    public static final int FOTYTHOU = 40000;
+    public static final int SIXTYTHOU = 60000;
+    public static final String DEMO_OOP = "{\n" +
+            "\"status\":\"201\",\n" +
+            "\"data\":[\n" +
+            "{\n" +
+            "\"goal_id\":\"0\",\n" +
+            "\"player_id\":\"0\",\n" +
+            "\"player_name\":\"Deepak Jain\",\n" +
+            "\"image\":\"\",\n" +
+            "\"clevel_id\":\"0\",\n" +
+            "\"clevel\":\"\",\n" +
+            "\"csublevel_id\":\"0\",\n" +
+            "\"csublevel\":\"\",\n" +
+            "\"country_code\":\"91\",\n" +
+            "\"subskill\":\"xyz\",\n" +
+            "\"subskill_id\":\"0\",\n" +
+            "\"player_email\":\"deepak@gmail.com\"\n" +
+            "}\n" +
+            "]\n" +
+            "}";
+
+    //Declear variable
+    public static final String OPPONENTKEY = "sdk$regid";
+    public static final String RESULTKEY = "sdk$result";
+    public static final String SUMMERYKEY = "sdk$summery";
+    public static final String PREF_ACCHIVEMENT = "sdk$acchivement";
+    public static final String PREF_RESULT = "sdk$result";
+    public static final String WIN_MESSAGE = "Win";
+    public static final String LOSS_MESSAGE = "Lose";
+    public static final String ABANDONED_MESSAGE = "Abandoned";
+    public static final String APP_TOKEN = "asdfdkaf9ojasdf09ausdjad";
+    public static final String PLAYER_HISTORY_TASK = "playergamehistoryfors2";
+    public static final String GAMEID_TASK = "generategamenofors2";
+    public static final String QUESTION_URL = "http://54.149.6.98/api/getQuestionBlend.php/";
+    public static final String DEFICULTY_LEVEL = "/";
+    public static final String QUESTION_NUMBERS = "10";
+    public static final String TIE = "Tie";
+    public static final String TASK = "task";
+    public static final String TOKEN = "token";
+    public static final String DATE = "date";
+    public static final String IS_DELETED = "is_deleted";
+    public static final String PLAYER1_ID = "player1_id";
+    public static final String PLAYER1_PROFILE_ID = "player1_profile_id";
+    public static final String PLAYER1_POINTS = "player1_points";
+    public static final String PLAYER1_LEVEL = "player1_level";
+    public static final String PLAYER2_ID = "player2_id";
+    public static final String PLAYER2_PROFILE_ID = "player2_profile_id";
+    public static final String PLAYER2_POINTS = "player2_points";
+    public static final String PLAYER2_LEVEL = "player2_level";
+    public static final String WINNER_PLAYER_ID = "winner_player_id";
+    public static final String ABANDONED_PLAYER_ID = "abandon_player_id";
+    public static final String LOSER_PLAYER_ID = "loser_player_id";
+    public static final String IS_AB = "is_ab";
+    public static final String IS_TIE = "is_tie";
+    public static final String IS_VP = "is_vp";
+    public static final String N = "N";
+    public static final String Y = "Y";
+    public static final String USERNAME = "user_name";
+    public static final String TOTAL_TIME = "total_time";
+    public static final String TOTAL_GAME_POINT = "total_game_point";
+    public static final String TOTAL_SPEED_BONUS = "total_speed_bonus";
+    public static final String COMPLETION_BONUS = "completion_bonus";
+    public static final String WIN_BONUS = "win_bonus";
+    public static final String GAME_STATUS = "game_status";
+    public static final int TWO = 2;
+    public static final int FREE = 99;
+    public static final String BE_WEBSITE = "BE_WEBSITE";
+    public static final String RULES = "RULES";
+    public static final String OVERVIEW = "OVERVIEW";
+    public static final String IS_CONTEST = "contest";
+    public static final String PREF_DOMAINID = "sdk$domainid";
+    public static final String PREF_SUBSKILLID = "sdk$subskillid";
+    public static final String PREF_SUBSKILL = "sdk$subskill";
+    public static final String PREF_SKILL = "sdk$skill";
+    public static final String PREF_AUTHKEY = "sdk$authkey";
+    public static final String PREF_NAME = "sdk$name";
+    public static final String PREF_PASSWORD = "sdk$password";
+    public static final String PREF_EMAIL = "sdk$email";
+    public static final String PREF_MOBILE = "sdk$mobile";
+    public static final String PREF_COUNTRY = "sdk$country";
+    public static final String PREF_OTP = "dk$otp";
+    public static final String PREF_GOALID = "sdk$goalid";
+    public static final String PREF_COUNTRYINDEX = "sdk$countryindex";
+    public static final String PREF_REGID = "sdk$regid";
+
+    private SDKConstant() {
+    }
+}

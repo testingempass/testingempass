@@ -1,0 +1,637 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.text.Html;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.CircleTransform;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SimpleGestureFilter;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.OpponentVO;
+import com.empass.sdk.vo.User;
+import com.empass.sdk.vo.UserQuestionVO;
+import com.squareup.picasso.Picasso;
+
+import java.util.Locale;
+
+;
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class GameSummaryActivity extends EmpassActivity implements SimpleGestureFilter.SimpleGestureListener {
+    /**
+     * declear object
+     */
+    private transient SimpleGestureFilter detector;
+    /**
+     * declear variable
+     */
+
+    private transient int index;
+    /**
+     * declear variable
+     */
+
+    private transient int size;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView watchImage;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage1;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage2;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage3;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage4;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage5;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage6;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage7;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage8;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage9;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView leftImage10;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage1;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage2;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage3;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage4;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage5;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage6;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage7;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage8;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage9;
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView rightImage10;
+    /**
+     * Initialize ImageView
+     */
+    private static ImageView[] leftWhiteRing, leftGreenRing, rightWhiteRing, rightGreenRing;
+    /**
+     * Initialize Option
+     */
+    private static TextView[] optionButton;
+    /**
+     * Initialize Option
+     */
+    private static ImageView[] optionImage;
+    /**
+     * Initialize button
+     */
+    public transient TextView btnOption1;
+    /**
+     * Initialize button
+     */
+    public transient TextView btnOption2;
+    /**
+     * Initialize button
+     */
+    public transient TextView btnOption3;
+    /**
+     * Initialize button
+     */
+    public transient TextView btnOption4;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption1;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption2;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption3;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption4;
+    /**
+     * Initialize button
+     */
+    public transient TextView txtUserName;
+    /**
+     * Initialize button
+     */
+    public transient TextView txtOppName;
+    /**
+     * Initialize button
+     */
+    public transient TextView tvOppLetters;
+    /**
+     * Initialize button
+     */
+    public transient ImageView iv_oppimage;
+    /**
+     * Initialize button
+     */
+    public transient TextView tvUserLetters;
+    /**
+     * Initialize button
+     */
+    public transient ImageView iv_playerimage;
+    /**
+     * Initialize button
+     */
+    public transient ImageView userCountryFlag;
+    /**
+     * Initialize button
+     */
+    public transient ImageView oppCountryFlag;
+
+    /**
+     * Initialize OpponentUser
+     */
+    private transient OpponentVO opponentUser;
+    /**
+     *
+     */
+    private transient UserQuestionVO[] userQuestionVO;
+    /**
+     *
+     */
+    public transient Goal goal;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declare variable
+     */
+    public transient ImageView userBadge;
+    /**
+     * declare variable
+     */
+    public transient ImageView oppBadge;
+    /**
+     * declare variable
+     */
+    public transient TextView txtQuestionNo;
+    /**
+     * declare variable
+     */
+    public transient TextView txtQuestion;
+    /**
+     * declare variable
+     */
+    public transient TextView txtUserScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtOppScore;
+    /**
+     * declare variable
+     */
+    public transient User user;
+    /**
+     * declare variable
+     */
+    public transient Intent intent;
+    /**
+     * declare variable
+     */
+    public transient String skillId;
+
+    /**
+     * oncreate
+     */
+    @Override
+    public void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        try {
+            setContentView(R.layout.m_activity_game_summary);
+            context = GameSummaryActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            intent = getIntent();
+            skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+            user = dbHelper.getLogedUser();
+            goal = dbHelper.getGoal(skillId);
+            opponentUser = dbHelper.getOpponentData(sdkConstant.OPPONENTKEY);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            watchImage = (ImageView) findViewById(R.id.iv_timer);
+            leftImage1 = (ImageView) findViewById(R.id.iv_left_b1);
+            leftImage2 = (ImageView) findViewById(R.id.iv_left_b2);
+            leftImage3 = (ImageView) findViewById(R.id.iv_left_b3);
+            leftImage4 = (ImageView) findViewById(R.id.iv_left_b4);
+            leftImage5 = (ImageView) findViewById(R.id.iv_left_b5);
+            leftImage6 = (ImageView) findViewById(R.id.iv_left_b6);
+            leftImage7 = (ImageView) findViewById(R.id.iv_left_b7);
+            leftImage8 = (ImageView) findViewById(R.id.iv_left_b8);
+            leftImage9 = (ImageView) findViewById(R.id.iv_left_b9);
+            leftImage10 = (ImageView) findViewById(R.id.iv_left_b10);
+            rightImage1 = (ImageView) findViewById(R.id.iv_right_b1);
+            rightImage2 = (ImageView) findViewById(R.id.iv_right_b2);
+            rightImage3 = (ImageView) findViewById(R.id.iv_right_b3);
+            rightImage4 = (ImageView) findViewById(R.id.iv_right_b4);
+            rightImage5 = (ImageView) findViewById(R.id.iv_right_b5);
+            rightImage6 = (ImageView) findViewById(R.id.iv_right_b6);
+            rightImage7 = (ImageView) findViewById(R.id.iv_right_b7);
+            rightImage8 = (ImageView) findViewById(R.id.iv_right_b8);
+            rightImage9 = (ImageView) findViewById(R.id.iv_right_b9);
+            rightImage10 = (ImageView) findViewById(R.id.iv_right_b10);
+            btnOption1 = (TextView) findViewById(R.id.btn_option_1);
+            btnOption2 = (TextView) findViewById(R.id.btn_option_2);
+            btnOption3 = (TextView) findViewById(R.id.btn_option_3);
+            btnOption4 = (TextView) findViewById(R.id.btn_option_4);
+            imgOption1 = (ImageView) findViewById(R.id.img_option_1);
+            imgOption2 = (ImageView) findViewById(R.id.img_option_2);
+            imgOption3 = (ImageView) findViewById(R.id.img_option_3);
+            imgOption4 = (ImageView) findViewById(R.id.img_option_4);
+            txtUserName = (TextView) findViewById(R.id.tv_local_user);
+            txtOppName = (TextView) findViewById(R.id.tv_opponent_user);
+            tvOppLetters = (TextView) findViewById(R.id.tvOppLetter);
+            iv_oppimage = (ImageView) findViewById(R.id.iv_opponent_dp);
+            tvUserLetters = (TextView) findViewById(R.id.tvUserLetter);
+            iv_playerimage = (ImageView) findViewById(R.id.ibUserImage);
+            userCountryFlag = (ImageView) findViewById(R.id.iv_local_user_flag);
+            oppCountryFlag = (ImageView) findViewById(R.id.iv_opponent_user_flag);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            userBadge = (ImageView) findViewById(R.id.iv_local_user_badge);
+            oppBadge = (ImageView) findViewById(R.id.iv_opponent_user_badge);
+            txtQuestionNo = (TextView) findViewById(R.id.tv_question_number);
+            txtQuestion = (TextView) findViewById(R.id.tv_question);
+            txtUserScore = (TextView) findViewById(R.id.tv_local_score);
+            txtOppScore = (TextView) findViewById(R.id.tv_opponent_score);
+            detector = new SimpleGestureFilter(this, this);
+            if (null != goal.getSubskillType() && sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                userBadge.setVisibility(View.GONE);
+                oppBadge.setVisibility(View.GONE);
+            }
+            tvHeader.setText(goal.getSubSkill() + " Summary");
+            uiContent();
+            // player not null
+            if (user.getName() != null) {
+                final String initials = sdkCommonUtils.getShortName(user.getName());
+                LogUtils.debug(sdkConstant.TAG, "Player name :" + user.getName());
+                tvUserLetters.setText(initials);
+            }
+            final String imagePath = dbHelper.profileImage(user.getId());
+            if (!sdkConstant.EMPTY.equalsIgnoreCase(imagePath)) {
+                tvUserLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(imagePath).placeholder(R.drawable.m_circle_username_white).transform(new CircleTransform()).into(iv_playerimage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        tvUserLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        iv_playerimage.setVisibility(View.VISIBLE);
+                        tvUserLetters.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+            //image not exists show user name
+            LogUtils.debug(sdkConstant.TAG, "image path not exists");
+            txtUserName.setText(user.getName());
+            txtOppName.setText(opponentUser.getPlayerName());
+            //get current player country flag
+            final int imageFlag = sdkCommonUtils.getCountryFlag(context, user.getCountryCode());
+            userCountryFlag.setImageResource(imageFlag);
+            //get badge of opponent player
+            //get opponent player country flag
+            final int imageOppFlag = sdkCommonUtils.getCountryFlag(context, opponentUser.getCountryCode());
+            oppCountryFlag.setImageResource(imageOppFlag);
+            // opponent in not a virtual player
+            //show opponent player name
+            if (sdkConstant.EMPTY.equalsIgnoreCase(opponentUser.getImage())) {
+                final String name = sdkCommonUtils.getShortName(opponentUser.getPlayerName());
+                tvOppLetters.setText(name);
+            } else {
+                final String name = sdkCommonUtils.getShortName(opponentUser.getPlayerName());
+                tvOppLetters.setText(name);
+                tvOppLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(opponentUser.getImage()).placeholder(R.drawable.m_circle_username_white).transform(new CircleTransform()).into(iv_oppimage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        tvOppLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        tvOppLetters.setVisibility(View.VISIBLE);
+                        iv_oppimage.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+            index = 0;
+            userQuestionVO = dbHelper.getSummray(sdkConstant.SUMMERYKEY);
+            size = userQuestionVO.length;
+            displayQuestionDetails(index);
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (Exception ex) {
+            LogUtils.error(sdkConstant.TAG, "Exception", ex);
+        }
+    }
+
+    /**
+     * initilize ui content
+     */
+    private void uiContent() {
+        try {
+            leftWhiteRing = new ImageView[]{leftImage1, leftImage2, leftImage3, leftImage4, leftImage5, leftImage6, leftImage7,
+                    leftImage8, leftImage9, leftImage10};
+            leftGreenRing = new ImageView[]{leftImage10, leftImage9, leftImage8, leftImage7, leftImage6, leftImage5, leftImage4,
+                    leftImage3, leftImage2, leftImage1};
+            rightWhiteRing = new ImageView[]{rightImage1, rightImage2, rightImage3, rightImage4, rightImage5, rightImage6, rightImage7,
+                    rightImage8, rightImage9, rightImage10};
+            rightGreenRing = new ImageView[]{rightImage10, rightImage9, rightImage8, rightImage7, rightImage6, rightImage5, rightImage4,
+                    rightImage3, rightImage2, rightImage1};
+            optionButton = new TextView[]{btnOption1, btnOption2, btnOption3, btnOption4};
+            optionImage = new ImageView[]{imgOption1, imgOption2, imgOption3, imgOption4};
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * disaplay question datails with users answer
+     *
+     * @param index
+     */
+    @SuppressLint("SetTextI18n")
+    private void displayQuestionDetails(final int index) {
+        try {
+            //get badge of current player
+            imageName = "drawable/" + userQuestionVO[index].getPlayerCLevel() + "_" + userQuestionVO[index].getPlayerCSubLevel()
+                    + "_index";
+            final String uriOppBadge = "drawable/" + opponentUser.getcLevel().toLowerCase(Locale.getDefault()) + "_"
+                    + opponentUser.getcSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+            final int imageBadge = sdkCommonUtils.getImageResource(context, imageName);
+            final int imageOppBadge = sdkCommonUtils.getImageResource(context, uriOppBadge);
+            userBadge.setImageResource(imageBadge);
+            showImage(imageOppBadge, imageBadge, oppBadge);
+            txtQuestionNo.setVisibility(View.VISIBLE);
+            txtQuestion.setVisibility(View.VISIBLE);
+            txtUserScore.setText(String.valueOf(userQuestionVO[index].getPlayer1Score()));
+            txtOppScore.setText(String.valueOf(userQuestionVO[index].getPlayer2Score()));
+            txtQuestionNo.setText("Q" + userQuestionVO[index].getQuestionNo());
+            txtQuestion.setText(Html.fromHtml(userQuestionVO[index].getQuestion()));
+            showOption(index);
+            int timeElapsed;
+            if (userQuestionVO[index].getPlayer2Time() > userQuestionVO[index].getPlayer1Time()) {
+                timeElapsed = userQuestionVO[index].getPlayer2Time();
+            } else if (userQuestionVO[index].getPlayer2Time() < userQuestionVO[index].getPlayer1Time()) {
+                timeElapsed = userQuestionVO[index].getPlayer1Time();
+            } else {
+                timeElapsed = userQuestionVO[index].getPlayer2Time();
+            }
+            watchImage.setImageResource(sdkCommonUtils.getImageResource(context, s2Constant.TIMER_PATH + timeElapsed));
+            // check if player answer then get the time else down the ring
+            LogUtils.debug(sdkConstant.TAG, "Opponent take time:" + userQuestionVO[index].getPlayer2Time());
+            for (int i = 0; i < userQuestionVO[index].getPlayer2Time(); i++) {
+                rightWhiteRing[i].setImageResource(R.drawable.timerwave_right_a);
+            }
+            final int greenIndex = 10 - userQuestionVO[index].getPlayer2Time();
+            //Opponent left time
+            LogUtils.debug(sdkConstant.TAG, "Opponent left time:" + greenIndex);
+            for (int i = 0; i < greenIndex; i++) {
+                rightGreenRing[i].setImageResource(R.drawable.timerwave_right_b);
+            }
+            LogUtils.debug(sdkConstant.TAG, "Player take time:" + userQuestionVO[index].getPlayer1Time());
+
+            for (int i = 0; i < userQuestionVO[index].getPlayer1Time(); i++) {
+                leftWhiteRing[i].setImageResource(R.drawable.timerwave_left_a);
+            }
+            final int mgreenIndex = 10 - userQuestionVO[index].getPlayer1Time();
+            LogUtils.debug(sdkConstant.TAG, " left time:" + mgreenIndex);
+
+            //Opponent left time
+            for (int i = 0; i < mgreenIndex; i++) {
+                leftGreenRing[i].setImageResource(R.drawable.timerwave_left_b);
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param imageOppBadge
+     * @param imageBadge
+     * @param oppBadge
+     */
+
+    private void showImage(final int imageOppBadge, final int imageBadge, final ImageView oppBadge) {
+        try {
+            if (opponentUser.getcLevel().length() > 1 && opponentUser.getcSubLevel().length() > 1) {
+                oppBadge.setImageResource(imageOppBadge);
+            } else {
+                oppBadge.setImageResource(imageBadge);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param index
+     */
+    private void showOption(final int index) {
+        try {
+            for (int i = 0; i < 4; i++) {
+                optionButton[i].setVisibility(View.VISIBLE);
+                optionImage[i].setVisibility(View.GONE);
+                optionButton[i].setBackgroundResource(R.drawable.m_shape_black_border_transprent);
+                optionButton[i].setTextColor(getResources().getColor(R.color.m_gray));
+                optionButton[i].setText("");
+                optionImage[i].setBackgroundResource(R.drawable.m_shape_black_border_transprent);
+                if (s2Constant.USER_ANSWER.equalsIgnoreCase(userQuestionVO[index].getOptions().get(i).getFlag())) {
+                    if (userQuestionVO[index].getOptions().get(i).getValue().contains("https://")) {
+                        optionButton[i].setVisibility(View.GONE);
+                        optionImage[i].setVisibility(View.VISIBLE);
+                        optionImage[i].setBackgroundResource(R.drawable.m_shape_purpel);
+                        Picasso.with(context).load(userQuestionVO[index].getOptions().get(i).getValue()).into(optionImage[i], new com.squareup.picasso.Callback() {
+                            @Override
+                            public void onSuccess() {
+                                LogUtils.debug(sdkConstant.TAG, "Success");
+
+                            }
+
+                            @Override
+                            public void onError() {
+                                LogUtils.debug(sdkConstant.TAG, "Error");
+
+                            }
+                        });
+                    } else {
+                        optionButton[i].setBackgroundResource(R.drawable.m_shape_purpel);
+                        optionButton[i].setTextColor(Color.WHITE);
+                        optionButton[i].setText(Html.fromHtml(userQuestionVO[index].getOptions().get(i).getValue()));
+                    }
+                }
+                if (s2Constant.CORRECT_ANSWER.equalsIgnoreCase(userQuestionVO[index].getOptions().get(i).getFlag())) {
+                    if (userQuestionVO[index].getOptions().get(i).getValue().contains("https://")) {
+                        optionButton[i].setVisibility(View.GONE);
+                        optionImage[i].setVisibility(View.VISIBLE);
+                        optionImage[i].setBackgroundResource(R.drawable.m_shape_green);
+                        Picasso.with(context).load(userQuestionVO[index].getOptions().get(i).getValue()).into(optionImage[i], new com.squareup.picasso.Callback() {
+                            @Override
+                            public void onSuccess() {
+                                LogUtils.debug(sdkConstant.TAG, "Success");
+
+                            }
+
+                            @Override
+                            public void onError() {
+                                LogUtils.debug(sdkConstant.TAG, "Error");
+
+                            }
+                        });
+                    } else {
+                        optionButton[i].setBackgroundResource(R.drawable.m_shape_green);
+                        optionButton[i].setTextColor(Color.WHITE);
+                        optionButton[i].setText(Html.fromHtml(userQuestionVO[index].getOptions().get(i).getValue()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Call onTouchEvent of SimpleGestureFilter class
+     */
+    @Override
+    public boolean dispatchTouchEvent(final MotionEvent move) {
+        this.detector.onTouchEvent(move);
+        return super.dispatchTouchEvent(move);
+    }
+
+    /**
+     * swipe
+     */
+    @Override
+    public void onSwipe(final int direction) {
+        try {
+            switch (direction) {
+                case SimpleGestureFilter.SWIPE_RIGHT:
+                    if (index > 0) {
+                        --index;
+                    }
+                    break;
+                case SimpleGestureFilter.SWIPE_LEFT:
+                    if (index < size - 1) {
+                        ++index;
+                    }
+                    break;
+                case SimpleGestureFilter.SWIPE_DOWN:
+                    if (index < size - 1) {
+                        ++index;
+                    }
+                    break;
+                case SimpleGestureFilter.SWIPE_UP:
+                    if (index > 0) {
+                        --index;
+                    }
+                    break;
+                default:
+                    break;
+            }
+            displayQuestionDetails(index);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onDoubleTap() {
+
+    }
+
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intentDashboard = new Intent(GameSummaryActivity.this, ResultActivity.class);
+            intentDashboard.putExtra(sdkConstant.GOAL_INTENT, skillId);
+            startActivity(intentDashboard);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+}

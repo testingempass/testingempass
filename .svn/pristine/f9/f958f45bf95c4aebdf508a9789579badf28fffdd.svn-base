@@ -1,0 +1,32 @@
+package com.empass.sdk.customview;
+
+import android.content.Context;
+import android.util.AttributeSet;
+import android.widget.LinearLayout;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+@SuppressWarnings("ALL")
+public class SquareLayout extends LinearLayout {
+	/**
+	 * 
+	 * @param context
+	 * @param attrs
+	 */
+	public SquareLayout(final Context context, final AttributeSet attrs) {
+		super(context, attrs);
+	}
+
+	/**
+ * //Set height equal to width to get Squared Layout
+ */
+	@Override
+	protected void onMeasure(final int widthMeasureSpecs,final int heightMeasureSpec) {
+
+		super.onMeasure(widthMeasureSpecs, widthMeasureSpecs);
+	}
+
+}

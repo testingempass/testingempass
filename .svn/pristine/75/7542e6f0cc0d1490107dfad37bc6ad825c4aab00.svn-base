@@ -1,0 +1,35 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 11/28/2015.
+ */
+@SuppressWarnings("ALL")
+public class OpponentResponse {
+
+
+    @SerializedName("status")
+    public String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public OpponentVO[] getData() {
+        return data;
+    }
+
+    public void setData(OpponentVO[] data) {
+        this.data = data;
+    }
+
+    @SerializedName("data")
+
+    public OpponentVO[] data;
+
+}

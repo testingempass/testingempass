@@ -1,0 +1,1620 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.text.Html;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.offline.Data;
+import com.empass.sdk.offline.GameStatus;
+import com.empass.sdk.offline.OfflineGamePlay;
+import com.empass.sdk.offline.User;
+import com.empass.sdk.s2.AnswerTimeResponse;
+import com.empass.sdk.s2.ApiQuestion;
+import com.empass.sdk.s2.FinalResult;
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.CircleTransform;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.OpponentVO;
+import com.empass.sdk.vo.UserOption;
+import com.empass.sdk.vo.UserQuestionVO;
+import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+/***
+ * Game Activity is use to Playing game
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class OfflineGameActivity extends EmpassActivity {
+    /***
+     * Initialize OpponentUser
+     */
+    private static OpponentVO opponentUser;
+    /***
+     * Initialize questionId
+     */
+    private transient String questionId;
+    /***
+     * Initialize currentPlayer
+     */
+    private static String currentPlayer;
+    /***
+     * Initialize Button
+     */
+    public transient TextView btnOption1;
+    /***
+     * Initialize Button
+     */
+    public transient TextView btnOption2;
+    /***
+     * Initialize Button
+     */
+    public transient TextView btnOption3;
+    /***
+     * Initialize Button
+     */
+    public transient TextView btnOption4;
+    /**
+     * Initialize boolean
+     */
+    private transient final AtomicInteger questionCount = new AtomicInteger(0);
+    /**
+     * Initialize boolean
+     */
+    private transient final AtomicBoolean isGetQuestion = new AtomicBoolean(true);
+    /**
+     * declare variable
+     */
+    private transient final AtomicBoolean isFirstQue = new AtomicBoolean(true);
+    /**
+     * Initialize boolean
+     */
+    private transient final AtomicBoolean isLastQue = new AtomicBoolean(false);
+    /**
+     * Initialize boolean
+     */
+    private transient final AtomicBoolean isAbandoned = new AtomicBoolean(false);
+    /**
+     * Initialize time
+     */
+    private transient long responseTime;
+    /**
+     * Initialize BEGameCountDownTimer
+     */
+    private static BEGameCountDownTimer countDownTimer;
+    /**
+     * Initialize BEBeforeOptionCountDownTimer
+     */
+    private static BEBeforeOptionCountDownTimer beforeOCounter;
+    /**
+     * Initialize BEBeforeQuestionCountDownTimer
+     */
+    private static BEBeforeQuestionCountDownTimer beforeQCounter;
+    /**
+     * declaer variable
+     */
+    private transient OfflileCountDownTimer offlineDownTimer;
+    /**
+     * Initialize optionStartTime
+     */
+    private static final long OPTIONTIME = 3000;
+    /**
+     * Initialize questionStartTime
+     */
+    private static final long QUESTIONTIME = 5000;
+    /**
+     * Initialize interval
+     */
+    private static final long INTERVEL = 1000;
+    /**
+     * Initialize answerGiven
+     */
+    private transient final AtomicBoolean answerGiven = new AtomicBoolean(false);
+    /**
+     *
+     */
+    private transient final AtomicBoolean dialog = new AtomicBoolean(false);
+    /**
+     * Initialize ImageView
+     */
+    public transient ImageView watchImage;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage1;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage2;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage3;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage4;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage5;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage6;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage7;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage8;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage9;
+    /**
+     * declare variable
+     */
+    public transient ImageView leftImage10;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage1;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage2;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage3;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage4;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage5;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage6;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage7;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage8;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage9;
+    /**
+     * declare variable
+     */
+    public transient ImageView rightImage10;
+    /**
+     * declare variable
+     */
+    public transient TextView txtQuestionNo;
+    /**
+     * declare variable
+     */
+    public transient TextView txtQuestion;
+    /**
+     * declare variable
+     */
+    public transient TextView playerSkill;
+
+    /**
+     * Initialize ImageView
+     */
+    private static ImageView[] leftRing, rightWhiteRing, rightGreenRing;
+    /**
+     * Initialize Option
+     */
+    public transient TextView[] optionButton;
+    /**
+     * Initialize Option
+     */
+    public transient ImageView[] optionImage;
+    /**
+     * declare variable
+     */
+    public transient LinearLayout linearQuestion;
+    /**
+     * declare variable
+     */
+    public transient TextView txtUserName;
+    /**
+     * declare variable
+     */
+    public transient TextView txtOppName;
+    /**
+     * declare variable
+     */
+    public transient TextView tvUserLetters;
+    /**
+     * declare variable
+     */
+    public transient ImageView ivPlayerimage;
+    /**
+     * declare variable
+     */
+    public transient TextView tvOppLetters;
+    /**
+     * declare variable
+     */
+    public transient ImageView ivOppimage;
+    /**
+     * declare variable
+     */
+    public transient ImageView userBadge;
+    /**
+     * declare variable
+     */
+    public transient ImageView userCountryFlag;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption1;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption2;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption3;
+    /**
+     * declare variable
+     */
+    public transient ImageView imgOption4;
+    /**
+     * declare variable
+     */
+    public transient ImageView oppBadge;
+    /**
+     * declare variable
+     */
+    public transient ImageView oppCountryFlag;
+    /**
+     * Initialize apiQuestion
+     */
+    private static ApiQuestion apiQuestion;
+    /**
+     * declare variable
+     */
+    public transient Goal goal;
+    /**
+     * declare variable
+     */
+    public transient int intervel, max;
+    /**
+     * declare variable
+     */
+    public transient int myAnsIndex;
+    /**
+     * declare variable
+     */
+    public transient int countForImage;
+    /**
+     * declare variable
+     */
+    public transient int totalImageCount;
+    /**
+     * declare variable
+     */
+    protected static transient ProgressDialog progressDialogs;
+    /**
+     * declare variable
+     */
+    public transient OfflineGamePlay offlinePlayer;
+    /**
+     * declare variable
+     */
+    public transient String flag;
+    /**
+     * declare variable
+     */
+    public transient String option;
+    /**
+     * declare variable
+     */
+    public transient com.empass.sdk.vo.User player;
+    /**
+     * declare variable
+     */
+    public transient Intent intent;
+    /**
+     * declare variable
+     */
+    public static transient String userId;
+
+    /**
+     * Initialize GameActivity
+     */
+    public OfflineGameActivity() {
+        super();
+    }
+
+    /**
+     * WaitCountDownTimer is count down for opponent
+     *
+     * @author Deepak
+     */
+    public class OfflileCountDownTimer extends CountDownTimer {
+        /**
+         * @param optionStartTime
+         * @param interval
+         */
+        public OfflileCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "OfflileCountDownTimer Finish start");
+            try {
+                final JSONObject object = new JSONObject();
+                object.put(s2Constant.QUESTION_ID, questionId);
+                object.put(s2Constant.ANSWER, option);
+                object.put(s2Constant.TIME, String.valueOf(responseTime));
+                object.put(s2Constant.USERNAME, currentPlayer);
+                final AnswerTimeResponse[] timeResponse = offlinePlayer.sendOfflineAnswer(object);
+                if (timeResponse != null) {
+                    showAnswerAndScore(timeResponse);
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "WaitCountDownTimer Finish stop");
+        }
+
+        /**
+         * onTick
+         */
+        @Override
+        public void onTick(final long tick) {
+
+        }
+    }
+
+    /**
+     * Initialize BEBeforeQuestionCountDownTimer
+     */
+    public class BEBeforeQuestionCountDownTimer extends CountDownTimer {
+        /**
+         * ProgressDialog
+         */
+        private transient ProgressDialog progressSending = new ProgressDialog(context);
+
+        /**
+         * Initialize BEBeforeQuestionCountDownTimer
+         */
+        public BEBeforeQuestionCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * Initialize onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "BEBeforeQuestionCountDownTimer Finish start");
+            try {
+                LogUtils.debug(sdkConstant.TAG, "Stop Dialog");
+                String question = offlinePlayer.getQuestion();
+                if (!"No Question".equalsIgnoreCase(question)) {
+                    apiQuestion = AbstractBEJsonParser.parseServerResponse(question, ApiQuestion.class);
+                    progressSending.dismiss();
+                    dialog.set(true);
+                    displayQuestionAndOption(apiQuestion, "Q");
+                } else {
+                    showNoQuestionError();
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Error while onFinish", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "BEBeforeQuestionCountDownTimer Finish stop");
+        }
+
+        /**
+         * Initialize onTick
+         */
+        @Override
+        public void onTick(final long count) {
+            try {
+                final int timeElapsed = 5 - (int) (count / 1000);
+                LogUtils.debug(sdkConstant.TAG, "Tick Before Question:" + timeElapsed);
+                /**
+                 * first question
+                 */
+                if (isFirstQue.get()) {
+                    dialog.set(true);
+                    if (dialog.get()) {
+                        LogUtils.debug(sdkConstant.TAG, "Start Dialog");
+                        progressSending = ProgressDialog.show(context, "", "", true);
+                        progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                        progressSending.setContentView(R.layout.next_question_progress);
+                        final TextView tvPro = (TextView) progressSending.findViewById(R.id.tv_prog);
+                        tvPro.setText(R.string.m_get_ready);
+                        dialog.set(false);
+                    }
+                    isFirstQue.set(false);
+                }
+                /**
+                 * show dialog after 4 sec
+                 */
+                if (!isFirstQue.get() && s2Constant.FOUR == timeElapsed && dialog.get()) {
+                    LogUtils.debug(sdkConstant.TAG, "Start Dialog");
+                    progressSending = ProgressDialog.show(context, "", "", true);
+                    progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    progressSending.setContentView(R.layout.next_question_progress);
+                    final TextView tvPro = (TextView) progressSending.findViewById(R.id.tv_prog);
+                    tvPro.setText(R.string.m_next_question);
+                    dialog.set(false);
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * Initialize BEBeforeOptionCountDownTimer
+     */
+    public class BEBeforeOptionCountDownTimer extends CountDownTimer {
+        /**
+         * Initialize OpponentUser
+         */
+        public BEBeforeOptionCountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+        }
+
+        /**
+         * Initialize onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "BEBeforeOptionCountDownTimer Finish start");
+            try {
+                /**
+                 * last question
+                 */
+                if (isLastQue.get()) {
+                    callResultActivity(sdkConstant.NTEXT);
+                } else {
+                    LogUtils.debug(sdkConstant.TAG, "display option");
+                    displayQuestionAndOption(apiQuestion, "O");
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "BEBeforeOptionCountDownTimer Finish stop");
+        }
+
+        /**
+         * Initialize onTick
+         */
+        @Override
+        public void onTick(final long count) {
+            LogUtils.debug(sdkConstant.TAG, "display option tick");
+        }
+    }
+
+    /**
+     * BECountDownTimer is use to display watch and user and opponent ring
+     */
+    public class BEGameCountDownTimer extends CountDownTimer {
+        /**
+         * Initialize BEGameCountDownTimer
+         */
+        public BEGameCountDownTimer(final long startTime, final long interval) {
+            super(startTime, interval);
+        }
+
+        /**
+         * Initialize onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(sdkConstant.TAG, "BECountDownTimer onFinish start");
+            try {
+                //user no give answer in 10 sec then give no answer
+                watchImage.setImageResource(sdkCommonUtils.getImageResource(context, s2Constant.TIMER_PATH + 10));
+                rightWhiteRing[9].setImageResource(R.drawable.timerwave_right_a);
+                if (!answerGiven.get()) {
+                    responseTime = 10;
+                    LogUtils.debug(sdkConstant.TAG, "No Answer");
+                    leftRing[9].setImageResource(R.drawable.timerwave_left_a);
+                    sendAnswerToServer(s2Constant.NO_ANSWER);
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "BECountDownTimer onFinish stop");
+        }
+
+        /**
+         * Initialize onTick
+         */
+        @Override
+        public void onTick(final long count) {
+            LogUtils.debug(sdkConstant.TAG, "BECountDownTimer onTick start");
+            try {
+                int timeElapsed = max - (int) (count / 1000);
+                timeElapsed = (timeElapsed * 10) / max;
+                if (sdkConstant.STARTTIME != intervel) {
+                    timeElapsed = timeElapsed + 1;
+                }
+                responseTime = timeElapsed;
+                watchImage.setImageResource(sdkCommonUtils.getImageResource(context, s2Constant.TIMER_PATH + timeElapsed));
+                // check if player answer then get the time else down the ring
+                if (timeElapsed > 0) {
+                    if (!answerGiven.get()) {
+                        leftRing[timeElapsed - 1].setImageResource(R.drawable.timerwave_left_a);
+                    }
+                    rightWhiteRing[timeElapsed - 1].setImageResource(R.drawable.timerwave_right_a);
+                } else {
+                    if (!answerGiven.get()) {
+                        leftRing[0].setImageResource(R.drawable.timerwave_left_a);
+                    }
+                    rightWhiteRing[0].setImageResource(R.drawable.timerwave_right_a);
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            LogUtils.debug(sdkConstant.TAG, "BECountDownTimer onTick stop");
+        }
+    }
+
+
+    /**
+     * callGoalActivity
+     */
+    protected synchronized void callGoalActivity() {
+        LogUtils.debug(sdkConstant.TAG, "callResultActivity Start");
+        try {
+            countDownTimer.cancel();
+            beforeOCounter.cancel();
+            beforeQCounter.cancel();
+            isAbandoned.set(true);
+            isGetQuestion.set(true);
+            isFirstQue.set(true);
+            String skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+            final Intent intent1 = new Intent(context, GoalDetailsActivity.class);
+            intent1.putExtra(sdkConstant.GOAL_INTENT, skillId);
+            startActivity(intent1);
+            finish();//finishing current running activity
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "callResultActivity Stop");
+    }
+
+
+    /**
+     * disconnect user and remove listener and call ResultActivity.java
+     */
+
+    protected synchronized void callResultActivity(final String flags) {
+        LogUtils.debug(sdkConstant.TAG, "callResultActivity Start");
+        try {
+            flag = flags;
+            new AsyncResult().execute();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "callResultActivity Stop");
+    }
+
+    /**
+     * show opponent answer and correct answer
+     *
+     * @param opponentTime
+     * @param ponits
+     * @param myPoint
+     */
+
+    private synchronized void changeOptionBackGround(final String userAnswer, final String correctAnswer, final int myPoint,
+                                                     final int ponits, final int opponentTime) {
+        LogUtils.debug(sdkConstant.TAG, "changeOptionBackGround Start");
+        try {
+            int oppAnsIndex = 0;
+            int correctAnsIndex;
+            //receive answer in not null and no answer
+            if (!s2Constant.NO_ANSWER.equals(userAnswer) && userAnswer != null) {
+                //opponent answer is not null and show in orange color
+                final String[] userAnswerArray = userAnswer.split("_");
+                final int userAnswerIndex = Integer.parseInt(userAnswerArray[1]);
+                oppAnsIndex = userAnswerIndex;
+                LogUtils.debug(sdkConstant.TAG, "opponet answer is:" + userAnswerIndex);
+                optionImage[userAnswerIndex - 1].setBackgroundResource(R.drawable.m_shape_orange);
+                optionButton[userAnswerIndex - 1].setBackgroundResource(R.drawable.m_shape_orange);
+                optionButton[userAnswerIndex - 1].setTextColor(Color.WHITE);
+            }
+            //show question correct answer green color
+            final String[] ansArray = correctAnswer.split("_");
+            final int ansIndex = Integer.parseInt(ansArray[1]);
+            correctAnsIndex = ansIndex;
+            optionImage[ansIndex - 1].setBackgroundResource(R.drawable.m_shape_green);
+            optionButton[ansIndex - 1].setBackgroundResource(R.drawable.m_shape_green);
+            optionButton[ansIndex - 1].setTextColor(Color.WHITE);
+            final ArrayList<UserOption> option = new ArrayList<UserOption>();
+            for (int i = 0; i < 4; i++) {
+                final UserOption ops = getOption();
+                ops.setFlag(s2Constant.NO_ANSWER);
+                if (oppAnsIndex > 0 && oppAnsIndex - 1 == i) {
+                    LogUtils.debug(sdkConstant.TAG, "opponet answer is:" + oppAnsIndex);
+                    ops.setFlag(s2Constant.OPP_ANSWER);
+                }
+                if (myAnsIndex > 0 && myAnsIndex - 1 == i) {
+                    LogUtils.debug(sdkConstant.TAG, "user answer is:" + myAnsIndex);
+                    ops.setFlag(s2Constant.USER_ANSWER);
+                }
+                if (correctAnsIndex > 0 && correctAnsIndex - 1 == i) {
+                    LogUtils.debug(sdkConstant.TAG, "correct answer is:" + correctAnsIndex);
+                    ops.setFlag(s2Constant.CORRECT_ANSWER);
+                }
+                ops.setSeq(apiQuestion.getQuestionWrapper().getQuestion().options[i].getSeq());
+                ops.setValue(apiQuestion.getQuestionWrapper().getQuestion().options[i].getValue());
+                option.add(ops);
+            }
+            final UserQuestionVO userQuestionVO = new UserQuestionVO();
+            userQuestionVO.setQuestion(apiQuestion.getQuestionWrapper().getQuestion().getQuestionString());
+            userQuestionVO.setQuestionNo(apiQuestion.getQuestionWrapper().getQuestionNumber());
+            userQuestionVO.setPlayer1Score(myPoint);
+            userQuestionVO.setPlayer2Score(ponits);
+            userQuestionVO.setPlayer1Time(Integer.parseInt(String.valueOf(responseTime)));
+            userQuestionVO.setPlayer2Time(opponentTime);
+            userQuestionVO.setOptions(option);
+            userQuestionVO.setPlayerCLevel(goal.getcLevel().toLowerCase(Locale.getDefault()));
+            userQuestionVO.setPlayerCSubLevel(goal.getcSubLevel().toLowerCase(Locale.getDefault()));
+            userQuestionVO.setGoalId(goal.getSubSkillId());
+            summary.add(userQuestionVO);
+            LogUtils.debug(sdkConstant.TAG, "correct  answer is:" + ansIndex);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "changeOptionBackGround Stop");
+    }
+
+    /**
+     * return obj
+     *
+     * @return
+     */
+    private UserOption getOption() {
+        return new UserOption();
+
+    }
+
+    /**
+     * show opponent taken time
+     */
+    private synchronized void displayOpponenRing(final int opponentCount) {
+        LogUtils.debug(sdkConstant.TAG, "displayOpponenRing start");
+        //Opponent take time
+        try {
+            final int greenIndex = 10 - opponentCount;
+            LogUtils.debug(sdkConstant.TAG, "Opponent take time:" + opponentCount);
+            for (int i = 0; i < opponentCount; i++) {
+                rightWhiteRing[i].setImageResource(R.drawable.timerwave_right_a);
+            }
+            //Opponent left time
+            LogUtils.debug(sdkConstant.TAG, "Opponent left time:" + greenIndex);
+            for (int j = 0; j < greenIndex; j++) {
+                rightGreenRing[j].setImageResource(R.drawable.timerwave_right_b);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "displayOpponenRing stop");
+    }
+
+    /**
+     * displayOption of current question
+     */
+    public void displayOption(final ApiQuestion apiQuestion) {
+        LogUtils.debug(sdkConstant.TAG, "displayOption stop");
+        countForImage = 0;
+        try {
+            myAnsIndex = 0;
+            linearQuestion.setVisibility(View.VISIBLE);
+            for (int i = 0; i < 4; i++) {
+                if (apiQuestion.getQuestionWrapper().getQuestion().options[i].getValue().contains("https://")) {
+                    optionButton[i].setVisibility(View.GONE);
+                    optionImage[i].setVisibility(View.VISIBLE);
+                    optionImage[i].setBackgroundResource(R.drawable.m_shape_black_border);
+                    optionImage[i].setClickable(true);
+                    countForImage++;
+                    Picasso.with(context).load(apiQuestion.getQuestionWrapper().getQuestion().options[i].getValue()).into(optionImage[i], getPicasso(countForImage));
+                } else {
+                    countForImage++;
+                    optionButton[i].setVisibility(View.VISIBLE);
+                    optionButton[i].setClickable(true);
+                    optionButton[i].setBackgroundResource(R.drawable.m_shape_black_border);
+                    optionButton[i].setTextColor(Color.BLACK);
+                    optionImage[i].setVisibility(View.GONE);
+                    optionButton[i].setText(Html.fromHtml(apiQuestion.getQuestionWrapper().getQuestion().options[i].getValue()));
+                    if (countForImage >= sdkConstant.THREE) {
+                        countDownTimer.start();
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "displayOption stop");
+    }
+
+    private com.squareup.picasso.Callback getPicasso(final int countForImage) {
+        return new com.squareup.picasso.Callback() {
+            @Override
+            public void onSuccess() {
+                LogUtils.debug(sdkConstant.TAG, "Success");
+                if (totalImageCount == countForImage) {
+                    countDownTimer.start();
+                }
+            }
+
+            @Override
+            public void onError() {
+                LogUtils.debug(sdkConstant.TAG, "Error");
+                if (totalImageCount == countForImage) {
+                    countDownTimer.start();
+                }
+            }
+        };
+    }
+
+    /**
+     * display question with options
+     */
+
+    @SuppressLint("SetTextI18n")
+    protected synchronized void displayQuestionAndOption(final ApiQuestion apiQuestion, final String type) {
+        LogUtils.debug(sdkConstant.TAG, "displayQuestion start");
+        try {
+            switch (type) {
+                case "Q":
+                    answerGiven.set(false);
+                    linearQuestion.setVisibility(View.GONE);
+                    watchImage.setImageResource(R.drawable.timer_0);
+                    for (int i = 0; i < 10; i++) {
+                        leftRing[i].setImageResource(R.drawable.timerwave_left_b);
+                        rightWhiteRing[i].setImageResource(R.drawable.timerwave_right_b);
+                    }
+                    questionCount.getAndIncrement();
+                    //set question number
+                    txtQuestionNo.setVisibility(View.VISIBLE);
+                    txtQuestion.setVisibility(View.VISIBLE);
+                    final String question = apiQuestion.getQuestionWrapper().getQuestion().getQuestionString();
+                    questionId = apiQuestion.getQuestionWrapper().getQuestionId();
+                    final String questionNumber = apiQuestion.getQuestionWrapper().getQuestionNumber();
+                    txtQuestionNo.setText("Q" + questionNumber);
+                    //set question on textview
+                    txtQuestion.setText(Html.fromHtml(question));
+                    totalImageCount = 0;
+                    Boolean optionFlag = true;
+                    for (int i = 0; i < 4; i++) {
+                        if (apiQuestion.getQuestionWrapper().getQuestion().options[i].getValue().contains("https://")) {
+                            optionFlag = false;
+                            totalImageCount++;
+                        }
+                    }
+                    if (optionFlag) {
+                        beforeOCounter.start();
+                    } else {
+                        displayOption(apiQuestion);
+                    }
+                    break;
+                case "O":
+                    displayOption(apiQuestion);
+                    break;
+                default:
+                    break;
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "displayQuestion stop");
+    }
+
+    /**
+     * initDisplay is use to initialize UI Content and show user and opponent
+     * user profile picture ,country flag and badge
+     */
+    private void initUI() {
+        LogUtils.debug(sdkConstant.TAG, "initDisplay start");
+        try {
+            uiContent();
+            if (player.getName() != null) {
+                final String initials = sdkCommonUtils.getShortName(player.getName());
+                LogUtils.debug(sdkConstant.TAG, "Player name :" + player.getName());
+                tvUserLetters.setText(initials);
+            }
+            showImage(ivPlayerimage, tvUserLetters);
+            //image not exists show user name
+            LogUtils.debug(sdkConstant.TAG, "image path not exists");
+            //get badge of current player
+            imageName = "drawable/" + goal.getcLevel().toLowerCase(Locale.getDefault()) + "_"
+                    + goal.getcSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+            txtUserName.setText(player.getName());
+            currentPlayer = player.getId() + "-" + goal.getGoalId() + "-" + goal.getcLevelId();
+            txtOppName.setText(opponentUser.getPlayerName());
+            final int imageBadge = sdkCommonUtils.getImageResource(context, imageName);
+            userBadge.setImageResource(imageBadge);
+            //get current player country flag
+            final int imageFlag = sdkCommonUtils.getCountryFlag(context, player.getCountryCode());
+            userCountryFlag.setImageResource(imageFlag);
+            //get badge of opponent player
+            final String uriOppBadge = "drawable/" + opponentUser.getcLevel().toLowerCase(Locale.getDefault()) + "_"
+                    + opponentUser.getcSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+            final int imageOppBadge = sdkCommonUtils.getImageResource(context, uriOppBadge);
+            //get opponent player country flag
+            final int imageOppFlag = sdkCommonUtils.getCountryFlag(context, opponentUser.getCountryCode());
+            oppCountryFlag.setImageResource(imageOppFlag);
+            // opponent in not a virtual player
+            if (opponentUser.getcLevel().length() > 1 && opponentUser.getcSubLevel().length() > 1) {
+                oppBadge.setImageResource(imageOppBadge);
+            } else {
+                oppBadge.setImageResource(imageBadge);
+            }
+            //show opponent player name
+            if (sdkConstant.EMPTY.equalsIgnoreCase(opponentUser.getImage())) {
+                final String name = sdkCommonUtils.getShortName(opponentUser.getPlayerName());
+                tvOppLetters.setText(name);
+            } else {
+                final String name = sdkCommonUtils.getShortName(opponentUser.getPlayerName());
+                tvOppLetters.setText(name);
+                tvOppLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(opponentUser.getImage()).placeholder(R.drawable.m_circle_username_white).transform(new CircleTransform()).into(ivOppimage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        tvOppLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        ivOppimage.setVisibility(View.VISIBLE);
+                        tvOppLetters.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "initDisplay stop");
+    }
+
+    /**
+     * show player image
+     *
+     * @param ivPlayerimage
+     * @param tvUserLetters
+     */
+    private void showImage(final ImageView ivPlayerimage, final TextView tvUserLetters) {
+        try {
+            imagePath = dbHelper.profileImage(player.getId());
+            if (!imagePath.equalsIgnoreCase(sdkConstant.EMPTY)) {
+                tvUserLetters.setVisibility(View.VISIBLE);
+                Picasso.with(context).load(imagePath).
+                        placeholder(R.drawable.m_circle_username_white).transform(new CircleTransform()).into(ivPlayerimage, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                        tvUserLetters.setVisibility(View.INVISIBLE);
+                    }
+
+                    @Override
+                    public void onError() {
+                        ivPlayerimage.setVisibility(View.VISIBLE);
+                        tvUserLetters.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * ui content
+     */
+    private void uiContent() {
+        try {
+            leftRing = new ImageView[]{leftImage1, leftImage2, leftImage3, leftImage4, leftImage5, leftImage6, leftImage7, leftImage8,
+                    leftImage9, leftImage10};
+            rightWhiteRing = new ImageView[]{rightImage1, rightImage2, rightImage3, rightImage4, rightImage5, rightImage6, rightImage7,
+                    rightImage8, rightImage9, rightImage10};
+            rightGreenRing = new ImageView[]{rightImage10, rightImage9, rightImage8, rightImage7, rightImage6, rightImage5, rightImage4,
+                    rightImage3, rightImage2, rightImage1};
+            optionButton = new TextView[]{btnOption1, btnOption2, btnOption3, btnOption4};
+            optionImage = new ImageView[]{imgOption1, imgOption2, imgOption3, imgOption4};
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * initWarpAndStartGame is use for initialize warpclient and start game
+     */
+    private void initWarpAndStartGame() {
+        LogUtils.debug(sdkConstant.TAG, "initWarpAndStartGame start");
+        try {
+            beforeQCounter.start();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "initWarpAndStartGame stop");
+    }
+
+    /**
+     * back button press
+     */
+    @Override
+    public void onBackPressed() {
+        LogUtils.debug(sdkConstant.TAG, "onBackPressed start");
+        if (!isAbandoned.get()) {
+            showExitDialog();
+        }
+        LogUtils.debug(sdkConstant.TAG, "onBackPressed stop");
+    }
+
+    public void onClickImg1(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option1");
+                imgOption1.setBackgroundResource(R.drawable.m_shape_purpel);
+                myAnsIndex = 1;
+                sendAnswerToServer(s2Constant.OPTION_1);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImg2(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option2");
+                imgOption2.setBackgroundResource(R.drawable.m_shape_purpel);
+                myAnsIndex = 2;
+                sendAnswerToServer(s2Constant.OPTION_2);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImg3(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option3");
+                imgOption3.setBackgroundResource(R.drawable.m_shape_purpel);
+                myAnsIndex = 3;
+                sendAnswerToServer(s2Constant.OPTION_3);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImg4(View view) {
+        try {
+            if (!answerGiven.get()) {
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option4");
+                imgOption4.setBackgroundResource(R.drawable.m_shape_purpel);
+                myAnsIndex = 4;
+                sendAnswerToServer(s2Constant.OPTION_4);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickTxt1(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                myAnsIndex = 0;
+                LogUtils.debug(sdkConstant.TAG, "Press option1");
+                btnOption1.setBackgroundResource(R.drawable.m_shape_purpel);
+                btnOption1.setTextColor(Color.WHITE);
+                myAnsIndex = 1;
+                sendAnswerToServer(s2Constant.OPTION_1);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickTxt2(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option2");
+                btnOption2.setBackgroundResource(R.drawable.m_shape_purpel);
+                btnOption2.setTextColor(Color.WHITE);
+                myAnsIndex = 2;
+                sendAnswerToServer(s2Constant.OPTION_2);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickTxt3(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option3");
+                btnOption3.setBackgroundResource(R.drawable.m_shape_purpel);
+                btnOption3.setTextColor(Color.WHITE);
+                myAnsIndex = 3;
+                sendAnswerToServer(s2Constant.OPTION_3);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickTxt4(View view) {
+        try {
+            if (!answerGiven.get()) {
+                countDownTimer.cancel();
+                answerGiven.set(true);
+                LogUtils.debug(sdkConstant.TAG, "Press option4");
+                btnOption4.setBackgroundResource(R.drawable.m_shape_purpel);
+                btnOption4.setTextColor(Color.WHITE);
+                myAnsIndex = 4;
+                sendAnswerToServer(s2Constant.OPTION_4);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onCreate
+     */
+    @Override
+    protected void onCreate(final Bundle bundel) {
+        super.onCreate(bundel);
+        try {
+            setContentView(R.layout.m_activity_game);
+            context = OfflineGameActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            player = dbHelper.getLogedUser();
+            btnOption1 = (TextView) findViewById(R.id.btn_option_1);
+            btnOption2 = (TextView) findViewById(R.id.btn_option_2);
+            btnOption3 = (TextView) findViewById(R.id.btn_option_3);
+            btnOption4 = (TextView) findViewById(R.id.btn_option_4);
+            btnOption2 = (TextView) findViewById(R.id.btn_option_2);
+            btnOption3 = (TextView) findViewById(R.id.btn_option_3);
+            btnOption4 = (TextView) findViewById(R.id.btn_option_4);
+            watchImage = (ImageView) findViewById(R.id.iv_timer);
+            leftImage1 = (ImageView) findViewById(R.id.iv_left_b1);
+            leftImage2 = (ImageView) findViewById(R.id.iv_left_b2);
+            leftImage3 = (ImageView) findViewById(R.id.iv_left_b3);
+            leftImage4 = (ImageView) findViewById(R.id.iv_left_b4);
+            leftImage5 = (ImageView) findViewById(R.id.iv_left_b5);
+            leftImage6 = (ImageView) findViewById(R.id.iv_left_b6);
+            leftImage7 = (ImageView) findViewById(R.id.iv_left_b7);
+            leftImage8 = (ImageView) findViewById(R.id.iv_left_b8);
+            leftImage9 = (ImageView) findViewById(R.id.iv_left_b9);
+            leftImage10 = (ImageView) findViewById(R.id.iv_left_b10);
+            rightImage1 = (ImageView) findViewById(R.id.iv_right_b1);
+            rightImage2 = (ImageView) findViewById(R.id.iv_right_b2);
+            rightImage3 = (ImageView) findViewById(R.id.iv_right_b3);
+            rightImage4 = (ImageView) findViewById(R.id.iv_right_b4);
+            rightImage5 = (ImageView) findViewById(R.id.iv_right_b5);
+            rightImage6 = (ImageView) findViewById(R.id.iv_right_b6);
+            rightImage7 = (ImageView) findViewById(R.id.iv_right_b7);
+            rightImage8 = (ImageView) findViewById(R.id.iv_right_b8);
+            rightImage9 = (ImageView) findViewById(R.id.iv_right_b9);
+            rightImage10 = (ImageView) findViewById(R.id.iv_right_b10);
+            txtQuestionNo = (TextView) findViewById(R.id.tv_question_number);
+            txtQuestion = (TextView) findViewById(R.id.tv_question);
+            playerSkill = (TextView) findViewById(R.id.tv_player_skill);
+            linearQuestion = (LinearLayout) findViewById(R.id.li_question_layout);
+            txtUserName = (TextView) findViewById(R.id.tv_local_user);
+            txtOppName = (TextView) findViewById(R.id.tv_opponent_user);
+            tvUserLetters = (TextView) findViewById(R.id.tvUserLetter);
+            ivPlayerimage = (ImageView) findViewById(R.id.ibUserImage);
+            tvOppLetters = (TextView) findViewById(R.id.tvOppLetter);
+            ivOppimage = (ImageView) findViewById(R.id.iv_opponent_dp);
+            userBadge = (ImageView) findViewById(R.id.iv_local_user_badge);
+            userCountryFlag = (ImageView) findViewById(R.id.iv_local_user_flag);
+            imgOption1 = (ImageView) findViewById(R.id.img_option_1);
+            imgOption2 = (ImageView) findViewById(R.id.img_option_2);
+            imgOption3 = (ImageView) findViewById(R.id.img_option_3);
+            imgOption4 = (ImageView) findViewById(R.id.img_option_4);
+            oppBadge = (ImageView) findViewById(R.id.iv_opponent_user_badge);
+            oppCountryFlag = (ImageView) findViewById(R.id.iv_opponent_user_flag);
+            isAbandoned.set(false);
+            intent = getIntent();
+            String skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+            goal = dbHelper.getGoal(skillId);
+            myAnsIndex = 0;
+            intervel = 1000;
+            try {
+                if (null != goal.getTick() && !sdkConstant.EMPTY.equalsIgnoreCase(goal.getTick())) {
+                    intervel = Integer.parseInt(goal.getTick());
+                }
+            } catch (Exception e) {
+                intervel = 1000;
+            }
+            max = intervel / 100;
+            summary = new ArrayList<UserQuestionVO>();
+            opponentUser = dbHelper.getOpponentData(sdkConstant.OPPONENTKEY);
+            beforeOCounter = new BEBeforeOptionCountDownTimer(OPTIONTIME, INTERVEL);
+            beforeQCounter = new BEBeforeQuestionCountDownTimer(QUESTIONTIME, INTERVEL);
+            offlineDownTimer = new OfflileCountDownTimer(OPTIONTIME, INTERVEL);
+            countDownTimer = new BEGameCountDownTimer(Long.valueOf("10") * Long.valueOf(intervel), Long.valueOf(intervel));
+            if (null != goal.getSubskillType() && sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                userBadge.setVisibility(View.GONE);
+                oppBadge.setVisibility(View.GONE);
+            }
+            playerSkill.setText(goal.getSubSkill());
+            initUI();
+            offlinePlayer = new OfflineGamePlay(context);
+            Data userData = new Data();
+            userData.setMaxGame(goal.subskillMaxGame);
+            userData.setCorrectSnswerScore(goal.subskillCorrectAnsScore);
+            userData.setSpeedBonus(goal.subskillSpeedBonus);
+            userData.setFinishBonus(goal.subskillFinishBonus);
+            userData.setWinningBonus(goal.subskillWinningBonus);
+            userData.setTick(goal.tick);
+            userData.setDifficultyLvl(goal.difficultyLvl);
+            userData.setQuesPerGame(goal.quesPerGame);
+            userData.setSkillId(goal.subSkillId);
+            userData.setSkillName(goal.subSkill);
+            userData.setLevel(Integer.parseInt(goal.cLevelId));
+            userId = player.getId();
+            new AsyncEmpass(userData).execute();
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putString(sdkConstant.PREF_ACCHIVEMENT, sdkConstant.EMPTY);
+            prefsEditor.apply();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * onDestroy
+     */
+    @Override
+    protected void onDestroy() {
+        LogUtils.debug(sdkConstant.TAG, "Game activity On Destroy");
+        try {
+            isGetQuestion.set(true);
+            isFirstQue.set(true);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        super.onDestroy();
+    }
+
+    /**
+     * showNoQuestionError is use to show no question is available
+     */
+    public void showNoQuestionError() {
+        LogUtils.debug(sdkConstant.TAG, "showNoQuestionError Start");
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Oops! something doesn't seem right. Why don't you try again?");
+                final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        mProgressDialog.dismiss();
+                        callGoalActivity();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "showNoQuestionError Stop");
+    }
+
+    /**
+     * sendAnswerToServer is use to send current question answer to server with
+     * taken time
+     */
+    private synchronized void sendAnswerToServer(final String optionStr) {
+        LogUtils.debug(sdkConstant.TAG, "sendAnswerToServer start");
+        try {
+            answerGiven.set(true);
+            if (responseTime > 6) {
+                final JSONObject object = new JSONObject();
+                object.put(s2Constant.QUESTION_ID, questionId);
+                object.put(s2Constant.ANSWER, optionStr);
+                object.put(s2Constant.TIME, String.valueOf(responseTime));
+                object.put(s2Constant.USERNAME, currentPlayer);
+                final AnswerTimeResponse[] timeResponse = offlinePlayer.sendOfflineAnswer(object);
+                if (timeResponse != null) {
+                    showAnswerAndScore(timeResponse);
+                }
+            } else {
+                option = optionStr;
+                offlineDownTimer.start();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "sendAnswerToServer stop");
+    }
+
+    /**
+     * updateAnswerAndScore is use to show players score and given answer and
+     * time
+     */
+    protected synchronized void showAnswerAndScore(final AnswerTimeResponse[] ansResponse) {
+        LogUtils.debug(sdkConstant.TAG, "updateAnswerAndScore start");
+        try {
+            int myPoint = 0;
+            int opponentTime = 0;
+            int virtualIndex = 0;
+            final TextView txtUserScore = (TextView) findViewById(R.id.tv_local_score);
+            final TextView txtOppScore = (TextView) findViewById(R.id.tv_opponent_score);
+            for (int i = 0; i < ansResponse.length; i++) {
+                //if player is local player
+                if (currentPlayer.equals(ansResponse[i].userName)) {
+                    LogUtils.debug(sdkConstant.TAG, "Current player point:" + ansResponse[i].ponits);
+                    myPoint = ansResponse[i].ponits;
+                    txtUserScore.setText(String.valueOf(ansResponse[i].ponits));
+                } else {
+                    virtualIndex = i;
+                    txtOppScore.setText(String.valueOf(ansResponse[i].ponits));
+                    opponentTime = Integer.parseInt(ansResponse[i].time);
+                    displayOpponenRing(opponentTime);
+                }
+                if (i == ansResponse.length - 1) {
+                    changeOptionBackGround(ansResponse[virtualIndex].userAnswer, ansResponse[virtualIndex].correctAnswer, myPoint,
+                            ansResponse[virtualIndex].ponits, opponentTime);
+                }
+            }
+            if (questionCount.get() < Integer.parseInt(goal.quesPerGame)) {
+                beforeQCounter.start();
+            } else {
+                FinalResult[] finalResult = offlinePlayer.finalResponse(GameStatus.GAME_OVER, currentPlayer);
+                if (isAbandoned.get()) {
+                    dbHelper.saveResultData(sdkConstant.RESULTKEY, finalResult);
+                    callResultActivity(sdkConstant.YTEXT);
+                } else if (finalResult != null) {
+                    dbHelper.saveResultData(sdkConstant.RESULTKEY, finalResult);
+                    isLastQue.set(true);
+                    beforeOCounter.start();
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "updateAnswerAndScore stop");
+    }
+
+    /**
+     * on press back button of device
+     */
+    private void showExitDialog() {
+        LogUtils.debug(sdkConstant.TAG, "showExitDialog start");
+        try {
+            if (!((Activity) context).isFinishing()) {
+                final ProgressDialog progressDialog = ProgressDialog.show(context, "", "", true);
+                progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressDialog.setContentView(R.layout.m_dialog_message_restart);
+                progressDialog.setCancelable(true);
+                final TextView tvLoading = (TextView) progressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Are you sure you wish to abandon the game?");
+                final Button tvYes = (Button) progressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        progressDialog.dismiss();
+                        if (isNetworkAvailable(context)) {
+                            // cancel timers
+                            countDownTimer.cancel();
+                            beforeOCounter.cancel();
+                            beforeQCounter.cancel();
+                            isGetQuestion.set(true);
+                            isFirstQue.set(true);
+                            isAbandoned.set(true);
+                            FinalResult[] finalResult = offlinePlayer.finalResponse(GameStatus.ABANDONED, currentPlayer);
+                            dbHelper.saveResultData(sdkConstant.RESULTKEY, finalResult);
+                            callResultActivity(sdkConstant.YTEXT);
+                        } else {
+                            countDownTimer.cancel();
+                            beforeOCounter.cancel();
+                            beforeQCounter.cancel();
+                            isAbandoned.set(true);
+                            isGetQuestion.set(true);
+                            isFirstQue.set(true);
+                            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                            tvLoading.setText("Sorry there is some internet problem to upload your result");
+                            final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                            tvOk.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(final View view) {
+                                    mProgressDialog.dismiss();
+                                    String skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+                                    final Intent intent1 = new Intent(context, GoalDetailsActivity.class);
+                                    intent1.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                                    startActivity(intent1);
+                                    finish();
+                                }
+                            });
+                            mProgressDialog.show();
+                        }
+                    }
+                });
+                final Button tvNo = (Button) progressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        progressDialog.dismiss();
+                    }
+                });
+                progressDialog.show();
+            }
+
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "showExitDialog stop");
+    }
+
+
+    /**
+     * @author Deepak
+     */
+    private class AsyncResult extends AsyncTask<String, String, String> {
+        protected transient ProgressDialog progressDialog;
+
+        /**
+         * constructor
+         *
+         * @param error
+         */
+        public AsyncResult() {
+            super();
+        }
+
+        /**
+         * doInBackground is use to send request in bg
+         */
+        @Override
+        protected String doInBackground(final String... params) {
+            String response = null;
+            try {
+                final FinalResult[] finalResult = dbHelper.getResultData(sdkConstant.RESULTKEY);
+                String winnerId = null;
+                String loserId = null;
+                String isVp = sdkConstant.Y;
+                String isTie = sdkConstant.N;
+                String[] player1;
+                String[] player2;
+                String abandoned = sdkConstant.N;
+                if (isAbandoned.get()) {
+                    abandoned = sdkConstant.Y;
+                }
+                String[] anandonPlayer;
+                int player1Point;
+                int player2Point;
+                final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH:mm:ss", Locale.ENGLISH);
+                final String currentDateandTime = sdf.format(new Date());
+                player1 = finalResult[0].userName.split("-");
+                player2 = finalResult[1].userName.split("-");
+                player1Point = finalResult[0].completionScore + finalResult[0].speedScore + finalResult[0].winBounas
+                        + finalResult[0].totalScore;
+                player2Point = finalResult[1].completionScore + finalResult[1].speedScore + finalResult[1].winBounas
+                        + finalResult[1].totalScore;
+                if ("0-0-0".equalsIgnoreCase(finalResult[0].userName)) {
+                    player2 = finalResult[0].userName.split("-");
+                    player1 = finalResult[1].userName.split("-");
+                    player1Point = finalResult[1].completionScore + finalResult[1].speedScore + finalResult[1].winBounas
+                            + finalResult[1].totalScore;
+                    player2Point = finalResult[0].completionScore + finalResult[0].speedScore + finalResult[0].winBounas
+                            + finalResult[0].totalScore;
+                }
+                anandonPlayer = currentPlayer.split("-");
+                winnerId = player2[0];
+                loserId = player1[0];
+                if (player1Point > player2Point) {
+                    winnerId = player1[0];
+                    loserId = player2[0];
+                }
+                if (player2[2].equals("0")) {
+                    player2[2] = player1[2];
+                }
+                if (player1[2].equals("0")) {
+                    player1[2] = player2[2];
+                }
+                if (finalResult[0].gameStatus.equals(sdkConstant.TIE) || finalResult[1].gameStatus.equals(com.empass.sdk.utils.SDKConstant.TIE)) {
+                    if (sdkConstant.N.equalsIgnoreCase(flag)) {
+                        isTie = sdkConstant.Y;
+                    }
+                    winnerId = "0";
+                    loserId = "0";
+                }
+                final JSONObject jsonMap = new JSONObject();
+                jsonMap.put(sdkConstant.GAME_ID, finalResult[0].getGameId());
+                jsonMap.put(sdkConstant.DATE, currentDateandTime);
+                jsonMap.put(sdkConstant.IS_DELETED, sdkConstant.Y);
+                jsonMap.put(sdkConstant.PLAYER1_ID, player1[0]);
+                jsonMap.put(sdkConstant.PLAYER1_PROFILE_ID, player1[1]);
+                jsonMap.put(sdkConstant.PLAYER1_POINTS, player1Point);
+                jsonMap.put(sdkConstant.PLAYER1_LEVEL, player1[2]);
+                jsonMap.put(sdkConstant.PLAYER2_ID, player2[0]);
+                jsonMap.put(sdkConstant.PLAYER2_PROFILE_ID, player2[1]);
+                jsonMap.put(sdkConstant.PLAYER2_POINTS, player2Point);
+                jsonMap.put(sdkConstant.PLAYER2_LEVEL, player2[2]);
+                jsonMap.put(sdkConstant.IS_VP, isVp);
+                jsonMap.put(sdkConstant.IS_TIE, isTie);
+                jsonMap.put(sdkConstant.SKILL_ID, goal.getSubSkillId());
+                jsonMap.put(sdkConstant.STATUS, "9");
+                jsonMap.put(sdkConstant.WINNER_PLAYER_ID, winnerId);
+                jsonMap.put(sdkConstant.LOSER_PLAYER_ID, loserId);
+                jsonMap.put(sdkConstant.IS_AB, abandoned);
+                jsonMap.put(sdkConstant.ABANDONED_PLAYER_ID, anandonPlayer[0]);
+                response = offlinePlayer.uploadDataOnServer(jsonMap, dbHelper.getRefData(sdkConstant.SDK_HOST_NAME));
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressDialog = ProgressDialog.show(context, "", "", true);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.m_dialog_message_connecting);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(String string) {
+            progressDialog.dismiss();
+            LogUtils.debug(sdkConstant.TAG, "Response:-" + string);
+            if (string.contains(urls.RESPONSE_COSE_201)) {
+                isGetQuestion.set(true);
+                isFirstQue.set(true);
+                dbHelper.saveSummeryData(sdkConstant.SUMMERYKEY, summary);
+                final SharedPreferences.Editor prefsEditor = prefs.edit();
+                prefsEditor.putBoolean(sdkConstant.PREF_RESULT, true);
+                prefsEditor.apply();
+                final Intent intentRes = new Intent(context, ResultActivity.class);
+                intentRes.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+                startActivity(intentRes);
+                finish();
+            } else {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Sorry there is some internet problem to upload your result");
+                final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        mProgressDialog.dismiss();
+                        String skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+                        final Intent intent1 = new Intent(context, GoalDetailsActivity.class);
+                        intent1.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                        startActivity(intent1);
+                        finish();
+                    }
+                });
+                mProgressDialog.show();
+            }
+            super.onPostExecute(string);
+        }
+    }
+
+    private class AsyncEmpass extends AsyncTask<String, String, String> {
+        Data userData;
+        protected transient ProgressDialog dialog;
+
+        public AsyncEmpass(Data userData) {
+            this.userData = userData;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            dialog = ProgressDialog.show(context, "", "", true);
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+            dialog.setContentView(R.layout.m_dialog_message_connecting);
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+            String response = null;
+            try {
+                response = offlinePlayer.getStartGame(userData, dbHelper.getRefData(sdkConstant.SDK_HOST_NAME),dbHelper.getRefData(sdkConstant.TAO_HOST_NAME));
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "", e);
+            }
+            return response;
+        }
+
+        @Override
+        protected void onPostExecute(String response) {
+            super.onPostExecute(response);
+            try {
+                if (dialog != null && dialog.isShowing() && !(context).isFinishing()) {
+                    dialog.dismiss();
+                }
+                if (sdkConstant.Y.equalsIgnoreCase(response)) {
+                    User user = new User();
+                    user.setName(userId + sdkConstant.HYPHEN + goal.getGoalId() + sdkConstant.HYPHEN + goal.getcLevelId());
+                    offlinePlayer.addUser(user);
+                    initWarpAndStartGame();
+                } else {
+                    showNoQuestionError();
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "", e);
+            }
+        }
+    }
+}

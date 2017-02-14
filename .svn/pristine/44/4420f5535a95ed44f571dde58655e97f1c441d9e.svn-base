@@ -1,0 +1,104 @@
+package com.empass.sdk.adapter;
+
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.SpinnerVO;
+
+import java.util.ArrayList;
+
+
+/**
+ * Created by Deepak on 12/7/2015.
+ */
+@SuppressWarnings("ALL")
+public class CustomCountryAdapter extends ArrayAdapter<String> {
+    /**
+     * declear variable
+     */
+    private transient final Activity activity;
+    /**
+     * declear variable
+     */
+    private transient final ArrayList data;
+
+    /**
+     * declear variable
+     */
+    public transient SpinnerVO tempValues;
+    /**
+     * declear variable
+     */
+    public transient LayoutInflater inflater;
+    /**
+     *
+     */
+
+
+    /*************
+     * CustomAdapter Constructor
+     *****************/
+    public CustomCountryAdapter(
+            final Activity activitySpinner,
+            final int textView,
+            final ArrayList objects
+    ) {
+        super(activitySpinner, textView, objects);
+        activity = activitySpinner;
+        data = objects;
+        inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    @Override
+    public View getDropDownView(final int position, final View convertView, final ViewGroup parent) {
+        return getCustomView(position, convertView, parent);
+    }
+
+    @Override
+    public View getView(final int position, final View convertView, final ViewGroup parent) {
+        return getCustomView(position, convertView, parent);
+    }
+
+    // This funtion called for each row ( Called data.size() times )
+    public View getCustomView(final int position, View convertView, final ViewGroup parent) {
+        try {
+            ViewHolder holder;
+
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = inflater.inflate(R.layout.m_spinner_rows, parent, false);
+                holder = new ViewHolder();
+                holder.sub = (TextView) convertView.findViewById(R.id.country_code);
+                holder.companyLogo = (ImageView) convertView.findViewById(R.id.country_image);
+                holder.country = (TextView) convertView.findViewById(R.id.country_name);
+                convertView.setTag(holder);
+            }
+            tempValues = (SpinnerVO) data.get(position);
+            // Set values for spinner each row
+            holder.sub.setText(tempValues.getCountryCode());
+            final String image = "drawable/" + tempValues.getCountryImage();
+            final int imageResource = activity.getResources().getIdentifier(image, null, activity.getPackageName());
+            holder.companyLogo.setImageResource(imageResource);
+            holder.country.setText(tempValues.getCountryName());
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    public static class ViewHolder {
+        public transient TextView sub;
+        public transient ImageView companyLogo;
+        public transient TextView country;
+    }
+}

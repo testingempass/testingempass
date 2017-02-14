@@ -1,0 +1,47 @@
+package com.empass.sdk.vo;
+
+/**
+ * Created by Deepak on 11/28/2015.
+ */
+@SuppressWarnings("ALL")
+public class ExpectedDateVO {
+    public ExpectedDateVO() {
+    }
+
+    private String noviceEta;
+    private String amateurEta;
+    public String getProEta() {
+        return proEta;
+    }
+
+    public void setProEta(String proEta) {
+        this.proEta = proEta;
+    }
+
+    public String getNoviceEta() {
+        return noviceEta;
+    }
+
+    public void setNoviceEta(String noviceEta) {
+        this.noviceEta = noviceEta;
+    }
+
+    public String getAmateurEta() {
+        return amateurEta;
+    }
+
+    public void setAmateurEta(String amateurEta) {
+        this.amateurEta = amateurEta;
+    }
+
+    public String getChampEta() {
+        return champEta;
+    }
+
+    public void setChampEta(String champEta) {
+        this.champEta = champEta;
+    }
+
+    private String proEta;
+    private String champEta;
+}

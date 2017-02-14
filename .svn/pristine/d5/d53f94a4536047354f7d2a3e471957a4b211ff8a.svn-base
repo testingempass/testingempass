@@ -1,0 +1,723 @@
+package com.empass.sdk.activity;
+
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.CustomCountryAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiEditText;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.SpinnerVO;
+
+import java.util.ArrayList;
+
+/**
+ * Created by Deepak on 9/13/2016.
+ */
+public class LoginActivity extends EmpassActivity {
+    /**
+     * Declear variable
+     */
+    public transient Spinner loginCountry;
+    /**
+     * declear variable
+     */
+    public transient Spinner forgetCountry;
+    /**
+     * Declear variable
+     */
+    public transient String countryCode;
+    /**
+     * declear variable
+     */
+    public transient int possition;
+    /**
+     * Declear variable
+     */
+    public transient ArrayList<SpinnerVO> CountyListView = new ArrayList<SpinnerVO>();
+    /**
+     * declear variable
+     */
+    public transient String passwordStatus = SDKConstant.HIDE;
+    /**
+     * Declear variable
+     */
+    public transient CustomCountryAdapter adapter;
+    /**
+     * Declear variable
+     */
+    public transient TextView showHidePassword;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText loginPhone;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText forgetPhone;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText etPassword;
+    /**
+     * Declear variable
+     */
+    public transient int errorCount;
+    /**
+     * Declear variable
+     */
+    public transient String mobile;
+    /**
+     * Declear variable
+     */
+    public transient RelativeLayout rlSignin;
+    /**
+     * Declear variable
+     */
+    public transient RelativeLayout rlForget;
+
+    @Override
+    protected void onCreate(Bundle bundel) {
+        super.onCreate(bundel);
+        setContentView(R.layout.m_activity_login);
+        try {
+            dbHelper = SDKDBHelper.getInstance(this);
+            dbController = new SDKDatabaseController(this);
+            setListData();
+            possition = -1;
+            errorCount = 0;
+            loginCountry = (Spinner) findViewById(R.id.spinner);
+            forgetCountry = (Spinner) findViewById(R.id.spinnerforget);
+            showHidePassword = (TextView) findViewById(R.id.textView_show_pw);
+            loginPhone = (MobiEditText) findViewById(R.id.phone_login);
+            etPassword = (MobiEditText) findViewById(R.id.et_password);
+            forgetPhone = (MobiEditText) findViewById(R.id.phone_forget);
+            rlSignin = (RelativeLayout) findViewById(R.id.rl_login);
+            rlForget = (RelativeLayout) findViewById(R.id.rl_forget);
+            adapter = new CustomCountryAdapter(this, R.layout.m_spinner_rows, CountyListView);
+            loginCountry.setAdapter(adapter);
+            forgetCountry.setAdapter(adapter);
+            loginCountry.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, View v, int position, long id) {
+                    possition = position;
+                    countryCode = "+91";
+                    View view = loginCountry.getChildAt(position - loginCountry.getFirstVisiblePosition());
+                    if (null != view) {
+                        countryCode = ((TextView) view.findViewById(R.id.country_code)).getText().toString();
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {
+                }
+            });
+            forgetCountry.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parentView, View v, int position, long id) {
+                    possition = position;
+                    countryCode = "+91";
+                    View view = forgetCountry.getChildAt(position - forgetCountry.getFirstVisiblePosition());
+                    if (null != view) {
+                        countryCode = ((TextView) view.findViewById(R.id.country_code)).getText().toString();
+                    }
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parentView) {
+                }
+            });
+            if (possition != -1) {
+                loginCountry.setSelection(possition);
+                forgetCountry.setSelection(possition);
+            }
+            showHidePassword.setVisibility(View.GONE);
+            etPassword.addTextChangedListener(passwordWatcher);
+            if (possition != -1) {
+                loginCountry.setSelection(possition);
+                forgetCountry.setSelection(possition);
+            }
+            etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        actionLogin();
+                    }
+                    return false;
+                }
+            });
+            forgetPhone.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        actionForget();
+                    }
+                    return false;
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /******
+     * Function to set data in ArrayList
+     *************/
+    public void setListData() {
+        try {
+            final String[] countryCode = getResources().getStringArray(R.array.m_country_code);
+            final String[] countryFlag = getResources().getStringArray(R.array.m_country_flag);
+            final String[] countryName = getResources().getStringArray(R.array.m_country_name);
+            for (int i = 0; i < 15; i++) {
+                LogUtils.debug(SDKConstant.TAG, "Code:" + countryCode[i]);
+                final SpinnerVO sched = new SpinnerVO();
+                sched.setCountryCode(countryCode[i]);
+                sched.setCountryImage(countryFlag[i]);
+                sched.setCountryName(countryName[i]);
+                CountyListView.add(sched);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickPwdHideShow(View view) {
+        try {
+            if (SDKConstant.HIDE.equalsIgnoreCase(passwordStatus)) {
+                showHidePassword.setText(SDKConstant.HIDE);
+                etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+                passwordStatus = SDKConstant.SHOW;
+            } else if (SDKConstant.SHOW.equalsIgnoreCase(passwordStatus)) {
+                showHidePassword.setText(SDKConstant.SHOW);
+                etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+                passwordStatus = SDKConstant.HIDE;
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickLogin(View view) {
+        try {
+            if (isInternetAvailable()) {
+                actionLogin();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method for login validation for fields
+     *
+     * @author Deepak
+     */
+    private void actionLogin() {
+        try {
+            LogUtils.debug(SDKConstant.TAG, "Country Code:" + countryCode);
+            String username = loginPhone.getText().toString();
+            final String password = etPassword.getText().toString();
+            username = username.replaceAll("\\s+", "");
+            // if username edittext is empty show username toast and return fail
+            if (SDKConstant.EMPTY.equalsIgnoreCase(username)) {
+                loginPhone.setError(context.getResources().getString(R.string.m_required));
+                loginPhone.requestFocus();
+            } else if (SDKConstant.TEN > username.length()) {
+                loginPhone.setError(context.getResources().getString(R.string.m_errorMobileMessage));
+                loginPhone.requestFocus();
+            }
+            // if password edittext is empty show password toast and return fail
+            else if (SDKConstant.EMPTY.equalsIgnoreCase(password)) {
+                etPassword.setError(context.getResources().getString(R.string.m_required));
+                etPassword.requestFocus();
+            } else if (SDKConstant.SIX_INDEX > password.length()) {
+                etPassword.setError("Password should be alphanumeric and at least 6 characters long");
+                etPassword.requestFocus();
+            }
+            // if above condition are not true then return success
+            else {
+                if (isInternetAvailable()) {
+                    loginInBe(username, password, countryCode);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    private final TextWatcher passwordWatcher = new TextWatcher() {
+        /**
+         * on text change of email
+         */
+        @Override
+        public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+            LogUtils.debug(SDKConstant.TAG, "onTextChanged" + " " + count);
+            showHidePassword.setVisibility(View.VISIBLE);
+        }
+
+        /**
+         * before text change of email
+         */
+        @Override
+        public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+            LogUtils.debug(SDKConstant.TAG, "beforeTextChanged" + "  " + count);
+            showHidePassword.setVisibility(View.VISIBLE);
+        }
+
+        /**
+         * after text change
+         */
+        @Override
+        public void afterTextChanged(final Editable edit) {
+            if (SDKConstant.EMPTY.equalsIgnoreCase(etPassword.getText().toString())) {
+                LogUtils.debug(SDKConstant.TAG, "afterTextChanged");
+                etPassword.requestFocus();
+                etPassword.setError("Required");
+                showHidePassword.setVisibility(View.GONE);
+            }
+        }
+    };
+
+    /**
+     * download new skill
+     */
+    public void onClickNewUser(View view) {
+        SharedPreferences preferences = context.getSharedPreferences(SDKConstant.PKZ, MODE_PRIVATE);
+        preferences.edit().clear().commit();
+        if (isInternetAvailable()) {
+            final TelephonyManager tm = (TelephonyManager) this.getSystemService(this.TELEPHONY_SERVICE);
+            final String county = tm.getNetworkCountryIso().toUpperCase();
+            LogUtils.debug(sdkConstant.TAG, "Country:" + county);
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_SKILL, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.COUNTRY, county);
+                request.params.put(urls.SKILL_AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                        } else {
+                            CommonResVO commonResVO = dbController.hanldeRefSkillResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                if (sdkConstant.YTEXT.equalsIgnoreCase(commonResVO.getMultiSkill())) {
+                                    Intent intent = new Intent(context, SkillActivity.class);
+                                    intent.putExtra(SDKConstant.ADD_SKILL_INTENT, false);
+                                    intent.putExtra(SDKConstant.IS_BACK, false);
+                                    intent.putExtra(SDKConstant.IS_DOWNLOAD, true);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    final SharedPreferences.Editor prefsEditor = prefs.edit();
+                                    prefsEditor.putString(sdkConstant.PREF_SUBSKILLID, commonResVO.getSkillId());
+                                    prefsEditor.apply();
+                                    Intent intent = new Intent(context, RegisterActivity.class);
+                                    intent.putExtra(SDKConstant.IS_DIRECTREG, true);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            } else {
+                                showAlertDialog(commonResVO.getMsg());
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    private void showAlertDialog(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvOK = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOK.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Async Login method for user login request
+     *
+     * @author Sandeep
+     */
+
+    private void loginInBe(String username, final String password, final String country) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_LOGIN, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.LOGIN_USER, username);
+                request.params.put(SDKConstant.PASSWORD, SDKCommonUtils.encryptPassword(password));
+                countryCode = country.replace("+", "");
+                request.params.put(SDKConstant.COUNTRY_CODE, countryCode);
+                request.params.put(urls.AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || SDKConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            signingSlowInternet(SDKConstant.SLOW_INTERNET_AND_TRY_AGAIN, SDKConstant.ZERO_INDEX);
+                        } else {
+                            CommonResVO commonResVO = dbController.handelUserDeatilsResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                if (SDKConstant.YTEXT.equalsIgnoreCase(commonResVO.getMultiSkill())) {
+                                    Intent intent = new Intent(context, DashBoardActivity.class);
+                                    intent.putExtra(SDKConstant.DASHBOARD_INTENT, false);
+                                    startActivity(intent);
+                                    finish();
+                                } else {
+                                    final Intent intent = new Intent(context, GoalDetailsActivity.class);
+                                    intent.putExtra(SDKConstant.GOAL_INTENT, commonResVO.getSkillId());
+                                    intent.putExtra(SDKConstant.DASHBOARD_INTENT, false);
+                                    startActivity(intent);
+                                    finish();
+                                }
+                            } else {
+                                if (errorCount < 3) {
+                                    showLoginError();
+                                } else {
+                                    showLoginFailed();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    //showLoginFailed
+    private void showLoginFailed() {
+        LogUtils.debug(SDKConstant.TAG, "showExitDialog start");
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("It seems you are not registered with Empass.\nTry one of the below actions");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setText("QUIT EMPASS");
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setText("REGISTER NOW");
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(SDKConstant.TAG, "showExitDialog stop");
+    }
+
+    //showLoginError
+    private void showLoginError() {
+        LogUtils.debug(SDKConstant.TAG, "showExitDialog start");
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog progressDialog = ProgressDialog.show(context, "", "", true);
+                progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) progressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("The mobile number or password you entered is incorrect");
+                final Button tvYes = (Button) progressDialog.findViewById(R.id.tv_yes);
+                tvYes.setText("TRY AGAIN");
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        errorCount++;
+                        progressDialog.dismiss();
+                        etPassword.setText("");
+                        etPassword.setError(null);
+                        loginPhone.setText("");
+                        loginPhone.setError(null);
+                        loginPhone.requestFocus();
+                    }
+                });
+                final Button tvNo = (Button) progressDialog.findViewById(R.id.tv_no);
+                tvNo.setText("FORGOT");
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        errorCount = 0;
+                        progressDialog.dismiss();
+                        initForget(loginPhone.getText().toString());
+                    }
+                });
+                progressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(SDKConstant.TAG, "showExitDialog stop");
+    }
+
+    //signingSlowInternet alert with action
+    private void signingSlowInternet(final String message, final int index) {
+        try {
+            final ProgressDialog progressDialog = ProgressDialog.show(context, "", "", true);
+            progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) progressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) progressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    progressDialog.dismiss();
+                    if (SDKConstant.ZERO_INDEX == index) {
+                    } else if (SDKConstant.TWO_INDEX == index) {
+                    } else {
+                        forgotPassword(mobile, forgetPhone);
+                    }
+                }
+            });
+            final Button tvNo = (Button) progressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    progressDialog.dismiss();
+                }
+            });
+            progressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    // forget password
+    private void actionForget() {
+        try {
+            LogUtils.debug(SDKConstant.TAG, "Country Code:" + countryCode);
+            mobile = forgetPhone.getText().toString();
+            mobile = mobile.replaceAll("\\s+", "");
+            if (SDKConstant.EMPTY.equalsIgnoreCase(mobile)) {
+                forgetPhone.setError(context.getResources().getString(R.string.m_required));
+                forgetPhone.requestFocus();
+            } else if (SDKConstant.TEN > mobile.length()) {
+                forgetPhone.setError(context.getResources().getString(R.string.m_errorMobileMessage));
+                forgetPhone.requestFocus();
+            } else {
+                forgotPassword(mobile, forgetPhone);
+            }
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onInitForget(View view) {
+        try {
+            final String mobile = loginPhone.getText().toString();
+            initForget(mobile);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void initForget(final String mobile) {
+        try {
+            if (possition != -1) {
+                forgetCountry.setSelection(possition);
+            }
+            rlForget.setVisibility(View.VISIBLE);
+            rlSignin.setVisibility(View.GONE);
+            forgetPhone.setText(mobile);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickForgetCancel(View view) {
+        try {
+            rlForget.setVisibility(View.GONE);
+            rlSignin.setVisibility(View.VISIBLE);
+            if (possition != -1) {
+                loginCountry.setSelection(possition);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickForgetSend(View view) {
+        try {
+            if (isInternetAvailable()) {
+                actionForget();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method for forgot password option
+     *
+     * @param mobile
+     * @param etMobile
+     */
+    private void forgotPassword(final String mobile, final EditText etMobile) {
+        if (isInternetAvailable()) {
+            try {
+                LogUtils.debug(SDKConstant.TAG, "Mobile:" + mobile);
+                countryCode = countryCode.replace("+", "");
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_FORGOT_PASS, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.PHONE, mobile);
+                request.params.put(SDKConstant.COUNTRY_CODE, countryCode);
+                request.params.put(urls.AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || SDKConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            signingSlowInternet(SDKConstant.SLOW_INTERNET_AND_TRY_AGAIN, SDKConstant.ONE_INDEX);
+                        } else {
+                            CommonResVO resVO = dbController.handelCommonResponse(response, request);
+                            showMsgWithOk(resVO.getMsg(), SDKConstant.PASSWORD.toUpperCase());
+
+                            /**
+                             * password change successfully
+                             */
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(resVO.getStatus())) {
+                                rlForget.setVisibility(View.GONE);
+                                rlSignin.setVisibility(View.VISIBLE);
+                                /**
+                                 * set moblie number on edit text
+                                 */
+                                if (!SDKConstant.EMPTY.equals(etMobile.getText().toString())) {
+                                    loginPhone.setText(etMobile.getText().toString());
+                                    etPassword.requestFocus();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+                slowInternet(SDKConstant.TRY_AGAIN);
+            }
+        }
+    }
+
+    /**
+     * press back button
+     */
+    @Override
+    public void onBackPressed() {
+        try {
+            if (rlForget.getVisibility() == View.VISIBLE) {
+                rlForget.setVisibility(View.GONE);
+                rlSignin.setVisibility(View.VISIBLE);
+                if (possition != -1) {
+                    loginCountry.setSelection(possition);
+                }
+            } else if (rlSignin.getVisibility() == View.VISIBLE) {
+                super.onBackPressed();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        try {
+            super.onResume();
+            etPassword.setText("");
+            etPassword.setError(null);
+            loginPhone.setText("");
+            loginPhone.setError(null);
+            forgetPhone.setText("");
+            forgetPhone.setError(null);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+}

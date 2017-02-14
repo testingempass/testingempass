@@ -1,0 +1,110 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.CoinDataVO;
+
+import java.util.ArrayList;
+
+
+/**
+ * Adapter for leaderboard activity list
+ *
+ * @author Sandeep
+ */
+@SuppressWarnings("ALL")
+public class CoinHistoryAdapter extends ArrayAdapter<CoinDataVO> {
+    /**
+     * declear vabiable
+     */
+    private transient final Context context;
+    /**
+     * declear vabiable
+     */
+
+    /**
+     * @param ctx
+     * @paramactivityGrid
+     */
+    public CoinHistoryAdapter(final Context ctx, final int resource, final ArrayList<CoinDataVO> data) {
+        super(ctx, resource, data);
+        this.context = ctx;
+    }
+
+
+    /**
+     * getView
+     */
+    @SuppressLint({"InflateParams", "SetTextI18n"})
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        final CoinDataVO data = getItem(position);
+        try {
+            final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            final ViewHolder holder;
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = inflater.inflate(R.layout.m_list_row_item_coins, parent, false);
+                holder = new ViewHolder();
+                holder.tvDate = (TextView) convertView.findViewById(R.id.tvDate);
+                holder.tvEvent = (TextView) convertView.findViewById(R.id.tvAction);
+                holder.tvPoint = (TextView) convertView.findViewById(R.id.tvPoint);
+                holder.tvViewAll = (TextView) convertView.findViewById(R.id.tvViewAll);
+                holder.tvViewLess = (TextView) convertView.findViewById(R.id.tvViewLess);
+                holder.tvViewAll.setVisibility(View.GONE);
+                holder.tvViewLess.setVisibility(View.GONE);
+                holder.tvPoint.setVisibility(View.VISIBLE);
+                holder.tvDate.setVisibility(View.VISIBLE);
+                holder.tvEvent.setVisibility(View.VISIBLE);
+                convertView.setTag(holder);
+            }
+            holder.tvDate.setText(data.getCreatedDate());
+            holder.tvEvent.setText(data.getComment());
+            holder.tvPoint.setText("+" + data.getCoins());
+            holder.tvPoint.setTextColor(context.getResources().getColor(R.color.m_color1));
+            if (!SDKConstant.ONE.equalsIgnoreCase(data.getType())) {
+                holder.tvPoint.setText("-" + data.getCoins());
+                holder.tvPoint.setTextColor(context.getResources().getColor(R.color.m_color2));
+            }
+            //last row
+            if (SDKConstant.VIEW_ALL.equalsIgnoreCase(data.getComment())) {
+                holder.tvPoint.setVisibility(View.GONE);
+                holder.tvDate.setVisibility(View.GONE);
+                holder.tvEvent.setVisibility(View.GONE);
+                holder.tvViewLess.setVisibility(View.GONE);
+                holder.tvViewAll.setVisibility(View.VISIBLE);
+                holder.tvViewAll.setText(data.getComment());
+            }
+            if (SDKConstant.VIEW_LESS.equalsIgnoreCase(data.getComment())) {
+                holder.tvPoint.setVisibility(View.GONE);
+                holder.tvDate.setVisibility(View.GONE);
+                holder.tvEvent.setVisibility(View.GONE);
+                holder.tvViewAll.setVisibility(View.GONE);
+                holder.tvViewLess.setVisibility(View.VISIBLE);
+                holder.tvViewLess.setText(data.getComment());
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    public static class ViewHolder {
+        public transient TextView tvDate;
+        public transient TextView tvEvent;
+        public transient TextView tvPoint;
+        public transient TextView tvViewAll;
+        public transient TextView tvViewLess;
+    }
+}

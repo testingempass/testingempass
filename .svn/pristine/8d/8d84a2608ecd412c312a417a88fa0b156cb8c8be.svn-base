@@ -1,0 +1,508 @@
+package com.empass.sdk.offline;
+
+
+import android.app.Activity;
+
+import com.empass.sdk.s2.AnswerTimeResponse;
+import com.empass.sdk.s2.ApiQuestion;
+import com.empass.sdk.s2.FinalResult;
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.google.gson.annotations.Expose;
+
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Created by Deepak on 9/29/2016.
+ */
+public class OfflineGamePlay {
+    @Expose(serialize = false)
+    private final Map<String, OfflinePlayer> playerMap;
+    /**
+     * Declear variable
+     */
+    @Expose(serialize = false)
+    private transient final List<ApiQuestion> apiQuestions;
+    /**
+     * Declear variable
+     */
+    @Expose(serialize = false)
+    private transient final Map<String, ApiQuestion> allQuestions;
+    /**
+     * Declear variable
+     */
+    /**
+     * Declear variable
+     */
+    @Expose(serialize = false)
+    private transient final Map<String, Data> skillScore;
+    ApiQuestion[] questionFromServer = null;
+    private transient final CustomFinal<String> gameId;
+
+    public OfflineGamePlay(Activity context) {
+        playerMap = new HashMap<>();
+        apiQuestions = new ArrayList<>();
+        allQuestions = new HashMap<>();
+        skillScore = new HashMap<>();
+        gameId = new CustomFinal<>();
+    }
+
+    /**
+     * @param
+     */
+    public String getStartGame(final Data data, final String serverIp, final String taoHost) {
+        String flag = "N";
+        try {
+            skillScore.put(SDKConstant.DATA, data);
+            if (SDKConstant.N.equalsIgnoreCase(skillScore.get(SDKConstant.DATA).getDifficultyLvl())) {
+                questionFromServer = getQuestionFromServer(skillScore.get(SDKConstant.DATA).skillName, SDKConstant.FREE, skillScore.get(SDKConstant.DATA).quesPerGame, taoHost);
+            } else {
+                questionFromServer = getQuestionFromServer(skillScore.get(SDKConstant.DATA).skillName, skillScore.get(SDKConstant.DATA).level, skillScore.get(SDKConstant.DATA).quesPerGame, taoHost);
+            }
+            if (questionFromServer != null) {
+                final List<ApiQuestion> questionList = Arrays.asList(questionFromServer);
+                apiQuestions.addAll(questionList);
+                final Map<String, ApiQuestion> questionMap = new HashMap<>();
+                for (int i = 0; i < apiQuestions.size(); i++) {
+                    questionMap.put(apiQuestions.get(i).getQuestionWrapper().getQuestionId(), apiQuestions.get(i));
+                }
+                allQuestions.putAll(questionMap);
+                flag = getGameId(serverIp);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return flag;
+    }
+
+    /**
+     * Add user is use to add user in a room
+     */
+    public boolean addUser(final User user) {
+        User virtualUser = new User();
+        virtualUser.setName("0-0-0");
+        try {
+            final OfflinePlayer player = new OfflinePlayer(user);
+            playerMap.put(user.getName(), player);
+            final OfflinePlayer virtualPlayer = new OfflinePlayer(virtualUser);
+            playerMap.put(virtualUser.getName(), virtualPlayer);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return true;
+    }
+
+    /**
+     * getQuestionFromServer is use to get question of particulaer level
+     *
+     * @param level
+     * @param questionNumbers
+     * @param taoHost
+     * @return
+     */
+    public static ApiQuestion[] getQuestionFromServer(final String skill, final int level, final String questionNumbers, final String taoHost) {
+        ApiQuestion[] questions = null;
+        try {
+            String roomNames = skill;
+            if (roomNames.contains(" ")) {
+                roomNames = roomNames.replace(" ", "%20");
+            }
+            String url = "http://" + taoHost + "/api/getQuestionBlend.php/";
+            if (!questionNumbers.equalsIgnoreCase(SDKConstant.QUESTION_NUMBERS)) {
+                url = "http://" + taoHost + "/api/getQuestionBlendTest.php/";
+            }
+            final String apiResponse = callURL(url + roomNames + SDKConstant.DEFICULTY_LEVEL + level
+                    + SDKConstant.DEFICULTY_LEVEL + questionNumbers);
+            if (apiResponse != null && apiResponse.length() > 0) {
+                LogUtils.debug(SDKConstant.TAG, "apiResponse:" + apiResponse);
+                final String resultJSON = AbstractBEJsonParser.getJSONStringFromResponse(apiResponse);
+                questions = AbstractBEJsonParser.parseQuestionsJSONString(resultJSON);
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return questions;
+    }
+
+    /**
+     * callURL is use to call url and get question
+     *
+     * @param myURL
+     * @return
+     */
+    private static String callURL(final String myURL) {
+        final StringBuilder builder = new StringBuilder();
+        URLConnection urlConn = null;
+        InputStreamReader in = null;
+        try {
+            final URL url = new URL(myURL);
+            if (url != null) {
+                urlConn = url.openConnection();
+                if (urlConn != null) {
+                    urlConn.setRequestProperty("accept", "application/json");
+                    urlConn.setReadTimeout(60 * 1000);
+                }
+                if (urlConn != null && urlConn.getInputStream() != null) {
+                    in = new InputStreamReader(urlConn.getInputStream(), Charset.defaultCharset());
+                    final BufferedReader bufferedReader = new BufferedReader(in);
+                    if (bufferedReader != null) {
+                        for (String nextLine = bufferedReader.readLine(); nextLine != null; nextLine = bufferedReader.readLine()) {
+                            builder.append(nextLine);
+                        }
+                        bufferedReader.close();
+                    }
+                }
+            }
+            if (in != null) {
+                in.close();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return builder.toString();
+    }
+
+    /**
+     * sendQuestionToUsers is use to send question to joined player
+     */
+    public String getQuestion() {
+        LogUtils.debug(SDKConstant.TAG, "question:-getQuestionstart");
+        String questionStr = null;
+        try {
+            if (SDKConstant.ZERO_INDEX == apiQuestions.size()) {
+                questionStr = "No Question";
+            } else {
+                final ApiQuestion question = apiQuestions.remove(0);
+                questionStr = AbstractBEJsonParser.convertToJson(question);
+                LogUtils.debug(SDKConstant.TAG, "question:-" + question);
+            }
+        } catch (Exception e) {
+        }
+        return questionStr;
+    }
+
+    public AnswerTimeResponse[] sendOfflineAnswer(JSONObject payLoad) {
+        AnswerTimeResponse[] answerTimeResponse = null;
+        try {
+            UserAnswer userAnswer = AbstractBEJsonParser.parseAnswerJSONString(payLoad.toString());
+            String questionId = userAnswer.getQuestionId();
+            final String correctAnswer = allQuestions.get(questionId).getAnswer().getAnswer();
+            boolean timeBonus = true;
+            final Collection<OfflinePlayer> playerCollection = playerMap.values();
+            LogUtils.debug(SDKConstant.TAG, "User" + playerCollection.size());
+            OfflinePlayer player = getPlayer(userAnswer.getUsername());
+            player.getAnswerPerQuestion().put(questionId, userAnswer);
+            final int time = userAnswer.getTime();
+            UserAnswer oppAnswer = generateAnswerForVirtualPlayer(questionId, time);
+            OfflinePlayer player1 = getPlayer("0-0-0");
+            player1.getAnswerPerQuestion().put(userAnswer.getQuestionId(), oppAnswer);
+            OfflinePlayer fasterPlayer = null;
+            for (final OfflinePlayer offlinePlayer : playerCollection) {
+                int correctAnswerScore = 0;
+                final UserAnswer userAnswer1 = offlinePlayer.getUserAnswerForQuestion(questionId);
+                final String userAns = userAnswer1.getAnswer();
+                if (correctAnswer.equals(userAns)) {
+                    correctAnswerScore = Integer.parseInt(skillScore.get(SDKConstant.DATA).getCorrectSnswerScore());
+                    if (fasterPlayer == null || fasterPlayer.getUserAnswerForQuestion(questionId).getTime() > userAnswer.getTime()) {
+                        fasterPlayer = offlinePlayer;
+                    }
+                } else {
+                    timeBonus = false;
+                }
+                offlinePlayer.getScorePerQuestion().put(questionId, correctAnswerScore);
+                offlinePlayer.setTotalGamePoint(correctAnswerScore);
+                offlinePlayer.setTotalTime(userAnswer.getTime());
+                userAnswer.setGamePoint(correctAnswerScore);
+            }
+            if (timeBonus && fasterPlayer != null) {
+                final int speedBonus = Integer.parseInt(skillScore.get(SDKConstant.DATA).getSpeedBonus());
+                fasterPlayer.setTotalSpeedBonus(speedBonus);
+                fasterPlayer.setBonusCount(1);
+                fasterPlayer.getUserAnswerForQuestion(questionId).setSpeedBonus(speedBonus);
+            }
+            final Collection<OfflinePlayer> playerArray = playerMap.values();
+            final List<Object> myArray = new ArrayList<>(playerMap.size());
+            for (final OfflinePlayer offlinePlayer : playerArray) {
+                final UserAnswer answer = offlinePlayer.getUserAnswerForQuestion(questionId);
+                final Map<String, Object> object = getNewMap();
+                object.put("user_name", offlinePlayer.getUser().getName());
+                object.put("total_time", String.valueOf(answer.getTime()));
+                object.put("correct_answer", String.valueOf(correctAnswer));
+                object.put("total_game_point", offlinePlayer.getTotalGamePoint() + offlinePlayer.getTotalSpeedBonus());
+                object.put("user_answer", answer.getAnswer());
+                myArray.add(object);
+            }
+            String response = AbstractBEJsonParser.convertToJson(myArray).toString();
+            LogUtils.debug(SDKConstant.TAG, "response" + response);
+            answerTimeResponse = AbstractBEJsonParser.getJSONStringFromResponseTime(response);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return answerTimeResponse;
+    }
+
+    private Map<String, Object> getNewMap() {
+        return new HashMap<>();
+    }
+
+    /**
+     * @param name
+     * @return
+     */
+    public OfflinePlayer getPlayer(final String name) {
+        return playerMap.get(name);
+    }
+
+    /**
+     * generateAnswerForVirtualPlayer is use to generate virtual player answer
+     *
+     * @param questionId
+     * @param timeTaken
+     * @return
+     */
+    public UserAnswer generateAnswerForVirtualPlayer(final String questionId, final int timeTaken) {
+        /**
+         * get correct answer of question
+         */
+        String answer = null;
+        int time = 0;
+        try {
+            final ApiQuestion question = allQuestions.get(questionId);
+            answer = question.getAnswer().getAnswer();
+            final int number = SDKCommonUtils.generateRandomNumber(0, 1);
+            if (SDKConstant.ONE_INDEX == number) {
+                answer = VirtualUserOptions.getWrongAnswerForVirtualPlayer(answer);
+            }
+            time = SDKCommonUtils.generateRandomNumber(1, timeTaken);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return new UserAnswer(questionId, answer, String.valueOf(time), "0-0-0");
+    }
+
+    /**
+     * finalResponse is use to send game end response
+     *
+     * @param status
+     */
+    public FinalResult[] finalResponse(final GameStatus status, final String playerId) {
+        FinalResult[] finalResults = null;
+        try {
+            final String abandonedPlayer = playerId;
+            // check winner or looser and tie in case game completed successfully
+            if (GameStatus.GAME_OVER.equals(status)) {
+                gameOver();
+            } else {
+                for (final OfflinePlayer player : playerMap.values()) {
+                    player.setGameStatus(SDKConstant.ABANDONED_MESSAGE);
+                }
+                gameAbondon(abandonedPlayer);
+            }
+            final List<Object> myArray = new ArrayList<>();
+            for (final OfflinePlayer player : playerMap.values()) {
+                final Map<String, Object> json = getObj();
+                json.put(SDKConstant.USERNAME, player.getUser().getName());
+                json.put(SDKConstant.TOTAL_TIME, player.getTotalTime());
+                json.put(SDKConstant.TOTAL_GAME_POINT, player.getTotalGamePoint());
+                json.put(SDKConstant.TOTAL_SPEED_BONUS, player.getTotalSpeedBonus());
+                json.put(SDKConstant.COMPLETION_BONUS, player.getCompletionBonus());
+                json.put(SDKConstant.WIN_BONUS, player.getWinBonus());
+                json.put(SDKConstant.GAME_STATUS, player.getGameStatus());
+                json.put(SDKConstant.GAME_ID, gameId.get());
+                myArray.add(json);
+            }
+            String response = AbstractBEJsonParser.convertToJson(myArray).toString();
+            LogUtils.debug(SDKConstant.TAG, "response" + response);
+            finalResults = AbstractBEJsonParser.getJSONStringFromResponseFinal(response);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return finalResults;
+    }
+
+    private Map<String, Object> getObj() {
+        return new HashMap<>();
+    }
+
+    private void gameOver() {
+        try {
+            OfflinePlayer winner = null;
+            for (final OfflinePlayer player : playerMap.values()) {
+                player.setCompletionBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getFinishBonus()));
+                if (winner == null || player.getTotalScore() > winner.getTotalScore()) {
+                    winner = player;
+                }
+            }
+            // Handle Win Scenario
+            winner.setWinBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getWinningBonus()));
+            winner.setGameStatus(SDKConstant.WIN_MESSAGE);
+            // Handle TIE
+            final OfflinePlayer[] players = playerMap.values().toArray(new OfflinePlayer[0]);
+            if (SDKConstant.TWO == players.length && players[0].getTotalScore() == players[1].getTotalScore()) {
+                players[0].setWinBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getWinningBonus()));
+                players[0].setGameStatus(SDKConstant.TIE);
+                players[1].setWinBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getWinningBonus()));
+                players[1].setGameStatus(SDKConstant.TIE);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    /**
+     * @param abandonedPlayer
+     */
+    private void gameAbondon(final String abandonedPlayer) {
+        try {
+            final OfflinePlayer[] players = playerMap.values().toArray(new OfflinePlayer[0]);
+            if (SDKConstant.TWO == players.length) {
+                if (players[0].getUser().getName().equals(abandonedPlayer)) {
+                    players[0].setGameStatus(SDKConstant.ABANDONED_MESSAGE);
+                    players[1].setGameStatus(SDKConstant.TIE);
+                    players[1].setCompletionBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getFinishBonus()));
+                } else {
+                    players[0].setGameStatus(SDKConstant.TIE);
+                    players[1].setGameStatus(SDKConstant.ABANDONED_MESSAGE);
+                    players[0].setCompletionBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getFinishBonus()));
+                }
+                final int p1Point = players[0].getTotalGamePoint() + players[0].getTotalSpeedBonus() + players[0].getCompletionBonus();
+                final int p2Point = players[1].getTotalGamePoint() + players[1].getTotalSpeedBonus() + players[1].getCompletionBonus();
+                if (players[0].getGameStatus().equalsIgnoreCase(SDKConstant.ABANDONED_MESSAGE)) {
+                    if (p1Point > p2Point) {
+                        players[1].setGameStatus(SDKConstant.LOSS_MESSAGE);
+                    } else if (p2Point > p1Point) {
+                        players[1].setWinBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getWinningBonus()));
+                        players[1].setGameStatus(SDKConstant.WIN_MESSAGE);
+                    }
+                } else {
+                    if (p1Point > p2Point) {
+                        players[0].setWinBonus(Integer.parseInt(skillScore.get(SDKConstant.DATA).getWinningBonus()));
+                        players[0].setGameStatus(SDKConstant.WIN_MESSAGE);
+                    } else if (p2Point > p1Point) {
+                        players[0].setGameStatus(SDKConstant.LOSS_MESSAGE);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+    }
+
+    private String getGameId(final String serverIp) {
+        String flag = "N";
+        try {
+            final String apiResponse = getGameIdValue(serverIp);
+            if (apiResponse != null && apiResponse.length() > 0) {
+                final GameIdVO gameIdVo = AbstractBEJsonParser.parseGameJSONString(apiResponse);
+                if (gameIdVo.getStatus().equalsIgnoreCase("201")) {
+                    gameId.set(gameIdVo.getGameNo());
+                } else {
+                    gameId.set("123456789");
+                }
+                flag = "Y";
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return flag;
+    }
+
+    /**
+     * @param serverIp
+     * @return
+     */
+    public static String getGameIdValue(final String serverIp) {
+        final StringBuilder builder = new StringBuilder();
+        URLConnection urlConn = null;
+        InputStreamReader in = null;
+        try {
+            String url = "http://" + serverIp + "/beapi/index.php/v3/S2Api";
+            final URL urls = new URL(url);
+            if (urls != null) {
+                urlConn = urls.openConnection();
+                if (urlConn != null) {
+                    urlConn.setRequestProperty("accept", "application/json");
+                    urlConn.setRequestProperty(SDKConstant.TASK, SDKConstant.GAMEID_TASK);
+                    urlConn.setRequestProperty(SDKConstant.TOKEN, SDKConstant.APP_TOKEN);
+                    urlConn.setReadTimeout(60 * 1000);
+                }
+                if (urlConn != null && urlConn.getInputStream() != null) {
+                    in = new InputStreamReader(urlConn.getInputStream(), Charset.defaultCharset());
+                    final BufferedReader bufferedReader = new BufferedReader(in);
+                    if (bufferedReader != null) {
+                        for (String nextLine = bufferedReader.readLine(); nextLine != null; nextLine = bufferedReader.readLine()) {
+                            builder.append(nextLine);
+                        }
+                        bufferedReader.close();
+                    }
+                }
+            }
+            if (in != null) {
+                in.close();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return builder.toString();
+    }
+
+
+    /**
+     * @param json
+     * @param serverIp
+     */
+    public static String uploadDataOnServer(final JSONObject json, final String serverIp) {
+        final StringBuilder builder = new StringBuilder();
+        try {
+            LogUtils.debug(SDKConstant.TAG, "json:" + json.toString());
+            String body;
+            String UTF = "UTF-8";
+            body = URLEncoder.encode(SDKConstant.DATA, UTF) + "=" + URLEncoder.encode(json.toString(), UTF);
+            String url = "http://" + serverIp + "/beapi/index.php/v3/S2Api";
+
+            final URL urls = new URL(url);
+            final HttpURLConnection connection = (HttpURLConnection) urls.openConnection();
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            connection.setRequestProperty("Content-Length", SDKConstant.EMPTY + Integer.toString(body.getBytes().length));
+            connection.setRequestProperty("Content-Language", "en-US");
+            connection.setRequestProperty(SDKConstant.TASK, SDKConstant.PLAYER_HISTORY_TASK);
+            connection.setRequestProperty(SDKConstant.TOKEN, SDKConstant.APP_TOKEN);
+            connection.addRequestProperty("Connection", "Keep-Alive");
+            connection.setDoOutput(true);
+            final DataOutputStream wr = new DataOutputStream(connection.getOutputStream());
+            wr.writeBytes(body);
+            wr.flush();
+            wr.close();
+            final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            if (bufferedReader != null) {
+                for (String nextLine = bufferedReader.readLine(); nextLine != null; nextLine = bufferedReader.readLine()) {
+                    builder.append(nextLine);
+                }
+                bufferedReader.close();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception1", e);
+        }
+        return builder.toString();
+    }
+
+
+}

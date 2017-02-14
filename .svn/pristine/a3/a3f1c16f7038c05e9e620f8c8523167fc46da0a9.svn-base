@@ -1,0 +1,103 @@
+package com.empass.sdk.activity;
+
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+
+import com.empass.sdk.R;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.User;
+
+
+/**
+ * Splash Activity For the application
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class SplashActivity extends Activity {
+    /**
+     * Class Context
+     */
+    private static Context context;
+
+    /**
+     * Class Constructor
+     */
+    public SplashActivity() {
+        super();
+    }
+
+    @Override
+    /**
+     * onCreate
+     */
+    public void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_splash);
+        context = this;
+        try {
+            final Thread welcomeThread = new Thread() {
+                int wait;
+
+                /**
+                 * Thread for Splash
+                 */
+                @Override
+                public void run() {
+                    try {
+                        while (wait < 350) {
+                            sleep(100);
+                            wait += 100;
+                        }
+                    } catch (NullPointerException e) {
+                        LogUtils.error(SDKConstant.TAG, "Excetion", e);
+                    } catch (Exception e) {
+                        LogUtils.error(SDKConstant.TAG, "Excetion", e);
+                    } finally {
+                        SDKDBHelper sdkdbHelper = SDKDBHelper.getInstance(context);
+                        User user = sdkdbHelper.getLogedUser();
+                        if (user.isLoggedIn()) {
+                            if (SDKConstant.YTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                                Intent intent = new Intent(context, DashBoardActivity.class);
+                                intent.putExtra(SDKConstant.DASHBOARD_INTENT, true);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                                startActivity(intent);
+                                finish();
+                            } else {
+                                Goal[] goals = sdkdbHelper.getUserGoals();
+                                final Intent intent = new Intent(context, GoalDetailsActivity.class);
+                                intent.putExtra(SDKConstant.GOAL_INTENT, goals[0].getSubSkillId());
+                                intent.putExtra(SDKConstant.DASHBOARD_INTENT, true);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                                startActivity(intent);
+                                finish();
+                            }
+                        } else {
+                            final Intent intent = new Intent(context, LoginActivity.class);
+                            startActivity(intent);
+                            finish();
+                        }
+                    }
+                }
+            };
+            welcomeThread.start();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Excetion", e);
+        }
+    }
+
+    /**
+     * changes in v2.5 for remove activity stack
+     * onPause
+     */
+    @Override
+    public void onPause() {
+        finish();
+        super.onPause();
+    }
+}

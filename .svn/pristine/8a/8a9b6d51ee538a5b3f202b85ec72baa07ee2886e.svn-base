@@ -1,0 +1,39 @@
+package com.empass.sdk.offline;
+
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.annotations.Expose;
+
+/**
+ * ExcludeAnnotationExclusionStrategy
+ * 
+ * @author Deepak
+ *
+ */
+public class ExcludeAnnotationExclusionStrategy implements ExclusionStrategy {
+
+	/**
+	 * cons
+	 * 
+	 */
+	public ExcludeAnnotationExclusionStrategy() {
+		super();
+	}
+
+	/**
+	 * shouldSkipField
+	 */
+	@Override
+	public boolean shouldSkipField(final FieldAttributes f) {
+		final Expose anno = f.getAnnotation(Expose.class);
+		return anno != null && !anno.serialize();
+	}
+
+	/**
+	 * shouldSkipClass
+	 */
+	@Override
+	public boolean shouldSkipClass(final Class<?> arg0) {
+		return false;
+	}
+}

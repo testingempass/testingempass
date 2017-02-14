@@ -1,0 +1,54 @@
+package com.empass.sdk.utils;
+
+import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.telephony.SmsMessage;
+import android.widget.Toast;
+
+import com.empass.sdk.activity.RegisterActivity;
+
+
+/**
+ * Chnages in v2.5 for read otp sms
+ * Created by Deepak on 10/06/15.
+ */
+public class IncomingSms extends BroadcastReceiver {
+    public IncomingSms() {
+        super();
+    }
+
+    public void onReceive(final Context context, final Intent intent) {
+        try {
+            /**
+             * Getting the intent action name
+             */
+            final String actionName = intent.getAction();
+            if ("empass.sent".equals(actionName) && getResultCode() == Activity.RESULT_OK) {
+                Toast.makeText(context, "Message is sent successfully", Toast.LENGTH_SHORT).show();
+            }
+            if ("empass.delivered".equals(actionName) && getResultCode() == Activity.RESULT_OK) {
+                Toast.makeText(context, "Message is delivered", Toast.LENGTH_SHORT).show();
+            }
+            // Retrieves a map of extended data from the intent.
+            final Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                final Object[] pdusObj = (Object[]) bundle.get("pdus");
+                for (int i = 0; i < (pdusObj != null ? pdusObj.length : 0); i++) {
+                    final SmsMessage currentMessage = SmsMessage.createFromPdu((byte[]) pdusObj[i]);
+                    final String phoneNumber = currentMessage.getDisplayOriginatingAddress();
+                    if (phoneNumber.contains("EMPASS")) {
+                        final String body = currentMessage.getDisplayMessageBody();
+                        final String message = SDKCommonUtils.stripNonDigits(body);
+                        RegisterActivity.setOtpMessage(message);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exc", e);
+        }
+    }
+}
+

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/overview"
+        android:icon="@drawable/overview_orange"
+        android:title="Overview" />
+    <item
+        android:id="@+id/rules"
+        android:icon="@drawable/rules_orange"
+        android:title="Rules" />
+    <item
+        android:id="@+id/summary"
+        android:icon="@drawable/summery_orange"
+        android:title="Summary" />
+    <item
+        android:id="@+id/share"
+        android:icon="@drawable/share_orange"
+        android:title="Share" />
+
+    <item
+        android:id="@+id/guide"
+        android:icon="@drawable/guide_orange"
+        android:title="Guide" />
+    <item
+        android:id="@+id/achievement"
+        android:icon="@drawable/orange_achivement"
+        android:title="Achievement" />
+</menu>

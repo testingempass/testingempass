@@ -1,0 +1,175 @@
+package com.empass.sdk.offline;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class UserAnswer {
+	/**
+	 * declear variable
+	 */
+	@SerializedName("QuestionId")
+	private String questionId;
+	/**
+	 * declear variable
+	 */
+	@SerializedName("Answers")
+	private String answer;
+	/**
+	 * declear variable
+	 */
+	@SerializedName("Time")
+	private String time;
+	/**
+	 * declear variable
+	 */
+	@SerializedName("username")
+	private  String username;
+	/**
+	 * declear variable
+	 */
+	private int totalScore;
+	/**
+	 * declear variable
+	 */
+	private int speedBonus;
+	/**
+	 * declear variable
+	 */
+	private int gamePoint;
+
+	/**
+	 * 
+	 * @param questionId
+	 * @param answers
+	 * @param time
+	 * @param username
+	 */
+	public UserAnswer(String questionId, String answers, String time, String username) {
+		this.questionId = questionId;
+		this.answer = answers;
+		this.time = time;
+		this.username = username;
+	}
+
+	/**
+ * 
+ */
+	@Override
+	public String toString() {
+		return "UserAnswer [questionId=" + questionId + ", answer=" + answer + ", time=" + time + "]";
+	}
+
+	/**
+	 * @return the questionId
+	 */
+	public String getQuestionId() {
+		return questionId;
+	}
+
+	/**
+	 * @return the answer
+	 */
+	public String getAnswer() {
+		return answer;
+	}
+
+	/**
+	 * @return the time
+	 */
+	public int getTime() {
+		return Integer.parseInt(time);
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getUsername() {
+		return username;
+	}
+
+	/**
+	 * 
+	 * @param username
+	 */
+	public void setUserName(String username) {
+		this.username = username;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getTotalScore() {
+		return totalScore;
+	}
+
+	/**
+	 * 
+	 * @param totalScore
+	 */
+	public void setTotalScore(int totalScore) {
+		this.totalScore = totalScore;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getSpeedBonus() {
+		return speedBonus;
+	}
+
+	/**
+	 * 
+	 * @param speedBonus
+	 */
+	public void setSpeedBonus(int speedBonus) {
+		this.speedBonus = speedBonus;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public int getGamePoint() {
+		return gamePoint;
+	}
+
+	/**
+	 * 
+	 * @param gamePoint
+	 */
+	public void setGamePoint(int gamePoint) {
+		this.gamePoint = gamePoint;
+	}
+
+	/**
+	 * 
+	 * @param questionId
+	 */
+	public void setQuestionId(String questionId) {
+		this.questionId = questionId;
+	}
+
+	/**
+	 * 
+	 * @param answer
+	 */
+	public void setAnswer(String answer) {
+		this.answer = answer;
+	}
+
+	/**
+	 * 
+	 * @param time
+	 */
+	public void setTime(String time) {
+		this.time = time;
+	}
+
+}

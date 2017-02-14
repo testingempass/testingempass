@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="end">
+
+    <include
+        android:id="@+id/btn_header"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:showIn="@layout/app_bar_main">
+
+        <RelativeLayout
+            android:id="@+id/rl_lbdheader"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/dp_130"
+            android:layout_marginTop="@dimen/dp_45"
+            android:adjustViewBounds="true"
+            android:background="@drawable/lbd_bg">
+
+            <RelativeLayout
+                android:id="@+id/imagelbd"
+                android:layout_width="@dimen/dp_74"
+                android:layout_height="@dimen/dp_74"
+                android:layout_margin="@dimen/dp_8"
+                android:background="@drawable/m_circle_white">
+
+                <ImageView
+                    android:id="@+id/ivlbdImage"
+                    android:layout_width="@dimen/dp_70"
+                    android:layout_height="@dimen/dp_70"
+                    android:layout_centerInParent="true"
+                    android:contentDescription="@null"
+                    android:src="@drawable/m_circle_username_orange" />
+
+                <TextView
+                    android:id="@+id/tvUserLetters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:gravity="center"
+                    android:text="@string/m_u"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/sp_50" />
+
+                <TextView
+                    android:id="@+id/tv_rank"
+                    android:layout_width="@dimen/sp_30"
+                    android:layout_height="@dimen/sp_30"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/m_circle_red"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    android:text="0"
+                    android:textColor="#fff"
+                    android:textSize="@dimen/sp_10" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/user"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/dp_70"
+                android:layout_marginLeft="@dimen/dp_12"
+                android:layout_marginRight="@dimen/dp_12"
+                android:layout_marginTop="@dimen/dp_12"
+                android:layout_toRightOf="@+id/imagelbd">
+
+                <TextView
+                    android:id="@+id/tv_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/dp_30"
+                    android:gravity="center"
+                    android:text="Deepak Jain"
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/dp_20" />
+
+                <TextView
+                    android:id="@+id/tv_userskill"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/dp_30"
+                    android:layout_below="@+id/tv_username"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/m_white"
+                    android:textSize="@dimen/dp_20" />
+
+                <LinearLayout
+                    android:id="@+id/ll_spinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_36"
+                    android:layout_below="@+id/tv_username"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <Spinner
+                        android:id="@+id/spinnerGoal"
+                        style="@style/MySpinnerLookNew"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@android:color/transparent" />
+
+                    <ImageView
+                        android:id="@+id/iv_spinner"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:src="@drawable/orangedownarrow" />
+                </LinearLayout>
+            </RelativeLayout>
+
+            <android.support.design.widget.TabLayout
+                android:id="@+id/tabslbd"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sp_40"
+                android:layout_alignParentBottom="true"
+                app:tabGravity="fill"
+                app:tabIndicatorColor="@color/sdk_primarycolor"
+                app:tabMode="fixed"
+                app:tabSelectedTextColor="@color/m_white"
+                app:tabTextColor="@color/m_white" />
+        </RelativeLayout>
+
+        <LinearLayout
+            android:id="@+id/llItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/rl_lbdheader"
+            android:background="#5B676D"
+            android:orientation="horizontal"
+            android:padding="@dimen/dp_10"
+            android:paddingBottom="@dimen/dp_5"
+            android:paddingTop="@dimen/dp_5">
+
+            <TextView
+                android:id="@+id/tvRank"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left"
+                android:paddingLeft="10sp"
+                android:singleLine="true"
+                android:text="@string/m_rank_leaderboard"
+                android:textColor="@color/m_white"
+                android:textSize="@dimen/sp_14" />
+
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center|left"
+                android:singleLine="true"
+                android:text="@string/m_name"
+                android:textColor="@color/m_white"
+                android:textSize="@dimen/sp_14" />
+
+
+            <TextView
+                android:id="@+id/tvPoints"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginRight="@dimen/dp_10"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:singleLine="true"
+                android:text="@string/m_score"
+                android:textColor="@color/m_white"
+                android:textSize="@dimen/sp_14" />
+        </LinearLayout>
+
+        <android.support.v4.view.ViewPager
+            android:id="@+id/viewpagerlbd"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@+id/llItems"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    </RelativeLayout>
+</RelativeLayout>

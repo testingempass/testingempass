@@ -1,0 +1,1473 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources.NotFoundException;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.media.MediaPlayer;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.CardView;
+import android.text.Html;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.RelativeSizeSpan;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.s2.FinalResult;
+import com.empass.sdk.utils.GamePlayHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.Teaser;
+import com.empass.sdk.utils.Urls;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.OpponentVO;
+import com.empass.sdk.vo.ProgressionVO;
+import com.empass.sdk.vo.RefreshGoalVO;
+import com.empass.sdk.vo.UpdateGoalVO;
+import com.empass.sdk.vo.User;
+import com.empass.sdk.vo.UserQuestionVO;
+import com.github.mikephil.charting.animation.Easing;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.squareup.picasso.Picasso;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+import static com.empass.sdk.utils.SDKConstant.ABANDON_GAME;
+import static com.empass.sdk.utils.SDKConstant.LOST_GAME;
+import static com.empass.sdk.utils.SDKConstant.TIE_GAME;
+import static com.empass.sdk.utils.SDKConstant.WIN_GAME;
+
+
+/**
+ * ResultActivity is use to show result
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class ResultActivity extends EmpassActivity {
+    /**
+     * declear variable
+     */
+    public transient Boolean isLocation = false;
+    /**
+     * declear variable
+     */
+    private static FinalResult[] finalResult;
+    /**
+     * declear variable
+     */
+    private static String localUserName;
+    /**
+     * declear varibale
+     */
+    private static String title;
+    /**
+     * declear varibale
+     */
+    private static String content;
+
+    /***
+     * Initialize OpponentUser
+     */
+
+    private static OpponentVO opponentUser;
+    /**
+     * correct
+     */
+    private static int correctQue;
+    /**
+     * correct
+     */
+    private static int cLevel;
+    /**
+     *
+     */
+    public transient int gameId;
+    /**
+     * declear variable
+     */
+    private transient Goal goal;
+    /**
+     * declear variable
+     */
+    private transient Goal[] goles;
+    /**
+     * declear variable
+     */
+    public transient SharedPreferences prefs;
+    /**
+     * declear variable
+     */
+    private transient int index;
+    /**
+     * create instance of variable
+     */
+    transient public android.location.Location mCurrentLocation;
+    /**
+     * declear variable
+     */
+    private transient double latitude = sdkConstant.ZERO_INDEX;
+    /**
+     * declear variable
+     */
+    public transient String skill, achiveMsg;
+    /**
+     * declear variable
+     */
+    private transient double longitude = sdkConstant.ZERO_INDEX;
+    /**
+     * declear variable
+     */
+    public transient MediaPlayer mediaPlayer;
+    /**
+     * declear variable
+     */
+    public transient boolean isGpsPresent;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declare variable
+     */
+    public transient ImageView imageSmallBanner;
+    /**
+     * declare variable
+     */
+    public transient TextView tvMax;
+    /**
+     * declare variable
+     */
+    public transient TextView tvLocalUser;
+    /**
+     * declare variable
+     */
+    public transient TextView tvOpponentUser;
+    /**
+     * declare variable
+     */
+    public transient TextView txtTotalScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtGameScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtWinScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtSpeedScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtComScore;
+    /**
+     * declare variable
+     */
+    public transient TextView txtPointEarned;
+    /**
+     * declare variable
+     */
+    public transient TextView txtLocalUserPoint;
+    /**
+     * declare variable
+     */
+    public transient TextView txtOpponentUserPoint;
+    /**
+     * declare variable
+     */
+    public transient TextView txtGameStatus;
+    /**
+     * declare variable
+     */
+    private transient UserQuestionVO[] userQuestionVO;
+    /**
+     * declare variable
+     */
+    public transient ImageView ivLevel;
+    /**
+     * declare variable
+     */
+    public transient ProgressBar pbNoview;
+    /**
+     * declare variable
+     */
+    public transient ProgressBar pbAmature;
+    /**
+     * declare variable
+     */
+    public transient ProgressBar pbPro;
+    /**
+     * declare variable
+     */
+    public transient ProgressBar pbChamp;
+    /**
+     * declare variable
+     */
+    public transient PieChart chartAccuracy;
+    /**
+     * declare variable
+     */
+    public transient PieChart chartSpeed;
+    /**
+     * declare variable
+     */
+    public transient CardView cardLevel;
+    /**
+     * declare variable
+     */
+    public transient CardView cardScore;
+    /**
+     * declare variable
+     */
+    public transient RelativeLayout rlResults;
+    /**
+     * declare variable
+     */
+    public transient CardView cardGraph;
+    /**
+     * declare variable
+     */
+    public transient int height;
+    /**
+     * declare variable
+     */
+    public transient int newHeight;
+    /**
+     * declare variable
+     */
+    public transient int width;
+    /**
+     * declare variable
+     */
+    public transient int skillHeight;
+    /**
+     * declare variable
+     */
+    public transient int levelHeight;
+    /**
+     * declare variable
+     */
+    public transient int scoreHeight;
+    /**
+     * declare variable
+     */
+    public transient int graphHeight;
+    /**
+     * declare variable
+     */
+    public transient int speedColor;
+    /**
+     * declare variable
+     */
+    public transient int accurecyColor;
+    /**
+     * declare variable
+     */
+    public transient User user;
+    /**
+     * declare variable
+     */
+    public transient Intent intent;
+    /**
+     * declare variable
+     */
+    public transient String skillId;
+    /**
+     * declare variable
+     */
+    public transient FloatingActionButton fbPlayAgain;
+
+    /**
+     * ResultActivity
+     */
+    public ResultActivity() {
+        super();
+    }
+
+
+    /**
+     * onCreate is use to initilize ui
+     */
+    @Override
+    protected void onCreate(final Bundle bundel) {
+        try {
+            LogUtils.debug(sdkConstant.TAG, "Result Activity onCreate start");
+            super.onCreate(bundel);
+            context = ResultActivity.this;
+            setContentView(R.layout.m_activity_game_result);
+            dbHelper = SDKDBHelper.getInstance(context);
+            dbController = new SDKDatabaseController(context);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            intent = getIntent();
+            skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+            prefs = getSharedPreferences(sdkConstant.PKZ, MODE_PRIVATE);
+            user = dbHelper.getLogedUser();
+            goles = dbHelper.getUserGoals();
+            goal = dbHelper.getGoal(skillId);
+            opponentUser = dbHelper.getOpponentData(sdkConstant.OPPONENTKEY);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            imageSmallBanner = (ImageView) findViewById(R.id.iv_small_banner);
+            tvMax = (TextView) findViewById(R.id.tvTotalPoints);
+            tvLocalUser = (TextView) findViewById(R.id.tv_localUser);
+            tvOpponentUser = (TextView) findViewById(R.id.tv_opponentUser);
+            txtTotalScore = (TextView) findViewById(R.id.tvPoints);
+            txtGameScore = (TextView) findViewById(R.id.tv_gamePoints);
+            txtWinScore = (TextView) findViewById(R.id.tv_winBonus);
+            txtSpeedScore = (TextView) findViewById(R.id.tv_speedBonus);
+            txtComScore = (TextView) findViewById(R.id.tv_completionBonus);
+            txtPointEarned = (TextView) findViewById(R.id.tv_pointEarned);
+            txtLocalUserPoint = (TextView) findViewById(R.id.tv_localUserPoint);
+            txtOpponentUserPoint = (TextView) findViewById(R.id.tv_opponentUserPoint);
+            txtGameStatus = (TextView) findViewById(R.id.tv_game_status);
+            ivLevel = (ImageView) findViewById(R.id.iv_playerBadge);
+            pbNoview = (ProgressBar) findViewById(R.id.pb_novice);
+            pbAmature = (ProgressBar) findViewById(R.id.pb_amature);
+            pbPro = (ProgressBar) findViewById(R.id.pb_pro);
+            pbChamp = (ProgressBar) findViewById(R.id.pb_champ);
+            chartAccuracy = (PieChart) findViewById(R.id.chartAccuracy);
+            chartSpeed = (PieChart) findViewById(R.id.chartSpeed);
+            cardLevel = (CardView) findViewById(R.id.card_view_level);
+            cardScore = (CardView) findViewById(R.id.card_view_score);
+            rlResults = (RelativeLayout) findViewById(R.id.rl_result);
+            fbPlayAgain = (FloatingActionButton) findViewById(R.id.btn_play);
+            fbPlayAgain.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickPlayAgain();
+                }
+            });
+            cardGraph = (CardView) findViewById(R.id.card_view_graph);
+            isGpsPresent = false;
+            correctQue = 0;
+            final DisplayMetrics display = new DisplayMetrics();
+            this.getWindowManager().getDefaultDisplay().getMetrics(display);
+            height = display.heightPixels;
+            mediaPlayer = MediaPlayer.create(this, com.empass.sdk.R.raw.wining);
+            if (sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                final View levels = (View) findViewById(R.id.ll_level);
+                levels.setVisibility(View.GONE);
+                imageSmallBanner.setVisibility(View.VISIBLE);
+                if (!sdkConstant.NULL_SMALL.equalsIgnoreCase(goal.getSubskillSmallBanner()) && !sdkConstant.EMPTY.equalsIgnoreCase(goal.getSubskillSmallBanner())) {
+                    Picasso.with(context).load(goal.getSubskillSmallBanner()).
+                            placeholder(R.drawable.m_shape_white_without_border).into(imageSmallBanner, new com.squareup.picasso.Callback() {
+                        @Override
+                        public void onSuccess() {
+
+                        }
+
+                        @Override
+                        public void onError() {
+                            imageSmallBanner.setVisibility(View.GONE);
+                        }
+                    });
+                } else {
+                    imageSmallBanner.setVisibility(View.GONE);
+                }
+            }
+            skill = goal.getSubSkill();
+            tvHeader.setText(skill);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                newHeight = height - sdkCommonUtils.dpToPx(this, 50);
+                skillHeight = (newHeight * 36) / 100;
+                levelHeight = (newHeight * 18) / 100;
+                scoreHeight = (newHeight * 19) / 100;
+                graphHeight = (newHeight * 28) / 100;
+                width = display.widthPixels;
+            } else {
+                newHeight = height - sdkCommonUtils.dpToPx(this, 60);
+                skillHeight = (newHeight * 35) / 100;
+                levelHeight = (newHeight * 16) / 100;
+                scoreHeight = (newHeight * 19) / 100;
+                graphHeight = (newHeight * 28) / 100;
+                width = display.widthPixels;
+            }
+            final RelativeLayout.LayoutParams rlResult = new RelativeLayout.LayoutParams(width, skillHeight);
+            rlResult.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            final RelativeLayout.LayoutParams rlLevel = new RelativeLayout.LayoutParams(width, levelHeight);
+            rlLevel.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            final RelativeLayout.LayoutParams rlGraph = new RelativeLayout.LayoutParams(width, graphHeight);
+            rlGraph.addRule(RelativeLayout.ABOVE, R.id.card_view_level);
+            final RelativeLayout.LayoutParams rlScore = new RelativeLayout.LayoutParams(width, scoreHeight);
+            rlScore.addRule(RelativeLayout.ABOVE, R.id.card_view_graph);
+            rlResults.setLayoutParams(rlResult);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                rlLevel.setMargins(4, -2, 4, 2);
+                rlGraph.setMargins(4, -4, 4, -4);
+                rlScore.setMargins(4, -2, 4, -2);
+            } else {
+                rlLevel.setMargins(12, 6, 12, 12);
+                rlGraph.setMargins(12, 6, 12, 6);
+                rlScore.setMargins(12, 6, 12, 6);
+            }
+            cardLevel.setLayoutParams(rlLevel);
+            cardScore.setLayoutParams(rlScore);
+            cardGraph.setLayoutParams(rlGraph);
+            rlResults.setBackgroundColor(Color.parseColor(goal.getColor()));
+            init();
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    private void init() {
+        LogUtils.debug(sdkConstant.TAG, "init start");
+        try {
+            chartAccuracy.setUsePercentValues(true);
+            chartAccuracy.setDescription("");
+            chartAccuracy.setExtraOffsets(15.f, 0.f, 15.f, 0.f);
+            chartAccuracy.setDrawHoleEnabled(true);
+            chartAccuracy.setHoleColor(Color.WHITE);
+            chartAccuracy.setTransparentCircleColor(Color.WHITE);
+            chartAccuracy.setHoleRadius(75f);
+            chartAccuracy.setDrawCenterText(true);
+            chartAccuracy.setRotationAngle(270);
+            chartAccuracy.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+            chartAccuracy.setRotationEnabled(false);
+            chartAccuracy.setHighlightPerTapEnabled(true);
+            chartSpeed.setUsePercentValues(true);
+            chartSpeed.setDescription("");
+            chartSpeed.setExtraOffsets(15.f, 0.f, 15.f, 0.f);
+            chartSpeed.setDrawHoleEnabled(true);
+            chartSpeed.setHoleColor(Color.WHITE);
+            chartSpeed.setTransparentCircleColor(Color.WHITE);
+            chartSpeed.setHoleRadius(75f);
+            chartSpeed.setDrawCenterText(true);
+            chartSpeed.setRotationAngle(270);
+            chartSpeed.animateY(1400, Easing.EasingOption.EaseInOutQuad);
+            chartSpeed.setRotationEnabled(false);
+            chartSpeed.setHighlightPerTapEnabled(true);
+            final Legend legend = chartAccuracy.getLegend();
+            legend.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+            legend.setEnabled(false);
+            final Legend legend1 = chartSpeed.getLegend();
+            legend1.setPosition(Legend.LegendPosition.RIGHT_OF_CHART);
+            legend1.setEnabled(false);
+            if (!sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                pbNoview.setMax(Integer.parseInt("20000"));
+                pbAmature.setMax(Integer.parseInt("20000"));
+                pbPro.setMax(Integer.parseInt("20000"));
+                pbChamp.setMax(Integer.parseInt("40000"));
+                tvMax.setText(String.format("%,d", Integer.parseInt(goal.getMaxPoints())));
+            }
+            finalResult = dbHelper.getResultData(sdkConstant.RESULTKEY);
+            localUserName = user.getId() + "-" + goal.getGoalId() + "-" + goal.getcLevelId();
+            String localPlayer = user.getName();
+            if (user.getName().contains(" ")) {
+                localPlayer = user.getName().substring(0, user.getName().indexOf(" "));
+            }
+            tvLocalUser.setText(localPlayer);
+            String oppPlayer = opponentUser.getPlayerName();
+            if (opponentUser.getPlayerName().contains(" ")) {
+                oppPlayer = opponentUser.getPlayerName().substring(0, opponentUser.getPlayerName().indexOf(" "));
+            }
+            tvOpponentUser.setText(oppPlayer);
+            displayFinalResult(finalResult);
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "init stop");
+    }
+
+    /**
+     * displayFinalResult
+     */
+    @SuppressLint("SimpleDateFormat")
+    protected void displayFinalResult(final FinalResult[] finalResult) {
+        LogUtils.debug(sdkConstant.TAG, "displayFinalResult start");
+        try {
+            LogUtils.debug(sdkConstant.TAG, "Result Length:" + finalResult.length);
+            for (int i = 0; i < finalResult.length; i++) {
+                LogUtils.debug(sdkConstant.TAG, "localUserName:" + localUserName);
+                LogUtils.debug(sdkConstant.TAG, "User Name:" + finalResult[i].userName);
+                final String[] localUserArray = localUserName.split("-");
+                final String[] userArray = finalResult[i].userName.split("-");
+                if (localUserArray[0].equals(userArray[0]) && localUserArray[1].equals(userArray[1])) {
+                    int score;
+                    score = finalResult[i].completionScore + finalResult[i].winBounas + finalResult[i].speedScore
+                            + finalResult[i].totalScore;
+                    int time = finalResult[i].totalTime;
+                    final int totalScore = getScore(score);
+                    goal.setPoints(String.valueOf(totalScore));
+                    dbHelper.updateTotalScore(totalScore, skillId);
+                    cLevel = Integer.parseInt(goal.getcLevelId());
+                    ProgressionVO progressionVO;
+                    if (Integer.parseInt(goal.getcLevelId()) < Integer.parseInt(goal.gettLevelId())) {
+                        progressionVO = dbHelper.getProgressionDeatils(goal.getPoints());
+                        LogUtils.debug(sdkConstant.TAG, "getId:" + progressionVO.getId());
+                        LogUtils.debug(sdkConstant.TAG, "getLevel:" + progressionVO.getLevel());
+                        LogUtils.debug(sdkConstant.TAG, "getSubLevel:" + progressionVO.getSubLevel());
+                        dbHelper.updateLavel(String.valueOf(progressionVO.getId()), progressionVO.getLevel(), progressionVO.getSubLevel(), skillId);
+                    }
+                    if (Integer.parseInt(goal.getcLevelId()) == 16 && Integer.parseInt(goal.gettLevelId()) == 16) {
+                        progressionVO = dbHelper.getProgressionDeatils(goal.getPoints());
+                        dbHelper.updateLavel(String.valueOf(progressionVO.getId()), progressionVO.getLevel(), progressionVO.getSubLevel(), skillId);
+                    }
+                    goal.setLastPlayed(dateTimeFormat.format(new Date()));
+                    dbHelper.updateLastPlayed(dateTimeFormat.format(new Date()), skillId);
+                    txtTotalScore.setText(Html.fromHtml(s2Constant.START_FONT + String.format("%,d", totalScore) + s2Constant.CURRENT_SCORE));
+                    txtGameScore.setText(String.valueOf(finalResult[i].totalScore));
+                    txtWinScore.setText(String.valueOf(finalResult[i].winBounas));
+                    txtSpeedScore.setText(String.valueOf(finalResult[i].speedScore));
+                    txtComScore.setText(String.valueOf(finalResult[i].completionScore));
+                    txtPointEarned.setText(String.valueOf(score));
+                    txtLocalUserPoint.setText(String.valueOf(score));
+                    userQuestionVO = dbHelper.getSummray(sdkConstant.SUMMERYKEY);
+                    int size = userQuestionVO.length;
+                    LogUtils.debug(sdkConstant.TAG, "Time" + time);
+                    LogUtils.debug(sdkConstant.TAG, "size" + size);
+                    double total = 0;
+                    String timeTaken = "00:00";
+                    if (size > 0) {
+                        total = Math.round(((double) time / (double) size) * 100) / 100.0;
+                        timeTaken = String.valueOf(String.format("%.2f", total));
+                        LogUtils.debug(sdkConstant.TAG, "timeTaken" + timeTaken);
+                        timeTaken = timeTaken.replace(".", ":");
+                    }
+                    setmChartSpeed(time, size);
+                    chartSpeed.setCenterText(setSpeedText(timeTaken));
+                    if (finalResult[i].totalScore > 0) {
+                        if (Integer.parseInt(goal.getSubskillCorrectAnsScore()) > 0) {
+                            correctQue = finalResult[i].totalScore / Integer.parseInt(goal.getSubskillCorrectAnsScore());
+                        } else {
+                            correctQue = finalResult[i].totalScore / 100;
+                        }
+                    }
+                    if (!sdkConstant.CONTEST.equalsIgnoreCase(goal.getSubskillType())) {
+                        if (Integer.parseInt(goal.getPoints()) <= sdkConstant.TWENTYTHOU) {
+                            pbNoview.setProgress(Integer.parseInt(goal.getPoints()));
+                        } else if (Integer.parseInt(goal.getPoints()) <= sdkConstant.FOTYTHOU) {
+                            pbNoview.setProgress(sdkConstant.TWENTYTHOU);
+                            pbAmature.setProgress(Integer.parseInt(goal.getPoints()) - sdkConstant.TWENTYTHOU);
+                        } else if (Integer.parseInt(goal.getPoints()) <= sdkConstant.SIXTYTHOU) {
+                            pbNoview.setProgress(sdkConstant.TWENTYTHOU);
+                            pbAmature.setProgress(sdkConstant.TWENTYTHOU);
+                            pbPro.setProgress(Integer.parseInt(goal.getPoints()) - sdkConstant.FOTYTHOU);
+                        } else if (Integer.parseInt(goal.getPoints()) <= sdkConstant.ONE_LAKH) {
+                            pbNoview.setProgress(sdkConstant.TWENTYTHOU);
+                            pbAmature.setProgress(sdkConstant.TWENTYTHOU);
+                            pbPro.setProgress(sdkConstant.TWENTYTHOU);
+                            pbChamp.setProgress(Integer.parseInt(goal.getPoints()) - sdkConstant.SIXTYTHOU);
+                        }
+                    }
+                    setmChartAccorucy(correctQue);
+                    chartAccuracy.setCenterText(setAccuracyText(correctQue));
+                    setData(finalResult[i]);
+                } else {
+                    int score;
+                    score = finalResult[i].completionScore + finalResult[i].winBounas + finalResult[i].speedScore
+                            + finalResult[i].totalScore;
+                    txtOpponentUserPoint.setText(String.valueOf(score));
+                }
+                showLevelImage();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+
+        LogUtils.debug(sdkConstant.TAG, "displayFinalResult stop");
+    }
+
+    private void setmChartSpeed(final int time, final int size) {
+        try {
+            final ArrayList<PieEntry> yVals1 = new ArrayList<PieEntry>();
+            yVals1.add(new PieEntry(time, 0));
+            int intervel = 1000;
+            int ticker = 1;
+            try {
+                if (null != goal.getTick() && !sdkConstant.EMPTY.equalsIgnoreCase(goal.getTick())) {
+                    intervel = Integer.parseInt(goal.getTick());
+                    ticker = intervel / 1000;
+                }
+            } catch (Exception e) {
+                intervel = 1000;
+            }
+            intervel = intervel / 100;
+            if (size > 0) {
+                yVals1.add(new PieEntry(((size * intervel) - time), 1));
+            } else {
+                yVals1.add(new PieEntry(intervel, 1));
+            }
+            final ArrayList<String> xVals = new ArrayList<String>();
+            xVals.add("");
+            xVals.add("");
+            final PieDataSet dataSet = new PieDataSet(yVals1, "");
+            dataSet.setSliceSpace(0f);
+            dataSet.setSelectionShift(0f);
+            final ArrayList<Integer> colors = new ArrayList<Integer>();
+            int avg = 0;
+            if (size > 0) {
+                avg = time / size;
+                avg = avg / ticker;
+            }
+            if (time == 0 || avg == 0) {
+                speedColor = getResources().getColor(R.color.m_red);
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                colors.add(getResources().getColor(R.color.m_red));
+            } else if (avg > 0 && avg <= 3.33) {
+                colors.add(getResources().getColor(R.color.sdk_tickcolor));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                speedColor = getResources().getColor(R.color.sdk_tickcolor);
+            } else if (avg > 3.33 && avg <= 6.66) {
+                colors.add(getResources().getColor(R.color.sdk_seconderycolor));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                speedColor = getResources().getColor(R.color.sdk_seconderycolor);
+            } else {
+                colors.add(getResources().getColor(R.color.m_red));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                speedColor = getResources().getColor(R.color.m_red);
+            }
+            colors.add(ColorTemplate.getHoloBlue());
+            dataSet.setColors(colors);
+            final PieData data = new PieData(dataSet);
+            data.setValueTextColor(Color.TRANSPARENT);
+            chartSpeed.setData(data);
+            chartSpeed.highlightValues(null);
+            chartSpeed.invalidate();
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void setmChartAccorucy(final int correctQue) {
+        try {
+            final ArrayList<PieEntry> yVals1 = new ArrayList<PieEntry>();
+            yVals1.add(new PieEntry(correctQue, 0));
+            yVals1.add(new PieEntry((10 - correctQue), 1));
+            final PieDataSet dataSet = new PieDataSet(yVals1, "");
+            dataSet.setSliceSpace(0f);
+            dataSet.setSelectionShift(0f);
+            final ArrayList<Integer> colors = new ArrayList<Integer>();
+            if (correctQue == 0) {
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                colors.add(getResources().getColor(R.color.m_red));
+                accurecyColor = getResources().getColor(R.color.m_red);
+            } else if (correctQue > 0 && correctQue <= 4) {
+                colors.add(getResources().getColor(R.color.m_red));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                accurecyColor = getResources().getColor(R.color.m_red);
+            } else if (correctQue > 4 && correctQue <= 7) {
+                colors.add(getResources().getColor(R.color.sdk_seconderycolor));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                accurecyColor = getResources().getColor(R.color.sdk_seconderycolor);
+            } else {
+                colors.add(getResources().getColor(R.color.sdk_tickcolor));
+                colors.add(getResources().getColor(R.color.m_gray_colr));
+                accurecyColor = getResources().getColor(R.color.sdk_tickcolor);
+            }
+            colors.add(ColorTemplate.getHoloBlue());
+            dataSet.setColors(colors);
+            final PieData data = new PieData(dataSet);
+            data.setValueTextColor(Color.TRANSPARENT);
+            chartAccuracy.setData(data);
+            chartAccuracy.highlightValues(null);
+            chartAccuracy.invalidate();
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private SpannableString setAccuracyText(final int correctQue) {
+        SpannableString spannableString = null;
+        try {
+            final int accuracy = correctQue * 10;
+            final String text = accuracy + "%";
+            spannableString = new SpannableString(text);
+            spannableString.setSpan(new RelativeSizeSpan(1.5f), 0, spannableString.length(), 0);
+            spannableString.setSpan(new ForegroundColorSpan(accurecyColor), 0, spannableString.length(), 0);
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return spannableString;
+    }
+
+    /**
+     * @return
+     */
+    private int getScore(final int score) {
+        int totalScore = 0;
+        try {
+            if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                totalScore = Integer.parseInt(goal.getPoints()) + score;
+            } else {
+                totalScore = Integer.parseInt(goal.getPoints());
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+
+        }
+        return totalScore;
+    }
+
+    /**
+     *
+     */
+    private void showLevelImage() {
+        try {
+            final String imageName = sdkConstant.DRAWABLE + goal.cLevel.toLowerCase(Locale.ENGLISH) + "_"
+                    + goal.cSubLevel.toLowerCase(Locale.ENGLISH) + sdkConstant.INDEX;
+            final int imageResource = context.getResources().getIdentifier(imageName, null, context.getPackageName());
+            ivLevel.setImageResource(imageResource);
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * setData is use to set user game result and set player data
+     *
+     * @param finalResult
+     */
+    /**
+     * setData is use to set user game result and set player data
+     *
+     * @param finalResult
+     */
+    private void setData(final FinalResult finalResult) {
+        try {
+            final String status = getStatus(finalResult);
+            /**
+             * totalPlay is calculate total game played
+             */
+            gameId = finalResult.gameId;
+            if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                isLocation = true;
+                final int totalGame = goal.getNumGame().equals(sdkConstant.ZERO) ? 1 : Integer.parseInt(goal.getNumGame()) + 1;
+                final int totalPlay = goal.getTotalPlayed() == null ? 1 : Integer.parseInt(goal.getTotalPlayed()) + 1;
+                final int avgPoint = Integer.parseInt(goal.getPoints()) > 0 ? Integer.parseInt(goal.getPoints()) / totalPlay : 0;
+                final int winPer = Integer.parseInt(goal.getTotalWin()) > 0 ? (Integer.parseInt(goal.getTotalWin()) * 100) / totalPlay : 0;
+                final String strikeRate = goal.getStrikeRate() == null ? status : goal.getStrikeRate().concat(status);
+                dbHelper.updateScore(String.valueOf(totalGame), String.valueOf(totalPlay), String.valueOf(avgPoint), String.valueOf(winPer), strikeRate, skillId);
+                LogUtils.debug(sdkConstant.TAG, "max point:" + goal.getMaxPoints());
+                final String message = Teaser.getMessage(correctQue, status, strikeRate, cLevel,
+                        Integer.parseInt(goal.getcLevelId()), Integer.parseInt(goal.getPoints()),
+                        Integer.parseInt(goal.getMaxPoints()), goal.getSubskillType());
+                LogUtils.debug(sdkConstant.TAG, "message:" + message);
+                content = prefs.getString(sdkConstant.PREF_ACCHIVEMENT, null);
+                showMessage(message);
+            }
+            LogUtils.debug(sdkConstant.TAG, "goal.getPoints():" + goal.getPoints());
+            LogUtils.debug(sdkConstant.TAG, "goal.getMaxPoints():" + goal.getMaxPoints());
+            if (Integer.parseInt(goal.getPoints()) >= Integer.parseInt(goal.getMaxPoints())) {
+                showDialogLevel();
+            }
+            /**
+             * get message for Teaser
+             */
+            setTeaserMes();
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void updatePlayerLocation() {
+        if (isInternetAvailable() && prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+            try {
+                LogUtils.debug(sdkConstant.TAG, "updatePlayerLocation");
+                final Calendar cal = Calendar.getInstance();
+                final TimeZone tz = cal.getTimeZone();
+                final String timeZone = sdkCommonUtils.getGmtOffsetString(tz.getRawOffset());
+                LogUtils.debug(sdkConstant.TAG, "Time off set=" + timeZone);
+                final @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat(sdkConstant.DATE_TIME_FORMATE);
+                final String time = df.format(cal.getTime());
+                LogUtils.debug(sdkConstant.TAG, "Time=" + time);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_GAME_LOC, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.GAME_ID, gameId);
+                request.params.put(sdkConstant.SKILL_ID, goal.getSubSkillId());
+                request.params.put(sdkConstant.LATITUDE, latitude);
+                request.params.put(sdkConstant.LONGITUDE, longitude);
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.PLAYER_PROFILE_ID, goal.getGoalId());
+                request.params.put(Urls.TIME_ZONE, timeZone);
+                request.params.put(Urls.CURRENT_DATE_TIME, time);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            resultSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ONE_INDEX);
+                        }
+                        LogUtils.debug(sdkConstant.TAG, "response:" + response);
+
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     *
+     */
+    private void showDialogLevel() {
+        LogUtils.debug(sdkConstant.TAG, "showDialogLevel");
+        try {
+            LogUtils.debug(sdkConstant.TAG, "goal.getPoints():" + goal.getPoints());
+            if (Integer.parseInt(goal.getPoints()) <= sdkConstant.ONE_LAKH) {
+                showAchiveLevelDialogs();
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param message
+     */
+    private void showMessage(final String message) {
+        try {
+            if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                if (Integer.parseInt(goal.getPoints()) >= 100000 && Integer.parseInt(goal.getPoints()) <= 101000) {
+                    content = "Congratulations! Your status has now been updated to a 'Guru' in '" + goal.getSubSkill()
+                            + "'. Go ahead and flaunt it on your profile, resume and social media posts.";
+                    showTreserPopup(content);
+                } else if (!sdkConstant.EMPTY.equalsIgnoreCase(message)) {
+                    achiveMsg = message;
+                    callAchivementApi(achiveMsg);
+                }
+            }
+            updatePlayerLocation();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    private void callAchivementApi(final String message) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_ACHIEVEMENT, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.ACHIEVEMENT_ID, message);
+                request.params.put(sdkConstant.PLAYER_PROFILE_ID, goal.getGoalId());
+                request.params.put(sdkConstant.SKILL_ID, goal.getSubSkillId());
+                request.params.put(sdkConstant.GAME_ID, gameId);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            resultSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.TWO_INDEX);
+                        } else {
+                            LogUtils.debug("Login Response in Login", response);
+                            CommonResVO commonResVO = dbController.handelCommonResponse(response, request);
+                            /**
+                             * login successfully
+                             */
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                final SharedPreferences.Editor prefsEditor = prefs.edit();
+                                prefsEditor.putString(sdkConstant.PREF_ACCHIVEMENT, commonResVO.getMsg());
+                                prefsEditor.apply();
+                                content = commonResVO.getMsg();
+                                showTreserPopup(content);
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 0).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * show treaser popup
+     *
+     * @param message
+     */
+    private void showTreserPopup(final String message) {
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                mProgressDialog.setCanceledOnTouchOutside(true);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(message);
+                final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param finalResult
+     * @return
+     */
+    private String getStatus(final FinalResult finalResult) {
+        String status = null;
+        try {
+            if (finalResult.gameStatus.equals(s2Constant.WIN)) {
+                txtGameStatus.setText(s2Constant.YOU_WON);
+                status = sdkConstant.W;
+                title = "WON a game on Empass !";
+                content = "I just beat " + opponentUser.getPlayerName() + " in " + goal.getSubSkill();
+                if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                    setPlayerData(WIN_GAME);
+                    final int index = sdkCommonUtils.generateRandomNumber(0, 5);
+                    if (index == 4) {
+                        mediaPlayer.start();
+                    }
+                }
+            } else if (finalResult.gameStatus.equals(s2Constant.LOSS)) {
+                txtGameStatus.setText(s2Constant.YOU_LOST);
+                status = sdkConstant.L;
+                title = "LOST a game on Empass :(";
+                content = "I just lost to " + opponentUser.getPlayerName() + " in " + goal.getSubSkill();
+                if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                    setPlayerData(LOST_GAME);
+                }
+            } else if (finalResult.gameStatus.equals(s2Constant.ABANDONED)) {
+                txtGameStatus.setText(finalResult.gameStatus);
+                status = sdkConstant.A;
+                title = "ABANDONED a game on Empass :(";
+                content = "Abandoned a game against " + opponentUser.getPlayerName() + " in " + goal.getSubSkill();
+                if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                    setPlayerData(ABANDON_GAME);
+                }
+            } else {
+                txtGameStatus.setText(finalResult.gameStatus);
+                status = sdkConstant.T;
+                title = "TIED a game on Empass !";
+                content = "I just tied with " + opponentUser.getPlayerName() + " in " + goal.getSubSkill();
+                if (prefs.getBoolean(sdkConstant.PREF_RESULT, false)) {
+                    setPlayerData(TIE_GAME);
+                }
+                LogUtils.debug(sdkConstant.TAG, title);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+
+        return status;
+    }
+
+
+    /**
+     * setTeaserMes
+     */
+    private void setTeaserMes() {
+        try {
+            if (Integer.parseInt(goal.getPoints()) >= Integer.parseInt(goal.getMaxPoints())) {
+                title = "Achieved my goal on Empass!";
+                content = "I have achieved my goal today " + goal.gettLevel() + " in " + goal.getSubSkill();
+            } else {
+                if (cLevel == 4 && Integer.parseInt(goal.getcLevelId()) == 5) {
+                    title = "Just changed my level";
+                    content = "I am an " + goal.getcLevel() + " in " + goal.getSubSkill() + " on Empass";
+
+                }
+                if (cLevel == 8 && Integer.parseInt(goal.getcLevelId()) == 9) {
+                    title = "Just changed my level";
+                    content = "I am a " + goal.getcLevel() + " in " + goal.getSubSkill() + " on Empass";
+                }
+                if (cLevel == 12 && Integer.parseInt(goal.getcLevelId()) == 13) {
+                    title = "Just changed my level";
+                    content = "I am a" + goal.getcLevel() + " in " + goal.getSubSkill() + " on Empass";
+                }
+                if (sdkConstant.THREE <= goal.getStrikeRate().length()) {
+                    final String strikeRate = goal.getStrikeRate().substring(goal.getStrikeRate().length() - 3);
+                    if (sdkConstant.WWW.equalsIgnoreCase(strikeRate)) {
+                        title = sdkConstant.TEASER_YOU_WIN_3_GAME;
+                        content = sdkConstant.TEASER_YOU_WIN_3_GAME;
+                    }
+                }
+
+                if (correctQue == sdkConstant.TEN) {
+                    title = sdkConstant.TEASER_ALL_QUE_CORRECT;
+                    content = sdkConstant.TEASER_ALL_QUE_CORRECT;
+                }
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * setPlayerData is set player data after game finish
+     *
+     * @param status
+     */
+    private void setPlayerData(final String status) {
+        try {
+            switch (status) {
+                case WIN_GAME:
+                    final int win = goal.getTotalWin() == null ? 1 : (Integer.parseInt(goal.getTotalWin()) + 1);
+                    goal.setTotalWin(String.valueOf(win));
+                    goles[index].setTotalWin(String.valueOf(win));
+                    break;
+                case LOST_GAME:
+                    final int loss = goal.getTotalLost() == null ? 1 : (Integer.parseInt(goal.getTotalLost()) + 1);
+                    goal.setTotalLost(String.valueOf(loss));
+                    goles[index].setTotalLost(String.valueOf(loss));
+                    break;
+                case ABANDON_GAME:
+                    final int abondon = goal.getTotalAbandon() == null ? 1 : (Integer.parseInt(goal.getTotalAbandon()) + 1);
+                    goal.setTotalAbandon(String.valueOf(abondon));
+                    goles[index].setTotalAbandon(String.valueOf(abondon));
+                    break;
+                case TIE_GAME:
+                    final int tie = goal.getTotalTie() == null ? 1 : (Integer.parseInt(goal.getTotalTie()) + 1);
+                    goal.setTotalTie(String.valueOf(tie));
+                    goles[index].setTotalTie(String.valueOf(tie));
+                    break;
+                default:
+                    break;
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    public void onClickPerformance(View view) {
+        final SharedPreferences.Editor prefsEditor = prefs.edit();
+        prefsEditor.putBoolean(sdkConstant.PREF_RESULT, false);
+        prefsEditor.apply();
+        callRefreshGoalApi(user.getId(), goal.getGoalId());
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+
+    private void callRefreshGoalApi(final String userId, final String goalId) {
+
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_REFRESH_GOAL, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.PLAYER_ID, userId);
+                request.params.put(sdkConstant.PLAYER_PROFILE_ID, goalId);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            LogUtils.error(sdkConstant.TAG, "NPException");
+                        } else {
+                            RefreshGoalVO goalRes = dbController.hanldeRefreshResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(goalRes.getStatus())) {
+                                setGoalData(goalRes.getGoal());
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * setGoalData
+     *
+     * @param index
+     * @param goalRes
+     */
+    private void setGoalData(final Goal goalRes) {
+        try {
+            dbHelper.deleteAndUpdateGoal(goalRes, skillId);
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.release();
+            }
+            final Intent intents = new Intent(ResultActivity.this, GoalDetailsActivity.class);
+            intents.putExtra(sdkConstant.GOAL_INTENT, goal.getSubSkillId());
+            startActivity(intents);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onClickPlayAgain
+     */
+    private void onClickPlayAgain() {
+        try {
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putBoolean(sdkConstant.PREF_RESULT, false);
+            prefsEditor.apply();
+            if (isInternetAvailable()) {
+                GamePlayHelper.playingGame(goal, user, this);
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onBackPressed() {
+        try {
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putBoolean(sdkConstant.PREF_RESULT, false);
+            prefsEditor.apply();
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.release();
+            }
+            if (sdkConstant.NTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                final Intent intents = new Intent(ResultActivity.this, GoalDetailsActivity.class);
+                intents.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                intents.putExtra(sdkConstant.DASHBOARD_INTENT, true);
+                startActivity(intents);
+                finish();
+            } else {
+                final Intent intents = new Intent(ResultActivity.this, DashBoardActivity.class);
+                intents.putExtra(sdkConstant.TITLE, "PERFORMANCE");
+                intents.putExtra(sdkConstant.IS_BACK, false);
+                startActivity(intents);
+                finish();
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showAchiveLevelDialog is use to show dialog for achived goal
+     */
+    protected void showAchiveLevelDialogs() {
+        try {
+            LogUtils.debug(sdkConstant.TAG, "showAchiveLevelDialogs");
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialogss = ProgressDialog.show(context, "", "", true);
+                mProgressDialogss.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialogss.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialogss.findViewById(R.id.tv_loading);
+                tvLoading.setText("Do you wish to extend your game to the CHAMP level?");
+                final Button tvYes = (Button) mProgressDialogss.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialogss.dismiss();
+                        callUpdateApi();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialogss.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialogss.dismiss();
+                    }
+                });
+                mProgressDialogss.show();
+            }
+
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * callUpdateApi is use to call update goal on server
+     */
+    protected void callUpdateApi() {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_GOAL, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.ID, user.getId());
+                request.params.put(sdkConstant.T_LEVEL, "16");
+                request.params.put(sdkConstant.PLAYER_PROFILE_ID, goal.getGoalId());
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            resultSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ZERO_INDEX);
+                        } else {
+                            LogUtils.debug("Login Response in Login", response);
+                            UpdateGoalVO updateGoal = dbController.hanldeUpdateResponse(response, request);
+                            showMsgWithOk(updateGoal.getMsg(), "RESULT");
+                            /**
+                             * login successfully
+                             */
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(updateGoal.getStatus())) {
+                                success(updateGoal);
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * success is use for icons
+     *
+     * @param updateGoal
+     */
+    protected void success(final UpdateGoalVO updateGoal) {
+        try {
+            goal = dbHelper.getGoal(skillId);
+            final ProgressionVO progressionVO = dbHelper.getProgressionDeatils(goal.getPoints());
+            dbHelper.updateGoal(String.valueOf(progressionVO.getId()), progressionVO.getLevel(),
+                    progressionVO.getSubLevel(), updateGoal.getExpectedDate(), "100000", String.valueOf(progressionVO.getId()),
+                    progressionVO.getLevel(), progressionVO.getSubLevel(), skillId);
+            tvMax.setText(String.format("%,d", Integer.parseInt(goal.getMaxPoints())));
+            final String imageName = sdkConstant.DRAWABLE + goal.cLevel.toLowerCase(Locale.ENGLISH) + "_" + goal.cSubLevel.toLowerCase(Locale.ENGLISH)
+                    + sdkConstant.INDEX;
+            final int cLevelRes = context.getResources().getIdentifier(imageName, null, context.getPackageName());
+            ivLevel.setImageResource(cLevelRes);
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * current location
+     */
+    public void currantLocation(final android.location.Location mLastLocation) {
+        LogUtils.debug(sdkConstant.TAG, "currantLocation");
+        if (isLocation && mLastLocation != null) {
+            latitude = mLastLocation.getLatitude();
+            longitude = mLastLocation.getLongitude();
+            updatePlayerLocation();
+            isLocation = false;
+        } else if (isLocation && mLastLocation == null) {
+            updatePlayerLocation();
+            isLocation = false;
+        }
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private void resultSlowInternet(final String message, final int index) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    if (sdkConstant.TWO_INDEX == index) {
+                        callAchivementApi(achiveMsg);
+                    } else if (sdkConstant.ONE_INDEX == index) {
+                        updatePlayerLocation();
+                    } else {
+                        callUpdateApi();
+                    }
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * set summery
+     */
+    public void onClickSummary(View view) {
+        try {
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putBoolean(sdkConstant.PREF_RESULT, false);
+            prefsEditor.apply();
+            LogUtils.debug(sdkConstant.TAG, "goal id:" + goal.getSubSkillId());
+            if (dbHelper.getSummray(sdkConstant.SUMMERYKEY).length > 0) {
+                UserQuestionVO[] summary = dbHelper.getSummray(sdkConstant.SUMMERYKEY);
+                if (summary[0].getGoalId().contains(goal.getSubSkillId())) {
+                    if (mediaPlayer.isPlaying()) {
+                        mediaPlayer.release();
+                    }
+                    final Intent intentDetails = new Intent(ResultActivity.this, GameSummaryActivity.class);
+                    intentDetails.putExtra(sdkConstant.IS_BACK, false);
+                    intentDetails.putExtra(sdkConstant.GOAL_INTENT, skillId);
+                    startActivity(intentDetails);
+                    finish();
+                } else {
+                    GamePlayHelper.summaryAlert(goal, user, this);
+                }
+            } else {
+                GamePlayHelper.summaryAlert(goal, user, this);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    private SpannableString setSpeedText(final String time) {
+        SpannableString spannableString = null;
+        try {
+            final String text = time + "\nsecond";
+            LogUtils.debug(sdkConstant.TAG, "text" + text);
+            LogUtils.debug(sdkConstant.TAG, "speedColor" + text);
+            spannableString = new SpannableString(text);
+            final int index = text.lastIndexOf("\n");
+            spannableString.setSpan(new RelativeSizeSpan(1.5f), 0, index + 1, 0);
+            spannableString.setSpan(new ForegroundColorSpan(speedColor), 0, index + 1, 0);
+            spannableString.setSpan(new RelativeSizeSpan(1.0f), index + 1, text.length(), 0);
+            spannableString.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.m_black_dark)), index + 1, text.length(), 0);
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return spannableString;
+    }
+
+    /**
+     * onResume is call resume of parent activity
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isGpsPresent = isGpsPresent(context);
+        if (prefs.getBoolean("firstrunforresult", true)) {
+            showOverlayDialog();
+            prefs.edit().putBoolean("firstrunforresult", false).apply();
+        }
+    }
+
+    /**
+     * showOverlayDialog
+     */
+    private void showOverlayDialog() {
+        try {
+            if (!(this).isFinishing()) {
+                LogUtils.debug(sdkConstant.TAG, "showInternetDialog");
+                final ProgressDialog progressDialog = ProgressDialog.show(context, "", "", true);
+                progressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressDialog.setContentView(R.layout.m_dialog_overlay);
+                progressDialog.setCancelable(true);
+                final ImageView image = (ImageView) progressDialog.findViewById(R.id.image_overylay);
+                image.setImageResource(R.drawable.result_overlay);
+                final LinearLayout llOverlay = (LinearLayout) progressDialog.findViewById(R.id.ll_overlay);
+                llOverlay.setOnClickListener(new View.OnClickListener() {
+
+                    @Override
+                    public void onClick(final View v) {
+                        progressDialog.dismiss();
+                    }
+                });
+                progressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+}

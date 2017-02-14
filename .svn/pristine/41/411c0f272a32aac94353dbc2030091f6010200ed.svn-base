@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="AppWarpClientS2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/empass-sdk/libs/AppWarpClientS2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

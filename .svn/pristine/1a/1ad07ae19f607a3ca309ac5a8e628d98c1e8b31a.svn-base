@@ -1,0 +1,524 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.LeaderboardAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.GamePlayHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.LeaderVO;
+import com.empass.sdk.vo.LeaderboardDataVO;
+import com.empass.sdk.vo.User;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+
+/**
+ * Class for leaderboard
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class LeaderboardActivity extends EmpassActivity {
+    /**
+     * Activity context
+     */
+    private static Context context;
+    /**
+     * List object for Listview
+     */
+    public transient ListView listLeaderboard;
+    /**
+     * Vo for leader arraylist
+     */
+    private transient LeaderVO leadervo;
+    /**
+     * Declaer varable
+     */
+    private transient LeaderboardDataVO leaderboardDataVO;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvLeaderBoard;
+    /**
+     * Declaer varable
+     */
+    public transient Intent intent;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvDate;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * Declaer varable
+     */
+    private transient Goal[] goal;
+    /**
+     * declear variable
+     */
+    private transient int goalIndex;
+    /**
+     * Declaer varable
+     */
+    private transient String skillId;
+    /**
+     * Declaer variable
+     */
+    public transient Spinner spinnerGoals;
+    /**
+     * Declaer variable
+     */
+    public transient ImageView iv;
+    /**
+     * Declaer variable
+     */
+    public transient LinearLayout llSummary;
+    /**
+     * Declaer variable
+     */
+    public transient SharedPreferences prefs = null;
+    /**
+     * Declaer varable
+     */
+    public transient String color;
+    /**
+     * Declaer varable
+     */
+    public transient String type;
+    /**
+     * Declaer varable
+     */
+    public transient User user;
+
+    /**
+     * cons
+     */
+    public LeaderboardActivity() {
+        super();
+    }
+
+    /**
+     * onCreate method for class
+     */
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_leaderboard);
+        try {
+            context = this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            dbController = new SDKDatabaseController(context);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            prefs = getSharedPreferences(sdkConstant.PKZ, MODE_PRIVATE);
+            listLeaderboard = (ListView) findViewById(R.id.listLeaderboard);
+            listLeaderboard.setCacheColorHint(Color.TRANSPARENT);
+            tvLeaderBoard = (TextView) findViewById(R.id.tv_leaderboard);
+            tvDate = (TextView) findViewById(R.id.tvDate);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            spinnerGoals = (Spinner) findViewById(R.id.spinnerGoal);
+            iv = (ImageView) findViewById(R.id.iv_spinner);
+            llSummary = (LinearLayout) findViewById(R.id.ll_summary);
+            intent = getIntent();
+            user = dbHelper.getLogedUser();
+            goal = dbHelper.getUserGoals();
+            type = "Global";
+            tvHeader.setText("Leaderboard");
+            if (sdkConstant.YTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                LinearLayout llLeaderboardSpinner = (LinearLayout) findViewById(R.id.ll_heading);
+                llLeaderboardSpinner.setVisibility(View.VISIBLE);
+                final List<String> goals = new ArrayList<String>();
+                final List<String> goalSkillId = new ArrayList<String>();
+                for (int i = 0; i < goal.length; i++) {
+                    if (!sdkConstant.ZERO.contains(goal[i].getSubSkillId())) {
+                        goals.add(goal[i].getSubSkill());
+                        goalSkillId.add(goal[i].getSubSkillId());
+                    }
+                }
+                final ArrayAdapter<String> goalAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, goals);
+                spinnerGoals.setAdapter(goalAdapter);
+                spinnerGoals.setSelection(goalSkillId.indexOf(intent.getExtras().getString(sdkConstant.GOAL_INTENT)));
+                spinnerGoals.setOnItemSelectedListener(new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        try {
+                            final Spinner spinner = (Spinner) parent;
+                            if (spinner.getId() == R.id.spinnerGoal) {
+                                final TextView selectedText = (TextView) parent.getChildAt(0);
+                                if (selectedText != null) {
+                                    selectedText.setTextColor(getResources().getColor(R.color.m_white));
+                                    goalIndex = position;
+                                    skillId = goal[position].getSubSkillId();
+                                    color = goal[position].getColor();
+                                    LogUtils.debug(sdkConstant.TAG, "Select id" + skillId);
+                                    getLeaderBoardData(skillId, type);
+                                }
+                            }
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exception", e);
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                iv.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        spinnerGoals.performClick();
+                    }
+                });
+            } else {
+                skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+                Goal goalIndex = dbHelper.getGoal(skillId);
+                color = goalIndex.getColor();
+                getLeaderBoardData(skillId, type);
+            }
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * @param subSkillId
+     */
+    private void getLeaderboard(final String subSkillId) {
+        try {
+            showDbData(subSkillId, type);
+            if (isInternetAvailable()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_connecting);
+                mProgressDialog.show();
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_LEADERBOARD, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.SUB_SKILL_ID, subSkillId);
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                if (!"Global".equalsIgnoreCase(type)) {
+                    if (user.getCcName().equalsIgnoreCase(type)) {
+                        request.params.put(sdkConstant.CCNAME, type);
+                    } else {
+                        request.params.put(sdkConstant.CITY, type);
+                    }
+                }
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle response msg
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        mProgressDialog.dismiss();
+                        String response = (String) msg.obj;
+                        //if response is null or slow internet then show toast else parse response
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            showDbData(subSkillId, type);
+                        } else {
+                            if (response.contains(urls.RESPONSE_COSE_201)) {
+                                tvLeaderBoard.setVisibility(View.GONE);
+                                leaderboardDataVO = dbController.handleLeaderboardResponse(response, request);
+                                dbHelper.saveLeaderBoardData(subSkillId, response, leaderboardDataVO.getDate(), type);
+                                showLeadeboardList(leaderboardDataVO, type);
+                            } else {
+                                tvLeaderBoard.setVisibility(View.VISIBLE);
+                                listLeaderboard.setVisibility(View.GONE);
+                                String[] res = dbHelper.getLeaderBoardData(subSkillId, type);
+                                JSONObject bundleObject;
+                                String msgs;
+                                try {
+                                    bundleObject = new JSONObject(response);
+                                    msgs = bundleObject.getString(sdkConstant.MSG);
+                                    tvLeaderBoard.setText(msgs);
+                                    showMinimumGameAlert();
+                                    tvDate.setText("");
+                                } catch (JSONException e) {
+                                    LogUtils.error(sdkConstant.TAG, "Exception", e);
+                                }
+                                if (null != res[1]) {
+                                    tvLeaderBoard.setVisibility(View.GONE);
+                                    leaderboardDataVO = dbController.handleLeaderboardResponse(res[1], request);
+                                    showLeadeboardList(leaderboardDataVO, type);
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 0).execute(request);
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param subSkillId
+     */
+    protected void showDbData(final String subSkillId, final String type) {
+        try {
+            final String[] res = dbHelper.getLeaderBoardData(subSkillId, type);
+
+            if (null != res[1]) {
+                tvLeaderBoard.setVisibility(View.GONE);
+                final SDKHttpRequestVO SDKHttpRequestVO = null;
+                leaderboardDataVO = dbController.handleLeaderboardResponse(res[1], SDKHttpRequestVO);
+                showLeadeboardList(leaderboardDataVO, type);
+            } else {
+                listLeaderboard.setVisibility(View.GONE);
+                tvLeaderBoard.setVisibility(View.VISIBLE);
+            }
+        } catch (Exception e) {
+            listLeaderboard.setVisibility(View.GONE);
+            tvLeaderBoard.setVisibility(View.VISIBLE);
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * Method to fill list from adapter class
+     *
+     * @param leaderboardDataVO
+     * @param type
+     */
+    @SuppressLint("SetTextI18n")
+    private void showLeadeboardList(final LeaderboardDataVO leaderboardDataVO, final String type) {
+        try {
+            if (null != leaderboardDataVO.data) {
+                boolean notPlay = false;
+                showMinimumGameAlert();
+                listLeaderboard.setVisibility(View.VISIBLE);
+                tvLeaderBoard.setVisibility(View.GONE);
+                int rank = 1;
+                int rankForCC = 1;
+                final ArrayList<LeaderVO> list = new ArrayList<LeaderVO>();
+                boolean printLeaderBoard = true;
+                for (int i = 0; i < leaderboardDataVO.data.length; i++) {
+                    //if rank is >4 set printing values to false
+                    if (sdkConstant.FOUR_INDEX < rank) {
+                        printLeaderBoard = false;
+                    }
+                    //if player name in response equals player name in app
+                    if (leaderboardDataVO.data[i].getPlayerName().equalsIgnoreCase(user.getName())
+                            && leaderboardDataVO.data[i].getPlayerId().equalsIgnoreCase(user.getId())) {
+                        rank = 1;
+                        printLeaderBoard = true;
+                    }
+                    //set leaderboard values in vo if boolean is true
+
+                    if (printLeaderBoard) {
+                        leadervo = getLeaderBoard();
+                        leadervo.setPlayerId(leaderboardDataVO.data[i].getPlayerId());
+                        if ("Global".equalsIgnoreCase(type)) {
+                            leadervo.setRank(leaderboardDataVO.data[i].getRank());
+                        } else {
+                            String previousAvg;
+                            if (i > 0) {
+                                previousAvg = leaderboardDataVO.data[i - 1].getAvgScore();
+                                if (previousAvg.equalsIgnoreCase(leaderboardDataVO.data[i].getAvgScore())) {
+                                    leadervo.setRank(String.valueOf(rankForCC));
+                                } else {
+                                    rankForCC++;
+                                    leadervo.setRank(String.valueOf(rankForCC));
+                                }
+                            } else {
+                                leadervo.setRank(String.valueOf(rankForCC));
+                            }
+                        }
+                        leadervo.setCountry(leaderboardDataVO.data[i].getPlayerCountry());
+                        leadervo.setPlayerName(leaderboardDataVO.data[i].getPlayerName());
+                        leadervo.setcLevel(leaderboardDataVO.data[i].getcLevel());
+                        leadervo.setcSubLevel(leaderboardDataVO.data[i].getcSublevel());
+                        leadervo.setAvgScore(leaderboardDataVO.data[i].getAvgScore());
+                        leadervo.setDomainId(Integer.parseInt(leaderboardDataVO.data[i].getDomainId()));
+                        leadervo.setCcName(leaderboardDataVO.data[i].getCcname());
+                        leadervo.setImage(leaderboardDataVO.data[i].getImage());
+                        leadervo.setDomainColor(color);
+                        if (leaderboardDataVO.data[i].getPlayerId().equalsIgnoreCase(user.getId())) {
+                            notPlay = true;
+                        }
+                        if (Integer.parseInt(goal[goalIndex].getTotalPlayed()) < sdkConstant.TEN && !notPlay) {
+                            llSummary.setVisibility(View.VISIBLE);
+                        } else {
+                            llSummary.setVisibility(View.GONE);
+                        }
+                        list.add(leadervo);
+                        rank++;
+                    }
+                }
+                final LeaderVO leadervo1 = new LeaderVO();
+                leadervo1.setPlayerId("Demo");
+                leadervo1.setPlayerName("Demo");
+                list.add(leadervo1);
+                /**
+                 * Object of LeaderboardAdapter Class for list
+                 */
+                final LeaderboardAdapter leaderboardAdap = new LeaderboardAdapter(this, R.layout.m_activity_leaderboard, list,
+                        user.getName(), user.getId());
+                leaderboardAdap.notifyDataSetChanged();
+                listLeaderboard.setAdapter(leaderboardAdap);
+                listLeaderboard.setFooterDividersEnabled(false);
+                LogUtils.debug(sdkConstant.TAG, leaderboardDataVO.getDate());
+                tvDate.setText("Updated " + leaderboardDataVO.getDate() + "(UTC)");
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * show minimum game alert
+     */
+    private void showMinimumGameAlert() {
+        try {
+            LogUtils.debug(sdkConstant.TAG, "Tag" + Integer.parseInt(goal[goalIndex].getTotalPlayed()));
+            if (Integer.parseInt(goal[goalIndex].getTotalPlayed()) < sdkConstant.THREE) {
+                llSummary.setVisibility(View.VISIBLE);
+            } else {
+                llSummary.setVisibility(View.GONE);
+            }
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "NUMFException", e);
+        }
+    }
+
+
+    /**
+     * @return
+     */
+    private LeaderVO getLeaderBoard() {
+        return new LeaderVO();
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+
+    public void onClickSummary(View view) {
+        GamePlayHelper.playingGame(goal[goalIndex], user, this);
+
+    }
+
+    /**
+     * get leader borad data fro selected goal
+     *
+     * @param skillId
+     */
+    private void getLeaderBoardData(final String skillId, final String type) {
+        try {
+            final String[] res = dbHelper.getLeaderBoardData(skillId, type);
+            if (null == res[1]) {
+                getLeaderboard(skillId);
+            } else {
+                LogUtils.debug(sdkConstant.TAG, "Date:" + dateTimeFormat.format(new Date()));
+                LogUtils.debug(sdkConstant.TAG, "Old Date:" + res[2]);
+                final int min = sdkCommonUtils.getTimeDiffernece(dateTimeFormat.format(new Date()), res[2]);
+                if (min < sdkConstant.FIFTEN) {
+                    final SDKHttpRequestVO SDKHttpRequestVO = null;
+                    leaderboardDataVO = dbController.handleLeaderboardResponse(res[1], SDKHttpRequestVO);
+                    showLeadeboardList(leaderboardDataVO, type);
+                } else {
+                    getLeaderboard(skillId);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intent1 = new Intent(LeaderboardActivity.this, GoalDetailsActivity.class);
+            intent1.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+            startActivity(intent1);
+            finish();
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (prefs.getBoolean("firstrunforgoal", true)) {
+            showOverlayDialog();
+            prefs.edit().putBoolean("firstrunforgoal", false).apply();
+        }
+    }
+
+    /**
+     * showOverlayDialog
+     */
+    private void showOverlayDialog() {
+        try {
+            LogUtils.debug(sdkConstant.TAG, "showInternetDialog");
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_overlay);
+            final ImageView image = (ImageView) mProgressDialog.findViewById(R.id.image_overylay);
+            image.setImageResource(R.drawable.performane_overlay);
+            mProgressDialog.setCancelable(true);
+            final LinearLayout llOverlay = (LinearLayout) mProgressDialog.findViewById(R.id.ll_overlay);
+            llOverlay.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+}

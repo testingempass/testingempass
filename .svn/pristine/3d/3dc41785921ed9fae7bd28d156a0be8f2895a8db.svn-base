@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/ll_PlaySummary"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_weight="1">
+
+        <TextView
+            android:id="@+id/tvSkill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="@dimen/sp_15"
+            android:layout_marginTop="@dimen/sp_5"
+            android:text="@string/m_sub_skill"
+            android:textColor="@color/m_white"
+            android:textSize="@dimen/sp_20" />
+
+        <TextView
+            android:id="@+id/tvSkillId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginLeft="@dimen/sp_15"
+            android:layout_marginTop="@dimen/sp_5"
+            android:textColor="@color/m_white"
+            android:textSize="@dimen/sp_20"
+            android:visibility="invisible" />
+
+        <ImageView
+            android:id="@+id/iv_action"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_30"
+            android:layout_alignParentRight="true"
+            android:layout_margin="@dimen/dp_5"
+            android:clickable="true"
+            android:clipToPadding="false"
+            android:elevation="20dp"
+            android:onClick="onClickPerformance"
+            android:src="@drawable/performance_active" />
+
+        <TextView
+            android:id="@+id/tvScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/ivScore"
+            android:layout_alignRight="@+id/tv_spash"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="@dimen/dp_minus15"
+            android:layout_marginRight="@dimen/dp_10"
+            android:text="@string/m_score_28000"
+            android:textColor="@color/m_white"
+            android:textSize="@dimen/sp_18" />
+
+        <TextView
+            android:id="@+id/tv_spash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/ivScore"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="@dimen/dp_minus15"
+            android:text="/"
+            android:textColor="@color/m_black_light"
+            android:textSize="@dimen/sp_18" />
+
+        <TextView
+            android:id="@+id/tvTargetScore"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/ivScore"
+            android:layout_alignLeft="@+id/tv_spash"
+            android:layout_centerInParent="true"
+            android:layout_marginBottom="@dimen/dp_minus15"
+            android:layout_marginLeft="@dimen/dp_10"
+            android:gravity="center"
+            android:text="@string/m_score_28000"
+            android:textColor="@color/m_black_dark"
+            android:textSize="@dimen/sp_18" />
+
+        <ImageView
+            android:id="@+id/ivScore"
+            android:layout_width="@dimen/sp_40"
+            android:layout_height="@dimen/sp_40"
+            android:layout_alignParentLeft="true"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="@dimen/sp_10"
+            android:layout_weight="1"
+            android:contentDescription="@null"
+            android:src="@drawable/novice_bronze_index" />
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="@dimen/sp_50"
+            android:layout_marginRight="@dimen/sp_50"
+            android:progressDrawable="@drawable/m_progressbar"
+            android:secondaryProgress="0" />
+
+        <ImageView
+            android:id="@+id/ivTarget"
+            android:layout_width="@dimen/sp_40"
+            android:layout_height="@dimen/sp_40"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="@dimen/sp_10"
+            android:contentDescription="@null"
+            android:src="@drawable/novice_bronze_index" />
+
+        <ImageView
+            android:id="@+id/btnPlay"
+            android:layout_width="@dimen/sp_50"
+            android:layout_height="@dimen/sp_50"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_margin="@dimen/sp_5"
+            android:clickable="true"
+            android:onClick="onClickPlay"
+            android:src="@drawable/orange_play"
+            android:visibility="visible" />
+    </RelativeLayout>
+
+</LinearLayout>

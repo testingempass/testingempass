@@ -1,0 +1,84 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class QuestionWrapper {
+	/**
+	 * 
+	 */
+	@SerializedName("id")
+	private String questionId;
+	/**
+ * 
+ */
+	@SerializedName("que_no")
+	private String questionNumber;
+	/**
+	 * 
+	 */
+	@SerializedName("Question")
+	private Question question;
+
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getQuestionId() {
+		return questionId;
+	}
+
+	/**
+	 * 
+	 * @param questionId
+	 */
+	public void setQuestionId(final String questionId) {
+		this.questionId = questionId;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public Question getQuestion() {
+		return question;
+	}
+
+	/**
+	 * 
+	 * @param question
+	 */
+	public void setQuestion(final Question question) {
+		this.question = question;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getQuestionNumber() {
+		return questionNumber;
+	}
+
+	/**
+	 * 
+	 * @param questionNumber
+	 */
+	public void setQuestionNumber(final String questionNumber) {
+		this.questionNumber = questionNumber;
+	}
+
+	/**
+ * 
+ */
+	@Override
+	public String toString() {
+		return "QuestionWrapper [questionId=" + questionId + ", questionNumber=" + questionNumber + ", question=" + question + "]";
+	}
+
+}

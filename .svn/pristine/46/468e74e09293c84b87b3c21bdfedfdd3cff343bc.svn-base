@@ -1,0 +1,47 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class OpponentResponse {
+	/**
+ * 
+ */
+	@SerializedName("first_user")
+	private final String firstUser;
+	/**
+ * 
+ */
+	@SerializedName("second_user")
+	private final String secondUser;
+
+	/**
+	 * 
+	 * @param firstUser
+	 * @param secondUser
+	 */
+	public OpponentResponse(final String firstUser, final String secondUser) {
+		super();
+		this.firstUser = firstUser;
+		this.secondUser = secondUser;
+	}
+
+	/**
+	 * @return the firstUser
+	 */
+	public String getFirstUser() {
+		return firstUser;
+	}
+
+	/**
+	 * @return the secondUser
+	 */
+	public String getSecondUser() {
+		return secondUser;
+	}
+
+}

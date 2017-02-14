@@ -1,0 +1,155 @@
+package com.empass.sdk.http;
+
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.utils.Urls;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.SocketTimeoutException;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Class for http request
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public final class SDKHttpRequestHelper {
+    /**
+     * variable for chracter set
+     */
+    protected static OkHttpClient okHttpClient;
+    /**
+     * decelear media type
+     */
+    private static final MediaType JSON = MediaType.parse("application/json;charset=utf-8");
+    static SDKHttpRequestVO SDKHttpRequestVO = null;
+    private static int count;
+
+    private SDKHttpRequestHelper() {
+    }
+
+    /**
+     * call http request
+     *
+     * @param request
+     * @return
+     */
+    public static String executeOKHttpRequest(final SDKHttpRequestVO request, int i) {
+        count = i;
+        SDKHttpRequestVO = request;
+        String responce = null;
+        Request okRequest = null;
+        setUpOkHttpClent();
+        final JSONObject json = new JSONObject();
+        final JSONObject jsondata = new JSONObject();
+        RequestBody body;
+        try {
+            //if method name is post
+            if (Urls.REQUEST_POST.equals(request.requestMethod)) {
+                for (Map.Entry<String, Object> entry : request.params.entrySet()) {
+                    json.put(entry.getKey(), String.valueOf(entry.getValue()));
+                }
+                jsondata.put(SDKConstant.DATA, json);
+                LogUtils.debug(SDKConstant.TAG, jsondata.toString());
+                body = RequestBody.create(JSON, jsondata.toString());
+                LogUtils.debug(SDKConstant.TAG, "Url:" + request.url);
+                okRequest = new Request.Builder().tag(SDKConstant.TAG).url(request.url).post(body).addHeader(SDKConstant.TOKEN, request.token).addHeader(SDKConstant.TASK, request.task).header("Connection", "close").build();
+            }
+            //if method name is get
+            else if (Urls.REQUEST_GET.equals(request.requestMethod)) {
+                final String url = request.url;
+                LogUtils.debug(SDKConstant.TAG, "Url:" + request.url);
+                okRequest = new Request.Builder().tag(SDKConstant.TAG).url(url).addHeader(SDKConstant.TOKEN, request.token).addHeader(SDKConstant.TASK, request.task).header("Connection", "close").build();
+            }
+            final Response response = okHttpClient.newCall(okRequest).execute();
+            final ResponseBody responseBody = response.body();
+            responce = responseBody.string();
+            responseBody.close();
+        } catch (SocketTimeoutException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            LogUtils.debug(SDKConstant.TAG, "Count:" + count);
+            callAgain();
+        } catch (IOException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            LogUtils.debug(SDKConstant.TAG, "Count:" + count);
+            callAgain();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+            LogUtils.debug(SDKConstant.TAG, "Count:" + count);
+            callAgain();
+        }
+        if (responce != null) {
+            LogUtils.debug(SDKConstant.TAG, responce);
+        }
+        return responce;
+    }
+
+    private static void callAgain() {
+        count++;
+        if (count < 3) {
+            executeOKHttpRequest(SDKHttpRequestVO, count);
+        }
+    }
+
+    /**
+     * set http time out
+     */
+    public static void setUpOkHttpClent() {
+        try {
+            okHttpClient = new OkHttpClient();
+            okHttpClient.setRetryOnConnectionFailure(true);
+            okHttpClient.setConnectTimeout(SDKConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+            okHttpClient.setReadTimeout(SDKConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+            okHttpClient.setWriteTimeout(SDKConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exce", e);
+        }
+    }
+
+    /**
+     * sendException
+     *
+     * @param url
+     * @param id
+     * @param error
+     * @return
+     */
+    public static String sendOKHttpException(final String url, final String id, final String error, final String token) {
+        String responce = null;
+        Request okRequest;
+        setUpOkHttpClent();
+        RequestBody body;
+        final JSONObject json = new JSONObject();
+        final JSONObject jsondata = new JSONObject();
+        try {
+            json.put(Urls.PLAYER_ID, id);
+            json.put(Urls.MESSAGE, error);
+            jsondata.put(SDKConstant.DATA, json);
+            LogUtils.debug(SDKConstant.TAG, jsondata.toString());
+            body = RequestBody.create(JSON, jsondata.toString());
+            okRequest = new Request.Builder().tag(SDKConstant.TAG).url(url).post(body).addHeader(SDKConstant.TASK, Urls.TASK_UPDATE_EXE).addHeader(SDKConstant.TOKEN, token).build();
+            final Response response = okHttpClient.newCall(okRequest).execute();
+            final ResponseBody responseBody = response.body();
+            responce = responseBody.string();
+        } catch (IOException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (JSONException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return responce;
+    }
+
+}

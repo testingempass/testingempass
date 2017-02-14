@@ -1,0 +1,30 @@
+package com.empass.sdk.s2;
+
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.shephertz.app42.gaming.multiplayer.client.listener.UpdateRequestListener;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+@SuppressWarnings("ALL")
+public class WarpUpdateRequestListener implements UpdateRequestListener {
+
+
+	/**
+	 *
+	 */
+	public WarpUpdateRequestListener() {
+		 LogUtils.debug(SDKConstant.TAG, "");
+	}
+
+	/**
+ * 
+ */
+	@Override
+	public void onSendUpdateDone(final byte arg0) {
+		 LogUtils.debug(SDKConstant.TAG, "onSendUpdateDone");
+	}
+}

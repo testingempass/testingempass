@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:openDrawer="end">
+
+    <include
+        android:id="@+id/btn_header"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginTop="@dimen/dp_50"
+        android:background="#fff"
+        android:keepScreenOn="true">
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:orientation="vertical">
+
+            <ScrollView
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent">
+
+                <LinearLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/header"
+                        layout="@layout/m_game_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentTop="true"
+                        android:layout_marginTop="@dimen/dp_minus15"></include>
+
+                    <TextView
+                        android:id="@+id/tv_question"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/header"
+                        android:layout_gravity="center"
+                        android:layout_marginLeft="@dimen/dp_20"
+                        android:layout_marginRight="@dimen/dp_20"
+                        android:layout_marginTop="@dimen/dp_5"
+                        android:gravity="center_horizontal"
+                        android:text="@string/m_question_txt"
+                        android:textColor="@color/m_black_dark"
+                        android:textSize="@dimen/dp_18"
+                        android:visibility="visible" />
+
+                    <com.empass.sdk.customview.SquareLayout
+                        android:id="@+id/li_question_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginLeft="@dimen/dp_30"
+                        android:layout_marginRight="@dimen/dp_30"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:id="@+id/tableRow1"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/btn_option_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:text="@string/m_options" />
+
+                            <ImageView
+                                android:id="@+id/img_option_1"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/btn_option_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:text="@string/m_options" />
+
+                            <ImageView
+                                android:id="@+id/img_option_2"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:visibility="gone" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/tableRow2"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/btn_option_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:text="@string/m_options" />
+
+                            <ImageView
+                                android:id="@+id/img_option_3"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:visibility="gone" />
+
+                            <TextView
+                                android:id="@+id/btn_option_4"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:text="@string/m_options" />
+
+                            <ImageView
+                                android:id="@+id/img_option_4"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_margin="@dimen/dp_5"
+                                android:layout_weight="1"
+                                android:background="@drawable/m_shape_black_border"
+                                android:gravity="center"
+                                android:padding="@dimen/dp_5"
+                                android:visibility="gone" />
+                        </LinearLayout>
+                    </com.empass.sdk.customview.SquareLayout>
+                </LinearLayout>
+            </ScrollView>
+        </LinearLayout>
+    </RelativeLayout>
+</RelativeLayout>
+
+

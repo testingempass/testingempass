@@ -1,0 +1,70 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 11/9/2016.
+ */
+public class LeaderboardData {
+    @SerializedName("rankall")
+    public String rankAll;                                           // Variable for status
+    @SerializedName("rankmon")                                      //Variable for login id
+    public String rankMon;
+    @SerializedName("rankdaily")                                           // Variable for msg
+    public String rankDaily;
+    @SerializedName("alltime")
+    public DataVO[] allTime;
+
+    public DataVO[] getMonthly() {
+        return monthly;
+    }
+
+    public void setMonthly(DataVO[] monthly) {
+        this.monthly = monthly;
+    }
+
+    public String getRankDaily() {
+        return rankDaily;
+    }
+
+    public void setRankDaily(String rankDaily) {
+        this.rankDaily = rankDaily;
+    }
+
+    public String getRankAll() {
+        return rankAll;
+    }
+
+    public void setRankAll(String rankAll) {
+        this.rankAll = rankAll;
+    }
+
+    public String getRankMon() {
+        return rankMon;
+    }
+
+    public void setRankMon(String rankMon) {
+        this.rankMon = rankMon;
+    }
+
+    public DataVO[] getAllTime() {
+        return allTime;
+    }
+
+    public void setAllTime(DataVO[] allTime) {
+        this.allTime = allTime;
+    }
+
+    public DataVO[] getDaily() {
+        return daily;
+    }
+
+    public void setDaily(DataVO[] daily) {
+        this.daily = daily;
+    }
+
+    @SerializedName("monthly")
+    public DataVO[] monthly;
+    @SerializedName("daily")
+    public DataVO[] daily;
+}

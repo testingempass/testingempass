@@ -1,0 +1,393 @@
+package com.empass.sdk.utils;
+
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ResolveInfo;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcelable;
+import android.view.KeyEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.activity.PurchaseActivity;
+import com.empass.sdk.activity.SearchOpponentActivity;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.vo.CanPlayResVO;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.User;
+
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.TimeZone;
+
+
+/**
+ * GamePlayHelper is use for start a game
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+@SuppressLint("Registered")
+public class GamePlayHelper extends EmpassActivity {
+
+    /**
+     *
+     */
+    private static transient Goal goal;
+    /**
+     *
+     */
+    private static transient Activity activity;
+
+    /**
+     * call seacrh opponent activity
+     *
+     * @param context
+     */
+    private static void callSearchOpponent(final Context context, final String skillId) {
+        try {
+            final Intent intent = new Intent(context, SearchOpponentActivity.class);
+            intent.putExtra(sdkConstant.GOAL_INTENT, skillId);
+            ((Activity) context).startActivity(intent);
+            ((Activity) context).finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * playingGame to start game
+     */
+    public static void playingGame(final Goal goals, User user, final Activity activitys) {
+        try {
+            if (isInternetAvailable1()) {
+                goal = goals;
+                activity = activitys;
+                final Calendar cal = Calendar.getInstance();
+                final TimeZone tz = cal.getTimeZone();
+                LogUtils.debug(sdkConstant.TAG, "Time zone=" + tz.getDisplayName());
+                final String timeZone = sdkCommonUtils.getGmtOffsetString(tz.getRawOffset());
+                LogUtils.debug(sdkConstant.TAG, "Time off set=" + timeZone);
+                final @SuppressLint("SimpleDateFormat") SimpleDateFormat df = new SimpleDateFormat(sdkConstant.DATE_TIME_FORMATE);
+                final String time = df.format(cal.getTime());
+                LogUtils.debug(sdkConstant.TAG, "Time=" + time);
+                final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_CAN_PLAY, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.PLAYER_PROFILE_ID, goal.getGoalId());
+                request.params.put(sdkConstant.SKILL_ID, goal.getSubSkillId());
+                request.params.put(sdkConstant.APP_VERSION, appVersion);
+                request.params.put(Urls.TIME_ZONE, timeZone);
+                request.params.put(Urls.CURRENT_DATE_TIME, time);
+                request.params.put(urls.AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            callSearchOpponent(context, goal.getSubSkillId());
+                        } else {
+                            CanPlayResVO commonResVO = new SDKDatabaseController(activity).handelCanPlayResponse(response, request);
+                            LogUtils.debug(sdkConstant.TAG, "Res:" + response);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                callSearchOpponent(context, goal.getSubSkillId());
+                            } else if (urls.RESPONSE_COSE_404A.equalsIgnoreCase(commonResVO.getStatus())) {
+                                goToGooglePlay(context);
+                            } else if (urls.RESPONSE_COSE_404B.equalsIgnoreCase(commonResVO.getStatus())) {
+                                slowNegCoinDialog(commonResVO.getMsg(), context,goal.getSubSkillId());
+                            } else if (urls.RESPONSE_COSE_404C.equalsIgnoreCase(commonResVO.getStatus())) {
+                                showMsgWithOk(commonResVO.getMsg(), sdkConstant.TAG);
+                            } else if (urls.RESPONSE_COSE_404D.equalsIgnoreCase(commonResVO.getStatus())) {
+                                showCompleteProfile(context);
+                            } else if (urls.RESPONSE_COSE_000.equalsIgnoreCase(commonResVO.getStatus())) {
+                                callSearchOpponent(context, goal.getSubSkillId());
+                            } else {
+                                showMsgWithOk(commonResVO.getMsg(), sdkConstant.TAG);
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(activity, new Handler(callback), 1).execute(request);
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private static void slowNegCoinDialog(final String msg, final Activity context,final String subSkillId) {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                mProgressDialog.setCancelable(true);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(msg);
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setText("PURCHASE");
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        final Intent intent = new Intent(context, PurchaseActivity.class);
+                        intent.putExtra(sdkConstant.GOAL_INTENT, subSkillId);
+                        context.startActivity(intent);
+                        ((Activity) context).finish();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setText("INVITE");
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        showInviteFriendDialog();
+                    }
+                });
+                mProgressDialog.show();
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * Method to show exception case dialog box
+     *
+     * @param goal
+     */
+    public static void summaryAlert(final Goal goal, final User user, final Activity activity) {
+        try {
+            if (!(activity).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(activity, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("You have not played any games recently");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setText(S2Constant.PLAY_NOW);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        playingGame(goal, user, activity);
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setText(R.string.m_cancel);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showCompleteProfile alert
+     *
+     * @param context
+     */
+    protected static void showCompleteProfile(final Context context) {
+        try {
+            if (!(activity).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Update your profile and \n education");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * call app link on play store
+     *
+     * @param context
+     */
+    protected static void goToGooglePlay(final Context context) {
+        try {
+            if (!(activity).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("An updated version of the Empass is available. Download now.");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+                        dbHelper.deleteLeaderBoard();
+                        //  dbHelper.updateUserLog(beApp.getLoggedinUser().getUserId());
+                        mProgressDialog.dismiss();
+                        final Uri uri = Uri.parse("https://bit.ly/empassappinvite");
+                        final Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                        context.startActivity(intent);
+                        ((Activity) context).finish();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+
+
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * Method to Check Internet Connectivity
+     *
+     * @return
+     */
+    public static boolean isInternetAvailable1() {
+        Boolean isInternetPresent = false;
+        try {
+            isInternetPresent = isNetworkAvailable(context);
+            if (!isInternetPresent) {
+                showInternetDialogs();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        return isInternetPresent;
+    }
+
+    /**
+     *
+     */
+
+    private static void showInternetDialogs() {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText("No connection available. Please enable internet!");
+            final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOk.setText(R.string.m_enable);
+            tvOk.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    context.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                }
+            });
+            mProgressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                @Override
+                public boolean onKey(final DialogInterface dialog, final int keyCode, KeyEvent event) {
+
+                    if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                        try {
+                            mProgressDialog.dismiss();
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exce", e);
+                        }
+                    }
+                    return false;
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private static void showInviteFriendDialog() {
+        try {
+            final List<Intent> targetShareIntents = new ArrayList<>();
+            final Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.setType(sdkConstant.TEXT_PLAIN);
+            final List<ResolveInfo> resInfos = context.getPackageManager().queryIntentActivities(shareIntent, 0);
+            if (!resInfos.isEmpty()) {
+                for (final ResolveInfo resInfo : resInfos) {
+                    final String packageName = resInfo.activityInfo.packageName;
+                    LogUtils.debug(sdkConstant.TAG, "packageName:" + packageName);
+                    if (packageName.contains("com.whatsapp") || packageName.contains("com.google.android.gm") ||
+                            packageName.contains("com.facebook.katana") /*|| packageName.contains("com.linkedin.android")*/
+                            || packageName.contains("com.google.android.talk") || packageName.contains("com.android.mms")) {
+                        final Intent intent = new Intent();
+                        intent.setComponent(new ComponentName(packageName, resInfo.activityInfo.name));
+                        intent.setAction(Intent.ACTION_SEND);
+                        intent.setType(sdkConstant.TEXT_PLAIN);
+                        // final String shareBody = "Hey There!\n Found this cool app called 'Empass'. You can test your job skills for free.\n \nClick" + " " + dbHelper.getRefData(sdkConstant.PLAY_STORE_URL) + " "
+                        //     + "to try it out.\n \n Use" + " " + beApp.getLoggedinUser().getInviteCode() + " as my referral code. Both you and I will earn bonus coins to play and redeem rewards.\n \nCheers";
+                        intent.putExtra(Intent.EXTRA_SUBJECT, "Empass");
+                        //intent.putExtra(Intent.EXTRA_TEXT, shareBody);
+                        intent.setPackage(packageName);
+                        targetShareIntents.add(intent);
+                    }
+                }
+                if (!targetShareIntents.isEmpty()) {
+                    final Intent chooserIntent = Intent.createChooser(targetShareIntents.remove(0), "Invite Friends");
+                    chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, targetShareIntents.toArray(new Parcelable[targetShareIntents.size()]));
+                    context.startActivity(chooserIntent);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+}

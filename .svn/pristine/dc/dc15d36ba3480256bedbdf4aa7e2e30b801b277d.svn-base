@@ -1,0 +1,241 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+import java.util.List;
+
+//Class for profile
+public class User {
+    @SerializedName("id")
+    private String id;
+    @SerializedName("email")                                      //Variable for id
+    private String email;
+    @SerializedName("phone")   // Variable for email
+    private String phone;
+    @SerializedName("name")   //Variable for phone
+    private String name;
+    @SerializedName("gender")   //Variable for name
+    private String gender;
+    @SerializedName("type")   //Variable for gender
+    private String type;
+    @SerializedName("dob")   //Variable for type
+    private String dob;                                         //Variable for dob
+
+    public String getIsChat() {
+        return isChat;
+    }
+
+    public void setIsChat(String isChat) {
+        this.isChat = isChat;
+    }
+
+    @SerializedName("city")
+    private String city;
+    @SerializedName("image")   //Variable for city
+    private String image;                                      //Variable for image
+
+    public String getInviteCode() {
+        return inviteCode;
+    }
+
+    public void setInviteCode(String inviteCode) {
+        this.inviteCode = inviteCode;
+    }
+
+    public String getUnreadNotifCount() {
+        return unreadNotifCount;
+    }
+
+    public void setUnreadNotifCount(String unreadNotifCount) {
+        this.unreadNotifCount = unreadNotifCount;
+    }
+
+    @SerializedName("unread_notif_count")   //Variable for city
+    private String unreadNotifCount;
+    @SerializedName("invite_code")   //Variable for city
+    private String inviteCode;
+
+    public String getMaxGoal() {
+        return maxGoal;
+    }
+
+    public void setMaxGoal(String maxGoal) {
+        this.maxGoal = maxGoal;
+    }
+
+    public String getCcName() {
+        return ccName;
+    }
+
+    public void setCcName(String ccName) {
+        this.ccName = ccName;
+    }
+
+    @SerializedName("max_goal")                            //Variable for country_code
+    private String maxGoal;
+    @SerializedName("ccname")                            //Variable for country_code
+    private String ccName;
+    @SerializedName("country_code")                            //Variable for country_code
+    private String countryCode;
+    @SerializedName("is_chat")                            //Variable for country_code
+    private String isChat;
+
+    public String getAuthType() {
+        return authType;
+    }
+
+    public void setAuthType(String authType) {
+        this.authType = authType;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    @SerializedName("auth_type")                            //Variable for country_code
+    private String authType;
+    @SerializedName("uuid")                            //Variable for country_code
+    private String uuid;
+    @SerializedName("resume")
+    private String resume;
+
+    public String getMultiSkill() {
+        return multiSkill;
+    }
+
+    public void setMultiSkill(String multiSkill) {
+        this.multiSkill = multiSkill;
+    }
+
+    @SerializedName("multiskill")
+    private String multiSkill;
+
+    public boolean isLoggedIn() {
+        return isLoggedIn;
+    }
+
+    public void setIsLoggedIn(boolean isLoggedIn) {
+        this.isLoggedIn = isLoggedIn;
+    }
+
+    /**
+     *
+     */
+    public boolean isLoggedIn = false;
+    public String getResume() {
+        return resume;
+    }
+
+    public void setResume(String resume) {
+        this.resume = resume;
+    }
+
+    public User() {                                            //Class Constructor
+        super();
+    }
+
+    public String getGender() {                               //Method to get gender  @return
+        return gender;
+    }
+
+    public void setGender(String gender) {                    // Method to set gender  @return
+        this.gender = gender;
+    }
+
+    public String getType() {                                //Method to get type @return
+        return type;
+    }
+
+    public void setType(String type) {                        // Method to set type @return
+        this.type = type;
+    }
+
+    public String getDob() {                                   // Method to get dob @return
+        return dob;
+    }
+
+    public void setDob(String dob) {                          // Method to set dob  @return
+        this.dob = dob;
+    }
+
+    public String getImage() {                                // Method to get image  @return
+        return image;
+    }
+
+    public void setImage(String image) {                      //Method to set image @return
+        this.image = image;
+    }
+
+    public String getId() {                                  //Method to get id @return
+        return id;
+    }
+
+    public void setId(String id) {                           //Method to set id @return
+        this.id = id;
+    }
+
+    public String getEmail() {                              // Method to get email @return
+        return email;
+    }
+
+    public void setEmail(String email) {                     //Method to set email  @return
+        this.email = email;
+    }
+
+    public String getPhone() {                               // Method to get phone  @return
+        return phone;
+    }
+
+    public void setPhone(String phone) {                    //Method to set phone @return
+        this.phone = phone;
+    }
+
+    public String getName() {                              // Method to get name  @return
+        return name;
+    }
+
+    public void setName(String name) {                    //Method to set name  @return
+        this.name = name;
+    }
+
+    public String getCity() {                                       //Method to get city @return
+        return city;
+    }
+
+    public void setCity(String city) {                            //Method to set city @return
+        this.city = city;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    /**
+     *
+     */
+    private List<Goal> domains;
+
+    /**
+     * @return the domains
+     */
+    public List<Goal> getDomains() {
+        return domains;
+    }
+
+    /**
+     * @param domains the domains to set
+     */
+    public void setDomains(List<Goal> domains) {
+        this.domains = domains;
+    }
+
+
+}

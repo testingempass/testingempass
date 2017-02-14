@@ -1,0 +1,490 @@
+package com.empass.sdk.activity;
+
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.LeaderboardTabAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.GamePlayHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.utils.Urls;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.LeaderboardDataVO;
+import com.empass.sdk.vo.User;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
+
+
+/**
+ * Class for leaderboard
+ *
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class LeaderboardActivity extends EmpassActivity {
+    /**
+     * Activity context
+     */
+    private static Context context;
+    /**
+     * Activity context
+     */
+    private static LeaderboardTabAdapter adapter;
+    /**
+     * Activity context
+     */
+    public transient TabLayout tabLayout;
+    /**
+     * Activity context
+     */
+    public transient ViewPager viewPager;
+    /**
+     * Declaer variable
+     */
+    public transient Spinner spinnerGoals;
+    /**
+     * Declaer variable
+     */
+    public transient ImageView imageView;
+    /**
+     * Declaer varable
+     */
+    public transient Intent intent;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvRank;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvUserName;
+    /**
+     * Declaer varable
+     */
+    public transient TextView tvUserSkill;
+    /**
+     * Declaer varable
+     */
+    public transient LinearLayout llSpinner;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declare variable
+     */
+    public transient ImageView ivUserImage;
+    /**
+     * declare variable
+     */
+    public transient TextView tvUserLetters;
+    /**
+     * Declaer variable
+     */
+    public transient SharedPreferences prefs;
+    /**
+     * Declaer varable
+     */
+    public transient String color;
+    /**
+     * Declaer varable
+     */
+    public transient String type;
+    /**
+     * Declaer varable
+     */
+    public transient User user;
+    /**
+     * Declaer varable
+     */
+    public transient LeaderboardDataVO leaderboardDataVO;
+    /**
+     * Declaer varable
+     */
+    private transient Goal[] goal;
+    /**
+     * declear variable
+     */
+    private transient int goalIndex;
+    /**
+     * Declaer varable
+     */
+    private transient String skill, allTime, monthly, daily;
+    /**
+     * Declaer varable
+     */
+    private transient String skillId;
+
+    /**
+     * cons
+     */
+    public LeaderboardActivity() {
+        super();
+    }
+
+    /**
+     * onCreate method for class
+     */
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_leaderboard);
+        try {
+            context = this;
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            prefs = getSharedPreferences(sdkConstant.PKZ, MODE_PRIVATE);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            spinnerGoals = (Spinner) findViewById(R.id.spinnerGoal);
+            tabLayout = (TabLayout) findViewById(R.id.tabslbd);
+            viewPager = (ViewPager) findViewById(R.id.viewpagerlbd);
+            imageView = (ImageView) findViewById(R.id.iv_spinner);
+            tvRank = (TextView) findViewById(R.id.tv_rank);
+            tvUserName = (TextView) findViewById(R.id.tv_username);
+            tvUserSkill = (TextView) findViewById(R.id.tv_userskill);
+            ivUserImage = (ImageView) findViewById(R.id.ivlbdImage);
+            tvUserLetters = (TextView) findViewById(R.id.tvUserLetters);
+            llSpinner = (LinearLayout) findViewById(R.id.ll_spinner);
+            dbController = new SDKDatabaseController(context);
+            allTime = SDKConstant.EMPTY;
+            monthly = SDKConstant.EMPTY;
+            daily = SDKConstant.EMPTY;
+            intent = getIntent();
+            tvHeader.setText("Leaderboard");
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    spinnerGoals.performClick();
+                }
+            });
+            user = dbHelper.getLogedUser();
+            goal = dbHelper.getUserGoals();
+            tvUserName.setText(user.getName());
+            final String initials = sdkCommonUtils.getShortName(user.getName());
+            tvUserLetters.setText(initials);
+            type = SDKConstant.ALLTIME;
+            tabLayout.addTab(tabLayout.newTab().setText(SDKConstant.ALLTIME));
+            tabLayout.addTab(tabLayout.newTab().setText(SDKConstant.MONTHLY));
+            tabLayout.addTab(tabLayout.newTab().setText(SDKConstant.DAILY));
+            viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
+            tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+                @Override
+                public void onTabSelected(TabLayout.Tab tab) {
+                    viewPager.setCurrentItem(tab.getPosition());
+                    tvRank.setVisibility(View.GONE);
+                    switch (tab.getPosition()) {
+                        case SDKConstant.ZERO_INDEX:
+                            type = SDKConstant.ALLTIME;
+                            LogUtils.debug(SDKConstant.TAG, "GLOBAL");
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(allTime)) {
+                                tvRank.setVisibility(View.VISIBLE);
+                                tvRank.setText(allTime);
+                            }
+                            break;
+                        case SDKConstant.ONEINDEX:
+                            type = SDKConstant.MONTHLY;
+                            LogUtils.debug(SDKConstant.TAG, "type" + type);
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(monthly)) {
+                                tvRank.setVisibility(View.VISIBLE);
+                                tvRank.setText(monthly);
+                            }
+                            break;
+                        case SDKConstant.TWO:
+                            type = SDKConstant.DAILY;
+                            LogUtils.debug(SDKConstant.TAG, "type" + type);
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(daily)) {
+                                tvRank.setVisibility(View.VISIBLE);
+                                tvRank.setText(daily);
+                            }
+                            break;
+                    }
+                }
+
+                @Override
+                public void onTabUnselected(TabLayout.Tab tab) {
+
+                }
+
+                @Override
+                public void onTabReselected(TabLayout.Tab tab) {
+
+                }
+            });
+            if (sdkConstant.YTEXT.equalsIgnoreCase(user.getMultiSkill())) {
+                llSpinner.setVisibility(View.VISIBLE);
+                tvUserSkill.setVisibility(View.GONE);
+                final List<String> goals = new ArrayList<String>();
+                final List<String> goalSkillId = new ArrayList<String>();
+                for (int i = 0; i < goal.length; i++) {
+                    if (!SDKConstant.ZERO.contains(goal[i].getSubSkillId())) {
+                        goals.add(goal[i].getSubSkill());
+                        goalSkillId.add(goal[i].getSubSkillId());
+                    }
+                }
+                final ArrayAdapter<String> goalAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_dropdown_item, goals);
+                spinnerGoals.setAdapter(goalAdapter);
+                spinnerGoals.setSelection(goalSkillId.indexOf(intent.getExtras().getString(SDKConstant.GOAL_INTENT)));
+                spinnerGoals.setOnItemSelectedListener(new OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        try {
+                            final Spinner spinner = (Spinner) parent;
+                            if (spinner.getId() == R.id.spinnerGoal) {
+                                final TextView selectedText = (TextView) parent.getChildAt(0);
+                                if (selectedText != null) {
+                                    selectedText.setTextColor(getResources().getColor(R.color.m_white));
+                                    goalIndex = position;
+                                    skillId = goal[position].getSubSkillId();
+                                    skill = goal[position].getSubSkill();
+                                    if (SDKConstant.CONTEST.equalsIgnoreCase(goal[position].getSubskillType())) {
+                                        color = goal[position].getColor();
+                                    } else {
+                                        color = goal[position].getColor();
+                                    }
+                                    initLbd();
+                                }
+                            }
+                        } catch (Exception e) {
+                            LogUtils.error(sdkConstant.TAG, "Exception", e);
+                        }
+                    }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
+                imageView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        spinnerGoals.performClick();
+                    }
+                });
+            } else {
+                skillId = intent.getExtras().getString(sdkConstant.GOAL_INTENT);
+                Goal goalIndex = dbHelper.getGoal(skillId);
+                llSpinner.setVisibility(View.GONE);
+                tvUserSkill.setVisibility(View.VISIBLE);
+                tvUserSkill.setText(goalIndex.getSubSkill());
+                color = goalIndex.getColor();
+                getLeaderBoardData(skillId, type);
+            }
+
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intent1 = new Intent(context, GoalDetailsActivity.class);
+            intent1.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+            startActivity(intent1);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    public void onClickImageBack(View view) {
+        try {
+            onBackPressed();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    public void onClickSummary(View view) {
+        try {
+            GamePlayHelper.playingGame(goal[goalIndex], user, this);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void initLbd() {
+        try {
+            type = SDKConstant.ALLTIME;
+            LogUtils.debug(SDKConstant.TAG, type);
+            getLeaderBoardData(skillId, type);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onResume is call resume of parent activity
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        try {
+            /** if (prefs.getBoolean("firstrunforlbd", true)) {
+             final ProgressDialog overlayDialog = ProgressDialog.show(context, "", "", true);
+             overlayDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+             overlayDialog.setContentView(R.layout.m_dialog_overlay);
+             final ImageView image = (ImageView) overlayDialog.findViewById(R.id.image_overylay);
+             image.setImageResource(R.drawable.leaderboard_overlay);
+             overlayDialog.setCancelable(true);
+             final LinearLayout llOverlay = (LinearLayout) overlayDialog.findViewById(R.id.ll_overlay);
+             llOverlay.setOnClickListener(new View.OnClickListener() {
+
+            @Override public void onClick(final View view) {
+            overlayDialog.dismiss();
+            }
+            });
+             overlayDialog.show();
+             prefs.edit().putBoolean("firstrunforlbd", false).apply();
+             }*/
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    /**
+     * get leader borad data fro selected goal
+     *
+     * @param skillId
+     */
+    private void getLeaderBoardData(final String skillId, final String type) {
+        try {
+            final String[] res = dbHelper.getLeaderBoardData(skillId, type);
+            if (null == res[1]) {
+                getLeaderboard(skillId);
+            } else {
+                DateFormat dateTimeFormat = new SimpleDateFormat(SDKConstant.DATE_TIME_FORMATE, Locale.ENGLISH);
+                dateTimeFormat.setTimeZone(TimeZone.getTimeZone(SDKConstant.TIME_ZONE));
+                if (null != res[2]) {
+                    final int min = SDKCommonUtils.getTimeDiffernece(dateTimeFormat.format(new Date()), res[2]);
+                    LogUtils.debug(SDKConstant.TAG, "Min Value" + min);
+                    if (min > SDKConstant.FIFTEN) {
+                        getLeaderboard(skillId);
+                    } else {
+                        if (res[1].contains(Urls.RESPONSE_COSE_201)) {
+                            leaderboardDataVO = dbController.handleLeaderboardResponse(res[1], null);
+                            tvRank.setVisibility(View.GONE);
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankAll())) {
+                                tvRank.setVisibility(View.VISIBLE);
+                                allTime = leaderboardDataVO.getData().getRankAll();
+                                tvRank.setText(allTime);
+                            }
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankMon())) {
+                                monthly = leaderboardDataVO.getData().getRankMon();
+                            }
+                            if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankDaily())) {
+                                daily = leaderboardDataVO.getData().getRankDaily();
+                            }
+                            adapter = new LeaderboardTabAdapter(getSupportFragmentManager(), tabLayout.getTabCount(), skillId, color, goalIndex);
+                            viewPager.setAdapter(adapter);
+                            viewPager.setCurrentItem(0);
+                        }
+                    }
+                } else {
+                    getLeaderboard(skillId);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param subSkillId
+     */
+    private void getLeaderboard(final String subSkillId) {
+        try {
+            if (isInternetAvailable()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_connecting);
+                mProgressDialog.show();
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_LEADERBOARD, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.SUB_SKILL_ID, subSkillId);
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.LBD_TYPE, type);
+                request.requestMethod = Urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle response msg
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        mProgressDialog.dismiss();
+                        String response = (String) msg.obj;
+                        //if response is null or slow internet then show toast else parse response
+                        if (null == response || SDKConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+
+                        } else {
+                            leaderboardDataVO = dbController.handleLeaderboardResponse(response, request);
+                            tvRank.setVisibility(View.GONE);
+                            if (Urls.RESPONSE_COSE_201.equalsIgnoreCase(leaderboardDataVO.getStatus())) {
+                                if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankAll())) {
+                                    allTime = leaderboardDataVO.getData().getRankAll();
+                                    tvRank.setVisibility(View.VISIBLE);
+                                    tvRank.setText(allTime);
+                                }
+                                if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankMon())) {
+                                    monthly = leaderboardDataVO.getData().getRankMon();
+                                }
+                                if (!SDKConstant.EMPTY.equalsIgnoreCase(leaderboardDataVO.getData().getRankDaily())) {
+                                    daily = leaderboardDataVO.getData().getRankDaily();
+                                }
+                            }
+                            dbHelper.saveLeaderBoardData(subSkillId, response, leaderboardDataVO.getDate(), type);
+                            adapter = new LeaderboardTabAdapter(getSupportFragmentManager(), tabLayout.getTabCount(), skillId, color, goalIndex);
+                            viewPager.setAdapter(adapter);
+                            viewPager.setCurrentItem(0);
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 0).execute(request);
+            } else {
+                adapter = new LeaderboardTabAdapter(getSupportFragmentManager(), tabLayout.getTabCount(), skillId, color, goalIndex);
+                viewPager.setAdapter(adapter);
+                viewPager.setCurrentItem(0);
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+}

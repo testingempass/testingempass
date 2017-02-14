@@ -1,0 +1,44 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class PlayVO {
+    public PlayVO() {
+    }
+
+    @SerializedName("status")                                        //Created by Deepak on 10/28/15.
+    public String status;
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+    @SerializedName("msg")
+    public String msg;
+
+    public boolean isProfile() {
+        return profile;
+    }
+    public void setProfile(boolean profile) {
+        this.profile = profile;
+    }
+    public String getStatus() {
+        return status;
+    }
+    public void setStatus(String status) {
+        this.status = status;
+    }
+    public boolean isEducation() {
+        return education;
+    }
+    public void setEducation(boolean education) {
+        this.education = education;
+    }
+    @SerializedName("profile")
+    public boolean profile;
+    @SerializedName("education")
+    public boolean education;
+}

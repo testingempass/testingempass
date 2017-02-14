@@ -1,0 +1,25 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class KeyData {
+    public KeyData() {
+    }
+
+    @SerializedName("category")
+    public String category;
+    public String getValue() {
+        return value;
+    }
+    public void setValue(String value) {
+        this.value = value;
+    }
+    public String getCategory() {
+        return category;
+    }
+    public void setCategory(String category) {
+        this.category = category;
+    }
+    @SerializedName("value")
+    public String value;
+}

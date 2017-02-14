@@ -1,0 +1,348 @@
+<resources>
+    <string name="m_power_by_empass">Powered by Empass</string>
+    <string name="m_facebook_app_id">228313087500868</string>
+    <string name="m_test_your_skill">GST Contest</string>
+    <string name="m_processing">Processing</string>
+    <string name="m_ok">OK</string>
+    <string name="m_yes">YES</string>
+    <string name="m_no">NO</string>
+    <string name="m_get_started">NEW USER</string>
+    <string name="m_enable">ENABLE</string>
+    <string name="m_existing_user">EXISTING USER</string>
+    <string name="m_processing_request">We\'re processing your request</string>
+    <string name="m_gst_request">Loading GST Contest</string>
+    <string name="m_play_your_way">Play your way to a dream career</string>
+    <string name="m_oldPassword">Current Password</string>
+    <string name="m_newPassword">New Password</string>
+    <string name="m_confirmPassword">Confirm Password</string>
+    <string name="m_save_small">Save</string>
+    <string name="m_purchase_txt">Purchase</string>
+    <string name="m_coin_detail">Coin detail</string>
+    <string name="m_redeem">Redeem</string>
+    <string name="m_point_txt">Point</string>
+    <string name="m_mobile">Mobile number</string>
+    <string name="m_email">Email id</string>
+    <string name="m_mobile_email">Your mobile number and email Id required. Click yes to continue</string>
+    <string name="m_nocity">No City found.Click here to upload city</string>
+    <string name="m_nocc">No Collage/Company found.Click here to update</string>
+    <string name="m_play_minimum_for">Leaderboard ranks are only visible if you have played  more than 4 games and at least one game in the last 45 days</string>
+    <string name="m_play_minimum_formonth">Leaderboard ranks are only visible if you have played at least 4 games in the last 30 days</string>
+    <string name="m_play_minimum_forday">Leaderboard ranks are only visible if you have played at least 4 games today</string>
+
+    <string name="m_connecting_msg">This may take some time depending on your connection speed</string>
+    <string name="m_forgotPwdc">FORGOT PASSWORD</string>
+    <string name="m_send_by_sms">Send password by sms</string>
+    <string name="m_cancel_small">Cancel</string>
+    <string name="m_loginc">LOGIN</string>
+    <string name="m_signin">Sign in</string>
+    <string name="m_signup">Sign up</string>
+    <string name="m_done">Done</string>
+    <string name="m_resend">Resend</string>
+    <string name="m_forgot">Forgot?</string>
+    <string name="m_skip_otp">Skip</string>
+    <string name="m_forgot_password">FORGOT PASSWORD</string>
+
+    <string name="m_show">Show</string>
+    <string name="m_hide">Hide</string>
+    <string name="m_mobile_number">Mobile Number</string>
+    <string name="m_password_p">Password</string>
+    <string name="m_required">Required</string>
+    <string name="m_errorMobileMessage">Invalid mobile number</string>
+    <string name="m_register">REGISTER</string>
+    <string name="m_enterName">Name</string>
+    <string name="m_enterEmail">Email</string>
+    <string name="m_submit">SUBMIT</string>
+    <string name="m_set_password">Set Password</string>
+    <string name="m_confirm">CONFIRM</string>
+    <string name="m_regenerate">REGENERATE</string>
+    <string name="m_otp_varifaction">Please wait\n We are auto verifying your code</string>
+    <string name="m_cancel">CANCEL</string>
+    <string name="m_coming_soon">Coming Soon</string>
+    <string name="m_click_here_to_refresh_the_skill">Click here to refresh the skill!</string>
+    <string name="m_refresh">REFRESH</string>
+    <string name="m_java">Java</string>
+    <string name="m_secure_skill">SECURE SKILL</string>
+    <string name="m_unlocking_skill">Unlocking this skill requires a Launch code.\nHave one already? Enter it below.</string>
+    <string name="m_auth_key">Launch code</string>
+    <string name="m_add_goal">Add Goal</string>
+    <string name="m_sub_skill">Sub Skill</string>
+    <string name="m_score_28000">28,000</string>
+    <string name="m_user">User</string>
+    <string name="m_options">OPTION</string>
+    <string name="m_question_txt">What is the name of the organization helping to foster security standards of cloud computing?</string>
+    <string name="m_search_opp">Search Opponent...</string>
+    <string name="m_jd">JD</string>
+    <string name="m_zero">0</string>
+    <string name="m_first">First</string>
+    <string name="m_second">Second</string>
+    <string name="m_q1">Q1</string>
+    <string name="m_next_question">Next Question ....</string>
+    <string name="m_get_ready">Get Ready ....</string>
+    <string name="m_jaydeep">Jaydeep</string>
+    <string name="m_ashish">Ashish</string>
+    <string name="m_vs">vs</string>
+    <string name="m_result">RESULT</string>
+    <string name="m_totalScore">Total Score</string>
+    <string name="m_curent_score">Current Score</string>
+    <string name="m_target_score">TARGET SCORE</string>
+    <string name="m_correct_answer">Correct Answers</string>
+    <string name="m_win_bonus">Winning Bonus</string>
+    <string name="m_speed_bonus">Speed Bonus</string>
+    <string name="m_completion_bonus">Finish Bonus</string>
+    <string name="m_point_earned">Points Earned</string>
+    <string name="m_game_response_summary">GAME RESPONSE SUMMARY</string>
+    <string name="m_novice">NOVICE</string>
+    <string name="amateur">AMATEUR</string>
+    <string name="m_pro">PRO</string>
+    <string name="m_champ">CHAMP</string>
+    <string name="m_achived_goal">Congrats you have achieved your goal</string>
+    <string name="m_play_again">PLAY AGAIN</string>
+    <string name="m_share">Share</string>
+    <string name="m_share_c">SHARE</string>
+    <string name="m_game_details">GAME SUMMARY</string>
+    <string name="m_know_the_app_better">KNOW THE APP BETTER</string>
+    <string name="m_compares">CLICK TO SEE HOW YOUR SCORE COMPARES WITH ALL OTHER</string>
+    <string name="m_plash">+</string>
+    <string name="m_equel">=</string>
+    <string name="m_avg_time">Avg. Time to Answer</string>
+    <string name="m_rules_cap">RULES</string>
+    <string name="m_leaderboardtxt">Leaderboard rank:</string>
+    <string name="m_start_date">Contest start date</string>
+    <string name="m_end_date">Contest end date</string>
+    <string name="m_view">View</string>
+    <string name="m_coins">Coin Balance:</string>
+    <string name="m_avg_points">Avg. point per game:</string>
+    <string name="m_best_score_value">100</string>
+    <string name="m_avg_ponits">1600</string>
+    <string name="m_lastGame">Last game played:</string>
+    <string name="m_lastGamePlayed">3 hour(s)</string>
+    <string name="m_summary">View result</string>
+    <string name="m_reachLevel">Date to reach goal:</string>
+    <string name="m_reachLevelIn">Nov 28 2015</string>
+    <string name="m_target_date">Original target date:</string>
+    <string name="m_winPercentage">Win percentage:</string>
+    <string name="m_played">P = 25,</string>
+    <string name="m_won"> W = 11</string>
+    <string name="m_winPercent">44%</string>
+    <string name="m_winningStreak">Streak:</string>
+    <string name="m_kb_str">Knowledge byte:</string>
+    <string name="m_winningResults">WLWALLLLLLLLLLLLLLL</string>
+    <string name="m_rules">Rules</string>
+    <string name="m_your_bal">Your Balance</string>
+    <string name="m_action">Action</string>
+    <string name="m_earned_used">Earned/Used</string>
+    <string name="m_no_data">No data</string>
+    <string name="m_date">Date</string>
+    <string name="m_abandon">Abandoned</string>
+    <string name="m_performance">Performance</string>
+    <string name="m_summary_txt">Summary</string>
+    <string name="m_correct_answer_new">Correct\nAnswers</string>
+    <string name="m_win_bonus_new">Winning\nBonus</string>
+    <string name="m_speed_bonus_new">Speed\nBonus</string>
+    <string name="m_completion_bonus_new">Finish\nBonus</string>
+    <string name="m_point_earned_new">Points\nEarned</string>
+    <string name="m_accuracy">ACCURACY</string>
+    <string name="m_speed">SPEED</string>
+    <string name="m_cancelled">Cancelled</string>
+    <string name="m_permission_not_granted">Permission Not Granted</string>
+    <string name="m_rank_leaderboard">RANK</string>
+    <string name="m_udpated">Updated 24-Jul-2015 10:11 AM</string>
+    <string name="m_name">NAME</string>
+    <string name="m_point">Points</string>
+    <string name="m_score">Score</string>
+    <string name="m_avg_point">AVG.PTS</string>
+    <string name="m_win_per">WIN %</string>
+    <string name="m_no_resume">Click \" + \" to upload a resume in .pdf</string>
+    <string name="m_no_education">Click \" + \" below to add another qualification.</string>
+    <string name="m_year">Year</string>
+    <string name="m_level">LEVEL</string>
+    <string name="m_error">Error</string>
+    <string name="m_global">GLOBAL</string>
+    <string name="m_city">MY CITY</string>
+    <string name="m_college">MY COLLEGE</string>
+    <string name="m_male">Male</string>
+    <string name="m_female">Female</string>
+    <string name="m_u">U</string>
+    <string name="m_invalid_dob_message">Please enter your dob here. You should be 13 or above.</string>
+    <string name="m_number">234</string>
+    <string name="m_days">0\n days</string>
+    <string name="m_best_score">Best score</string>
+    <string name="m_avg_score">Avg. score</string>
+    <string name="m_renk">Leaderboard rank</string>
+    <string name="m_best_score_new">Best score</string>
+    <string name="m_poweredby">Powered by Empass</string>
+    <string name="m_expected_date">Expected date to reach goal</string>
+    <string name="m_original_date">Original date to reach goal</string>
+    <string name="m_click_profile_to_select_clg">Click on profile to select your college</string>
+    <string name="m_internal_storage">Internal storage</string>
+    <string name="m_chooser_title">Resume Upload</string>
+    <string name="m_save_cap">SAVE</string>
+    <string name="m_updates">Update</string>
+    <string name="m_others">Others</string>
+    <string name="m_upload_resume">UPLOAD RESUME</string>
+    <string name="m_view_resume">VIEW RESUME</string>
+    <string name="m_school_college">College Name</string>
+    <string name="m_expeced_graduation">or expected graduation year</string>
+    <string name="m_select_degree">Select Your Degree</string>
+    <string name="m_enter_degree">Your degree</string>
+    <string name="m_study_field">Field of Study</string>
+    <string name="m_select_study">Select Your Major</string>
+    <string name="m_grade">Grade / Percentage (Optional)</string>
+    <string name="m_AgreeStatements">This Information will not be shared with anyone \nwithout your prior permission.</string>
+    <string name="m_your_have_logged">You have logged in from</string>
+    <string name="m_your_login_id">Your login id is</string>
+    <string name="m_gender_select">Select Gender</string>
+    <string name="m_dob">Date of birth</string>
+    <string name="m_student">Student</string>
+    <string name="m_professional">Professional</string>
+    <string name="m_company">Company Name</string>
+    <string name="m_update">UPDATE</string>
+    <string name="m_add_education">ADD EDUCATION</string>
+    <string name="m_provide_company">Provide company name</string>
+    <string name="m_provide_college">Provide college name</string>
+    <string-array name="m_gender_array">
+        <item>Female</item>
+        <item>Male</item>
+        <item>Choose not to reveal</item>
+    </string-array>
+    <string-array name="m_year">
+        <item>1950</item>
+        <item>1951</item>
+        <item>1952</item>
+        <item>1953</item>
+        <item>1954</item>
+        <item>1955</item>
+        <item>1956</item>
+        <item>1957</item>
+        <item>1958</item>
+        <item>1959</item>
+        <item>1960</item>
+        <item>1961</item>
+        <item>1962</item>
+        <item>1963</item>
+        <item>1964</item>
+        <item>1965</item>
+        <item>1966</item>
+        <item>1967</item>
+        <item>1968</item>
+        <item>1969</item>
+        <item>1970</item>
+        <item>1971</item>
+        <item>1972</item>
+        <item>1973</item>
+        <item>1974</item>
+        <item>1975</item>
+        <item>1976</item>
+        <item>1977</item>
+        <item>1978</item>
+        <item>1979</item>
+        <item>1980</item>
+        <item>1981</item>
+        <item>1982</item>
+        <item>1983</item>
+        <item>1984</item>
+        <item>1985</item>
+        <item>1986</item>
+        <item>1987</item>
+        <item>1988</item>
+        <item>1989</item>
+        <item>1990</item>
+        <item>1991</item>
+        <item>1992</item>
+        <item>1993</item>
+        <item>1994</item>
+        <item>1995</item>
+        <item>1996</item>
+        <item>1997</item>
+        <item>1998</item>
+        <item>1999</item>
+        <item>2000</item>
+        <item>2001</item>
+        <item>2002</item>
+        <item>2003</item>
+        <item>2004</item>
+        <item>2005</item>
+        <item>2006</item>
+        <item>2007</item>
+        <item>2008</item>
+        <item>2009</item>
+        <item>2010</item>
+        <item>2011</item>
+        <item>2012</item>
+        <item>2013</item>
+        <item>2014</item>
+        <item>2015</item>
+        <item>2016</item>
+        <item>2017</item>
+    </string-array>
+
+    <string-array name="m_degree">
+        <item>Bachelor of Architecture - B.Arch</item>
+        <item>Bachelor of Arts - B.A.</item>
+        <item>Bachelor of Business Administration - B.B.A.</item>
+        <item>Bachelor of Commerce - B.Com.</item>
+        <item>Bachelor of Computer Applications - B.C.A.</item>
+        <item>Bachelor of Science - B.Sc.</item>
+        <item>Bachelor of Technology - B.E./B.Tech.</item>
+        <item>Master of Architecture - M.Arch.</item>
+        <item>Master of Arts - M.A.</item>
+        <item>Master of Business Administration - M.B.A. / PGDM</item>
+        <item>Master of Commerce - M.Com.</item>
+        <item>Master of Computer Applications - M.C.A.</item>
+        <item>Master of Science - M.Sc.</item>
+        <item>Master of Technology - M.E./ M.Tech.</item>
+        <item>Others</item>
+    </string-array>
+    <string-array name="m_country_code">
+        <item>+91</item>
+        <item>+1</item>
+        <item>+44</item>
+        <item>+65</item>
+        <item>+971</item>
+        <item>+61</item>
+        <item>+64</item>
+        <item>+81</item>
+        <item>+27</item>
+        <item>+49</item>
+        <item>+55</item>
+        <item>+60</item>
+        <item>+86</item>
+        <item>+966</item>
+        <item>+01</item>
+    </string-array>
+    <string-array name="m_country_flag">
+        <item>flag_91</item>
+        <item>flag_1</item>
+        <item>flag_44</item>
+        <item>flag_65</item>
+        <item>flag_971</item>
+        <item>flag_61</item>
+        <item>flag_64</item>
+        <item>flag_81</item>
+        <item>flag_27</item>
+        <item>flag_49</item>
+        <item>flag_55</item>
+        <item>flag_60</item>
+        <item>flag_86</item>
+        <item>flag_966</item>
+        <item>flag_01</item>
+    </string-array>
+    <string-array name="m_country_name">
+        <item>India</item>
+        <item>US</item>
+        <item>UK</item>
+        <item>Singapore</item>
+        <item>UAE</item>
+        <item>Australia</item>
+        <item>NewZealand</item>
+        <item>Japan</item>
+        <item>South Africa</item>
+        <item>Germany</item>
+        <item>Brazil</item>
+        <item>Malaysia</item>
+        <item>China</item>
+        <item>SaudiArabia</item>
+        <item>Canada</item>
+    </string-array>
+
+</resources>

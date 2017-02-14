@@ -1,0 +1,38 @@
+package com.empass.sdk.offline;
+
+/**
+ * Class Name : CustomFinal Created By : pbinda
+ */
+public class CustomFinal<V> {
+	/**
+	 * 
+	 */
+	private transient V value;
+
+	/**
+	 * cons
+	 * 
+	 */
+	public CustomFinal() {
+		super();
+	}
+
+	/**
+	 * 
+	 * @param value
+	 */
+
+	public synchronized void set(final V value) {
+		if (this.value == null) {
+			this.value = value;
+		}
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public synchronized V get() {
+		return value;
+	}
+}

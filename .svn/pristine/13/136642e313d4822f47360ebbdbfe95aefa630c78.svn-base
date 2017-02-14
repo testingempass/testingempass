@@ -1,0 +1,595 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.net.http.SslError;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.design.widget.FloatingActionButton;
+import android.view.KeyEvent;
+import android.view.View;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestHelper;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.FileUtils;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.User;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+
+
+/**
+ * WebView Activity is use for open url on webview
+ */
+@SuppressWarnings("ALL")
+public class ResumeActivity extends EmpassActivity {
+    /**
+     * declear variable
+     */
+    public transient WebView contentWebView;
+    /**
+     * declear variable
+     */
+    public transient LinearLayout llTxt;
+    /**
+     * declear variable
+     */
+    public transient RelativeLayout rlWebview;
+    /**
+     * declear variable
+     */
+    public transient String type, path, urlExe;
+    /**
+     * Declear variable
+     */
+    public transient String resumePath = sdkConstant.EMPTY;
+    /**
+     * Declear variable
+     */
+    private transient int requestCode;
+    /**
+     * declare variable
+     */
+    public transient MobiTextView header;
+    public transient User user;
+
+    /**
+     * declear varibale
+     */
+    public transient FloatingActionButton fbResume;
+
+    /**
+     * constructor
+     */
+    public ResumeActivity() {
+        super();
+    }
+
+    @Override
+    protected void onCreate(final Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.m_activity_resume);
+        try {
+            context = ResumeActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            requestCode = 342;
+            header = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            header.setText(sdkConstant.VIEW_RESUME);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            contentWebView = (WebView) findViewById(R.id.contentWebView);
+            llTxt = (LinearLayout) findViewById(R.id.ll_text);
+            rlWebview = (RelativeLayout) findViewById(R.id.rl_webview);
+            contentWebView.setWebViewClient(new MyWebViewClient());
+            fbResume = (FloatingActionButton) findViewById(R.id.fab);
+            fbResume.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onClickResume(v);
+                }
+            });
+            user = dbHelper.getLogedUser();
+            if (!sdkConstant.EMPTY.equalsIgnoreCase(user.getResume())) {
+                showResume(user.getResume());
+            }
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showResume
+     *
+     * @param resume
+     */
+    private void showResume(final String resume) {
+        try {
+            llTxt.setVisibility(View.GONE);
+            rlWebview.setVisibility(View.VISIBLE);
+            setWebSetting();
+            if (isInternetAvailable()) {
+                final ProgressDialog progressSending = ProgressDialog.show(context, "", "", true);
+                progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressSending.setContentView(R.layout.m_dialog_message_connecting);
+                contentWebView.setWebChromeClient(new WebChromeClient() {
+                    @Override
+                    public void onProgressChanged(final WebView view, final int progress) {
+                        LogUtils.error("progress ", String.valueOf(progress));
+                        //**after complete load page hide progress bar
+                        if (progress >= sdkConstant.FOURTY) {
+                            progressSending.dismiss();
+                            contentWebView.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+                contentWebView.loadUrl(sdkConstant.DRIVE_URL + resume);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    public void onClickResume(final View view) {
+        try {
+            if (isInternetAvailable()) {
+                if (sdkConstant.EMPTY.equalsIgnoreCase(user.getResume())) {
+                    getDocument();
+                } else {
+                    showUploadResumeDialog();
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showUploadResumeDialog
+     */
+    private void showUploadResumeDialog() {
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Do you wish to update the existing resume?");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        getDocument();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+
+    }
+
+    private void getDocument() {
+        try {
+            final Intent target = FileUtils.createGetContentIntent();
+            final Intent intent = Intent.createChooser(
+                    target, getString(R.string.m_chooser_title));
+            startActivityForResult(intent, requestCode);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            if (contentWebView.canGoBack()) {
+                contentWebView.goBack();
+            } else {
+                final Intent intentDashboard = new Intent(context, DashBoardActivity.class);
+                intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+                startActivity(intentDashboard);
+                finish();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onActivityResult is use to display image
+     */
+    @Override
+    protected void onActivityResult(final int requestCode, final int resultCode,
+                                    final Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        try {
+            if (sdkConstant.THREE_HUND == requestCode && null != data && resultCode == RESULT_OK) {
+                final Uri uri = data.getData();
+                try {
+                    LogUtils.debug(sdkConstant.TAG, "Uri = " + uri.toString());
+                    resumePath = FileUtils.getPath(this, uri);
+                    if (null != resumePath && isInternetAvailable() && new File(resumePath).getName().contains(sdkConstant.DOT_PDF)) {
+                        uploadFile(new File(resumePath).getName(), resumePath, user.getId(), urls.S3_RESUME_CONTENT,
+                                dbHelper.getRefData(sdkConstant.S3_RESUME_POLICY), dbHelper.getRefData(sdkConstant.S3_RESUME_SIGNATURE),
+                                dbHelper.getRefData(sdkConstant.S3_RESUME_UPLOAD_URL), dbHelper.getRefData(sdkConstant.S3_RESUME_BUCKET), sdkConstant.RESUME);
+                    } else {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                showInvalidFilePopup();
+                            }
+                        });
+                    }
+                } catch (Exception e) {
+                    LogUtils.error("File Activity", "File select error", e);
+                }
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * update profile
+     */
+
+    public void uploadFile(final String fileName, final String pathUri, final String uploadFileName, final String contentType,
+                           final String policy, final String signature, final String url, final String bucketName, final String typeStr) {
+        if (isInternetAvailable()) {
+            try {
+                final ProgressDialog progressSending = ProgressDialog.show(context, "", "", true);
+                progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressSending.setContentView(R.layout.m_dialog_message_connecting);
+                type = typeStr;
+                path = pathUri;
+                progressSending.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(final DialogInterface dialog, final int keyCode, final KeyEvent event) {
+
+                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                            try {
+                                progressSending.dismiss();
+                            } catch (Exception e) {
+                                LogUtils.error(sdkConstant.TAG, "Exception", e);
+                            }
+                        }
+                        return false;
+                    }
+                });
+                OkHttpClient okHttpClient;
+                okHttpClient = new OkHttpClient();
+                okHttpClient.setRetryOnConnectionFailure(true);
+                okHttpClient.setConnectTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                okHttpClient.setReadTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                okHttpClient.setWriteTimeout(sdkConstant.OKHTPP_TIME_OUT, TimeUnit.MILLISECONDS);
+                final MediaType MEDIA_TYPE_PNG = MediaType.parse("*");
+                final RequestBody requestBody = new MultipartBuilder()
+                        .type(MultipartBuilder.FORM)
+                        .addFormDataPart(urls.TASK_KEY, user.getId())
+                        .addFormDataPart(urls.S3_ACL, urls.S3_PUBLIC_READ)
+                        .addFormDataPart(urls.S3_SUCCESS_ACTION_STATUS, urls.RESPONSE_COSE_200)
+                        .addFormDataPart(urls.S3_CONTENT_TYPE, contentType)
+                        .addFormDataPart(urls.S3_AWS_ACCESS_KEY, dbHelper.getRefData(urls.S3_AWS_ACCESS_KEY))
+                        .addFormDataPart(urls.S3_POLICY, policy)
+                        .addFormDataPart(urls.S3_SIGNATURE, signature)
+                        .addFormDataPart(urls.S3_FILE, fileName, RequestBody.create(MEDIA_TYPE_PNG, new File(path)))
+                        .build();
+                final Request request = new Request.Builder()
+                        .url(url)
+                        .post(requestBody)
+                        .build();
+                okHttpClient.newCall(request).enqueue(new com.squareup.okhttp.Callback() {
+                    @Override
+                    public void onFailure(final Request request, final IOException e) {
+                        LogUtils.debug(sdkConstant.TAG, "onFailure:" + e);
+                    }
+
+                    @Override
+                    public void onResponse(final Response response) throws IOException {
+                        try {
+                            progressSending.dismiss();
+                            LogUtils.debug(sdkConstant.TAG, "response:" + response);
+                            if (response.isSuccessful()) {
+                                final String path = dbHelper.getRefData(sdkConstant.S3_DOWNLOAD_URL) + bucketName + "/" + uploadFileName;
+                                LogUtils.debug(sdkConstant.TAG, "Path:" + path);
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        callUploadDoc(path);
+                                    }
+                                });
+                            }
+                        } catch (Exception e) {
+                            progressSending.dismiss();
+                            LogUtils.error(sdkConstant.TAG, "Exception", e);
+                        }
+                    }
+                });
+            } catch (IllegalArgumentException e) {
+                sendExceptionOnServer(url);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    /**
+     * @param type
+     * @param path
+     */
+    private void callUploadDoc(final String path) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_P, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.RESUME, path);
+                request.params.put(sdkConstant.ID, user.getId());
+                request.params.put(sdkConstant.EMAIL, user.getEmail());
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            profileSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN);
+                        } else {
+                            CommonResVO commonResVO = dbController.handelCommonResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                showMsgWithOk(commonResVO.getMsg(), sdkConstant.RESUME.toUpperCase(Locale.ENGLISH));
+                                dbHelper.updateResume(path, user.getId());
+                                showResume(path);
+                            } else {
+                                slowInternet("Image upload failed");
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(ResumeActivity.this, new Handler(callback), 0).execute(request);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    /**
+     *
+     */
+    @SuppressLint("SetTextI18n")
+    private void showInvalidFilePopup() {
+        try {
+            if (!(ResumeActivity.this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("Only .pdf is supported for resume upload.\\n Click to try again.");
+                final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                tvOk.setText("UPLOAD");
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        if (isInternetAvailable()) {
+                            getDocument();
+                        }
+                    }
+                });
+                mProgressDialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(final DialogInterface dialog, final int keyCode, final KeyEvent event) {
+
+                        if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
+                            try {
+                                mProgressDialog.dismiss();
+                            } catch (Exception e) {
+                                LogUtils.error(sdkConstant.TAG, "Exce", e);
+                            }
+                        }
+                        return false;
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @SuppressLint("SetJavaScriptEnabled")
+    public void setWebSetting() {
+        try {
+            contentWebView.getSettings().setJavaScriptEnabled(true);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public static class MyWebViewClient extends WebViewClient {
+        /**
+         * MyWebView Constructor. whose takes current activity instance.
+         */
+        public MyWebViewClient() {
+            super();
+        }
+
+        /**
+         * this function call when change url request.
+         */
+        @Override
+        public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
+            view.loadUrl(url);
+            return true;
+        }
+
+        /**
+         * this function call when page is start load in web view.
+         */
+        @Override
+        public void onPageStarted(final WebView view, final String url, final Bitmap favicon) {
+
+        }
+
+        /**
+         * this function call when any error page load.
+         */
+        @Override
+        public void onReceivedError(final WebView view, final int errorCode,
+                                    final String description, final String failingUrl) {
+            LogUtils.error("error", " " + errorCode + "  " + description + " " + failingUrl);
+            if (sdkConstant.FIVE_HUNDERED == errorCode) {
+                slowInternet("Server error");
+            }
+            super.onReceivedError(view, errorCode, description, failingUrl);
+        }
+
+        @Override
+        public void onReceivedSslError(final WebView view, final SslErrorHandler handler, final SslError error) {
+            super.onReceivedSslError(view, handler, error);
+            handler.proceed();
+            LogUtils.error("error on https", error.toString() + "  " + handler.obtainMessage());
+        }
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private void profileSlowInternet(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    callUploadDoc(path);
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param url
+     */
+    private void sendExceptionOnServer(final String url) {
+        try {
+            if (isInternetAvailable()) {
+                urlExe = url;
+                new AsyncSendException().execute();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @author Deepak
+     */
+    private class AsyncSendException extends AsyncTask<String, String, String> {
+
+        /**
+         * constructor
+         */
+        public AsyncSendException() {
+            super();
+
+        }
+
+        /**
+         * doInBackground is use to send request in bg
+         */
+        @Override
+        protected String doInBackground(final String... params) {
+            String response = null;
+            try {
+                if (null != user.getId()) {
+                    response = SDKHttpRequestHelper.sendOKHttpException(getUrl(), user.getId(), urlExe, dbHelper.getRefData(sdkConstant.TOKEN));
+                } else {
+                    response = SDKHttpRequestHelper.sendOKHttpException(getUrl(), "1", urlExe, dbHelper.getRefData(sdkConstant.TOKEN));
+                }
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+            return response;
+        }
+    }
+
+}

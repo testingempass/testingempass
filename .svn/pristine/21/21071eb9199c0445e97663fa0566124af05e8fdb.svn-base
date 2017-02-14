@@ -1,0 +1,315 @@
+package com.empass.sdk.s2;
+
+import android.app.Activity;
+import android.os.Handler;
+import android.util.Log;
+
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.S2Constant;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.Goal;
+import com.shephertz.app42.gaming.multiplayer.client.WarpClient;
+import com.shephertz.app42.gaming.multiplayer.client.events.AllRoomsEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.AllUsersEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.LiveRoomInfoEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.LiveUserInfoEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.MatchedRoomsEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.RoomData;
+import com.shephertz.app42.gaming.multiplayer.client.events.RoomEvent;
+import com.shephertz.app42.gaming.multiplayer.client.listener.RoomRequestListener;
+import com.shephertz.app42.gaming.multiplayer.client.listener.ZoneRequestListener;
+
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class WarpZoneRequestListener implements ZoneRequestListener, RoomRequestListener {
+
+    /**
+     *
+     */
+    private static WarpClient warpClient;
+    /**
+     *
+     */
+    private transient final Handler handler;
+    /**
+     *
+     */
+    private transient final Goal goal;
+
+    /**
+     *
+     */
+    private static transient String roomId;
+    /**
+     *
+     */
+
+    private transient final AtomicInteger roomCounter = new AtomicInteger(0);
+    /**
+     *
+     */
+    private transient final AtomicInteger totalRoomLength = new AtomicInteger();
+
+
+    private transient final AtomicBoolean roomMatched = new AtomicBoolean(false);
+
+    /**
+     * @param context
+     * @param warpClient
+     * @param handler
+     */
+    @SuppressWarnings("static-access")
+    public WarpZoneRequestListener(final Activity context, final WarpClient warpClient, final Handler handler, final String skillId) {
+        this.warpClient = warpClient;
+        this.handler = handler;
+        final SDKDBHelper dbHelper = SDKDBHelper.getInstance(context);
+        this.goal = dbHelper.getGoal(skillId);
+    }
+
+    /**
+     * @param roomEvent
+     * @param data
+     */
+    @Override
+    public void onCreateRoomDone(final RoomEvent roomEvent, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "Room created " + roomEvent);
+        LogUtils.debug(SDKConstant.TAG, "Room Data " + roomEvent.getData());
+        try {
+            if (null == roomEvent.getData()) {
+                LogUtils.error(SDKConstant.TAG, "Error while creating room");
+            } else {
+                LogUtils.debug(SDKConstant.TAG, "Joining Room : " + roomEvent.getData().getName() + " >> " + roomEvent.getData().getId());
+                roomId = roomEvent.getData().getId();
+                warpClient.joinRoom(roomEvent.getData().getId());
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onDeleteRoomDone(final RoomEvent roomEvent, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "onDeleteRoomDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGetAllRoomsDone(final AllRoomsEvent allRoomsEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onGetAllRoomsDone");
+    }
+
+    /**
+     * onGetLiveRoomInfoDone is callback of warpClient.getLiveRoomInfo()
+     */
+    @Override
+    public void onGetLiveRoomInfoDone(final LiveRoomInfoEvent liveRoomInfoEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onGetLiveRoomInfoDone");
+        try {
+            final HashMap<String, Object> props = liveRoomInfoEvent.getProperties();
+            if (null != props) {
+                final String subSkill = (String) props.get(S2Constant.KEY_SUB_SKILL);
+                String level;
+                try {
+                    level = (String) props.get(S2Constant.KEY_LEVEL);
+                } catch (NullPointerException e) {
+                    level = "1";
+                }
+                final String isVirtual = (String) props.get(S2Constant.KEY_VIRTUAL);
+                final int currentLevel = Integer.parseInt(goal.getcLevelId());
+                final int roomSkillLevel = Integer.parseInt(level);
+                final int minLevel = (currentLevel - 5);
+                final int maxLevel = (currentLevel + 5);
+                LogUtils.debug(SDKConstant.TAG, "Server " + "_" + subSkill + "_" + level + "_" + isVirtual);
+                LogUtils.debug(SDKConstant.TAG, "App " + "_" + goal.getSubSkill() + "_" + goal.getcLevelId());
+                if (roomSkillLevel >= minLevel && roomSkillLevel <= maxLevel && S2Constant.FALSE.equalsIgnoreCase(isVirtual) && goal.getSubSkill().equals(subSkill)) {
+                    LogUtils.debug(SDKConstant.TAG, "Matching Room and join");
+                    roomMatched.set(true);
+                    warpClient.joinRoom(liveRoomInfoEvent.getData().getId());
+                }
+                roomCounter.getAndIncrement();
+                if (!roomMatched.get() && roomCounter.get() == totalRoomLength.get()) {
+                    LogUtils.error(SDKConstant.TAG, "Error : No matching room found. creating new room");
+                    handler.sendEmptyMessage(WarpCallbackMessageCode.MSG_RNOT_FOUND);
+                }
+            } else {
+                LogUtils.error(SDKConstant.TAG, "Error : No matching room found. creating new room");
+                handler.sendEmptyMessage(WarpCallbackMessageCode.MSG_RNOT_FOUND);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGetLiveUserInfoDone(final LiveUserInfoEvent liveUserInfoEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onGetLiveUserInfoDone");
+    }
+
+    /**
+     * onGetMatchedRoomsDone is callback of warpClient.getRoomInRange()-in
+     * SearchOpponentActivity
+     */
+    @Override
+    public void onGetMatchedRoomsDone(final MatchedRoomsEvent matchedRoomsEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onGetMatchedRoomsDone");
+        try {
+            if (matchedRoomsEvent != null) {
+                LogUtils.debug(SDKConstant.TAG, "Matching Room in onGetMatchedRoomsDone");
+                final RoomData[] roomsData = matchedRoomsEvent.getRoomsData();
+                if (null != roomsData) {
+                    totalRoomLength.set(roomsData.length);
+                    LogUtils.debug(SDKConstant.TAG, "Total room found : " + totalRoomLength.get());
+                    if (totalRoomLength.get() > 0) {
+                        roomCounter.set(0);
+                        for (int i = 0; i < totalRoomLength.get(); i++) {
+                            final RoomData roomData = matchedRoomsEvent.getRoomsData()[i];
+                            LogUtils.debug(SDKConstant.TAG, "Matching Room data with : " + roomData);
+                            warpClient.getLiveRoomInfo(roomData.getId());
+                        }
+                    } else {
+                        Log.i("BuildEmploy", "onGetMatchedRoomsDone : No Matching room found");
+                        handler.sendEmptyMessage(WarpCallbackMessageCode.MSG_RNOT_FOUND);
+                    }
+                } else {
+                    Log.i("BuildEmploy", "onGetMatchedRoomsDone : No Matching room found");
+                    handler.sendEmptyMessage(WarpCallbackMessageCode.MSG_RNOT_FOUND);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGetOnlineUsersDone(final AllUsersEvent allUsersEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onGetOnlineUsersDone");
+    }
+
+    /**
+     * onJoinRoomDone is callback of warpClient.joinRoom()
+     */
+    @Override
+    public void onJoinRoomDone(final RoomEvent roomEvent, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "onJoinRoomDone");
+        try {
+            final RoomData roomData = roomEvent.getData();
+            if (roomData == null) {
+                LogUtils.debug(SDKConstant.TAG, "No Room");
+            } else {
+                LogUtils.debug(SDKConstant.TAG, "Room Data " + roomData.getName() + " >> " + roomData.getId());
+
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onLeaveRoomDone(final RoomEvent roomEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onLeaveRoomDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onLockPropertiesDone(final byte onLockPropertiesDone) {
+        LogUtils.debug(SDKConstant.TAG, "onLockPropertiesDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onRPCDone(final byte onRPCDone, final String data, final Object obj) {
+        LogUtils.debug(SDKConstant.TAG, "onRPCDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onSetCustomRoomDataDone(final LiveRoomInfoEvent liveRoomInfoEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onSetCustomRoomDataDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onSetCustomUserDataDone(final LiveUserInfoEvent liveUserInfoEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onSetCustomUserDataDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onSubscribeRoomDone(final RoomEvent roomEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onSubscribeRoomDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUnlockPropertiesDone(final byte onUnlockPropertiesDone) {
+        LogUtils.debug(SDKConstant.TAG, "onUnlockPropertiesDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUnSubscribeRoomDone(final RoomEvent roomEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onUnSubscribeRoomDone");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUpdatePropertyDone(final LiveRoomInfoEvent onUpdatePropertyDone, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "onUpdatePropertyDone");
+    }
+
+    /**
+     * @param warpClient
+     * @param properties
+     */
+    public static void updateRoomProperties(final WarpClient warpClient, final HashMap<String, Object> properties) {
+        LogUtils.debug(SDKConstant.TAG, "updateRoomProperties start");
+        final String subSkill = (String) properties.get(S2Constant.KEY_SUB_SKILL);
+        final String level = (String) properties.get(S2Constant.KEY_LEVEL);
+        final String isVirtual = (String) properties.get(S2Constant.KEY_VIRTUAL);
+        LogUtils.debug(SDKConstant.TAG, "Old Propery " + "_" + subSkill + "_" + level + "_" + isVirtual);
+        final HashMap<String, Object> propertie = new HashMap<String, Object>();
+        propertie.put(S2Constant.KEY_LEVEL, level);
+        propertie.put(S2Constant.KEY_SUB_SKILL, subSkill);
+        propertie.put(S2Constant.KEY_VIRTUAL, S2Constant.TRUE);
+        warpClient.updateRoomProperties(roomId, propertie, null);
+        LogUtils.debug(SDKConstant.TAG, "updateRoomProperties stop");
+    }
+
+}

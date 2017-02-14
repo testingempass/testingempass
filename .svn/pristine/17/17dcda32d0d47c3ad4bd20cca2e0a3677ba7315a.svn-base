@@ -1,0 +1,447 @@
+package com.empass.sdk.utils;
+
+import android.annotation.SuppressLint;
+import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.util.Base64;
+
+import com.empass.sdk.vo.SkillDataVO;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+import java.util.TimeZone;
+
+@SuppressWarnings("ALL")
+public class SDKCommonUtils {                                               //Class for common utilities  @author Deepak
+
+    public static int getImageResource(final Context ctx, final String imageName) {                  //Get image res @param ctx   @param imageName  @return
+        return ctx.getResources().getIdentifier(imageName, null, ctx.getPackageName());
+    }
+
+    public static String getFormatedText(final String text, final String colorCode) {                   //Method to get formatted text  @param text  @param colorCode  @return
+        return "<font color=\"" + colorCode + "\">" + text + "</font>";
+    }
+
+    public void makeDir(final String imagepathSource) {                                                  //Method to create Application Directory  @param imagepathSource
+        try {
+            final File dir = new File(imagepathSource);
+            if (dir.mkdir()) {
+                LogUtils.debug(SDKConstant.TAG, "created");
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    @SuppressWarnings("PMD.AssignementInOperand")
+    public static void fileCopy(final String fnameS, final String fnameT) {
+        try {
+            final InputStream input = new FileInputStream(fnameT);
+            final OutputStream output = new FileOutputStream(new File(fnameS));
+            final byte[] buffer = new byte[1024];
+            while (true) {
+                int bufferLength = input.read(buffer);
+                if (SDKConstant.MINUS_ONE == bufferLength) {
+                    break;
+                }
+                output.write(buffer, 0, bufferLength);
+            }
+            input.close();
+            output.flush();
+            output.close();
+        } catch (FileNotFoundException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public static String getColorCodeWithLessOpacity(final String colorCode) {
+        String tempColor = colorCode;
+        try {
+            tempColor = tempColor.replace("#", "#66");
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return tempColor;
+    }
+
+    public static String getColorCodeWithDarkOpacity(final String colorCode) {                        //Method to get color with dark opacity  @param colorCode  @return
+        String tempColor = colorCode;
+        try {
+            tempColor = tempColor.replace("#", "#CC");
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return tempColor;
+    }
+
+    /**
+     * generate random number
+     *
+     * @param min
+     * @param max
+     * @return
+     */
+    public static int generateRandomNumber(final int min, final int max) {
+        final Random randomNumber = new Random();
+        return randomNumber.nextInt((max - min) + 1) + min;
+    }
+
+    public static String encryptPassword(final String password) {
+        String encryptPassword = null;
+        try {
+            byte[] data = password.getBytes("UTF-8");
+            encryptPassword = Base64.encodeToString(data, Base64.DEFAULT);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return encryptPassword;
+    }
+
+    /**
+     * get city
+     *
+     * @param location
+     * @param mContext
+     * @return
+     */
+    public static String getCity(final Location location, final Context mContext) {
+        String city = "";
+        try {
+            final double latitude = location.getLatitude();
+            final double longitude = location.getLongitude();
+            final Geocoder gcd = new Geocoder(mContext, Locale.getDefault());
+            List<Address> addresses;
+            addresses = gcd.getFromLocation(latitude, longitude, 1);
+            if (addresses.size() > SDKConstant.ZERO_INDEX) {
+                city = addresses.get(0).getLocality();
+            }
+        } catch (IOException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return city;
+    }
+
+    /**
+     * Changes in v2.5 for remove text in otp sms
+     *
+     * @param input
+     * @return
+     */
+    public static String stripNonDigits(
+            final CharSequence input /* inspired by seh's comment */) {
+        final StringBuilder sb = new StringBuilder(
+                input.length() /* also inspired by seh's comment */);
+        for (int i = 0; i < input.length(); i++) {
+            final char c = input.charAt(i);
+            if (c > 47 && c < 58) {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    public static String getDateReachGoal(final int days) {                                        //Method to get Date to reach goal @param cLevel  @return
+        final Calendar cal = Calendar.getInstance(Locale.getDefault());
+        SimpleDateFormat format;
+        String time = null;
+        try {
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, days);
+            format = new SimpleDateFormat(SDKConstant.EXP_DATE_FOR, Locale.ENGLISH);
+            time = format.format(cal.getTime());
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return time;
+    }
+
+    public static int dpToPx(final Context context, final double dp) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) ((dp * scale) + 0.5f);
+    }
+
+    public static int pxTodp(final Context context, final double px) {
+        final float scale = context.getResources().getDisplayMetrics().density;
+        return (int) ((px / scale) + 0.5);
+    }
+
+    /**
+     * get offset
+     *
+     * @param offsetMillis
+     * @return
+     */
+    public static String getGmtOffsetString(final int offsetMillis) {
+        int offsetMinutes = offsetMillis / 60000;
+        char sign = '+';
+        if (offsetMinutes < 0) {
+            sign = '-';
+            offsetMinutes = -offsetMinutes;
+        }
+        return String.format("%c%02d:%02d", sign, offsetMinutes / 60, offsetMinutes % 60);
+    }
+
+    public static int getCountryFlag(final Context ctx, final String countryCode) {              //Get country flag wrt to country code  @param ctx  @param countryCode  @return
+        String uri = "";
+        try {
+            uri = "drawable/flag_91";
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return getImageResource(ctx, uri);
+    }
+
+    public static final int ONE = 1;                                     //variable for 1
+
+    public static String getShortName(final String userName) {            //get short name "ST" for "Sachin Tendulkar"
+        final String userNames = userName.trim();
+        String name = "";
+        String lastNameChar;
+        String firstNameChar;
+        LogUtils.debug(SDKConstant.TAG, userName);
+        LogUtils.debug(SDKConstant.TAG, "length:" + userName.split("\\w+").length);
+        if (ONE < userNames.split("\\w+").length) {                        // if username has length more then 1
+            try {
+                firstNameChar = userNames.substring(0, userNames.lastIndexOf(' '));
+                final String firstChar = Character.toString(firstNameChar.charAt(0));
+                lastNameChar = userNames.substring(userNames.lastIndexOf(SDKConstant.BLANK) + 1);
+                final String secondChar = Character.toString(lastNameChar.charAt(0));
+                name = firstChar + secondChar;
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        } else {
+            name = Character.toString(userNames.charAt(0));
+        }
+        return name;
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    //get time difference    @param currentDate  @param lastPlayDate  @return
+    public static int getTimeDiff(final String currentDate, final String lastPlayDate) {
+        final SimpleDateFormat format = new SimpleDateFormat(SDKConstant.DATE_TIME_FORMATE);
+        // format.setTimeZone(TimeZone.getTimeZone(sdkConstant.TIME_ZONE));
+        Date date1;
+        Date date2;
+        long diffHours = 0;
+        try {
+            date1 = format.parse(lastPlayDate);
+            date2 = format.parse(currentDate);
+            LogUtils.debug(SDKConstant.TAG, "Date1:" + date1 + " ,Date2" + date2);
+            final long diff = date2.getTime() - date1.getTime();                                      // in milliseconds
+            diffHours = diff / (60 * 60 * 1000) % 24;
+            final long diffDays = diff / (24 * 60 * 60 * 1000);
+            diffHours = diffHours + (diffDays * 24);
+            LogUtils.debug(SDKConstant.TAG, diffHours + " hours, ");
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return (int) diffHours;
+    }
+
+    /**
+     * @param date
+     * @param oldDate
+     * @return
+     */
+    public static int getTimeDiffernece(final String date, final String oldDate) {
+        @SuppressLint("SimpleDateFormat") final SimpleDateFormat format = new SimpleDateFormat(SDKConstant.DATE_TIME_FORMATE);
+        format.setTimeZone(TimeZone.getTimeZone(SDKConstant.TIME_ZONE));
+        Date date1;
+        Date date2;
+        long diffMin = 0;
+        try {
+            date1 = format.parse(oldDate);
+            date2 = format.parse(date);
+            LogUtils.debug(SDKConstant.TAG, "Date1:" + date1 + " ,Date2" + date2);
+            final long diff = date2.getTime() - date1.getTime();                                      // in milliseconds
+            diffMin = diff / (60 * 1000) % 60;
+            LogUtils.debug(SDKConstant.TAG, diffMin + " Min, ");
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return (int) diffMin;
+    }
+
+    @SuppressLint("SimpleDateFormat")
+    public static int getDaysDiff(final String currentDate, final String createdDate) {                //get days difference  @param currentDate  @param createdDate  @return
+        final SimpleDateFormat format = new SimpleDateFormat(SDKConstant.EXP_DATE_FOR, Locale.ENGLISH);
+        format.setTimeZone(TimeZone.getTimeZone(SDKConstant.TIME_ZONE));
+        Date date1;
+        Date date2;
+        long diffDays = 0;
+        try {
+            date1 = format.parse(createdDate);
+            date2 = format.parse(currentDate);
+            LogUtils.debug(SDKConstant.TAG, "Date1:" + date1 + " ,Date2" + date2);
+            final long diff = date2.getTime() - date1.getTime();                                     // in milliseconds
+            diffDays = diff / (24 * 60 * 60 * 1000);
+            LogUtils.debug(SDKConstant.TAG, diffDays + " days, ");
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return (int) diffDays;
+    }
+
+    /**
+     * @param dob
+     * @return
+     */
+
+    public static String getYearFromDob(final String dob) {
+        String year = null;
+        try {
+            @SuppressLint("SimpleDateFormat") final SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+            final Date date = format.parse(dob);
+            @SuppressLint("SimpleDateFormat") final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy", Locale.ENGLISH);
+            year = simpleDateFormat.format(date);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return year;
+    }
+
+    /**
+     * get level is use for player registration level
+     *
+     * @param rLevel
+     * @return
+     */
+    public static String getLevel(String rLevel) {
+        String rLevelIndex;
+        if (null == rLevel) {
+            rLevel = "1";
+        }
+        switch (rLevel) {
+            case "1":
+                rLevelIndex = SDKConstant.FOUR;
+                break;
+            case "2":
+                rLevelIndex = SDKConstant.EIGHT;
+                break;
+            case "3":
+                rLevelIndex = SDKConstant.TWEEL;
+                break;
+            case "4":
+                rLevelIndex = SDKConstant.SIXTEN;
+                break;
+            case "99":
+                rLevelIndex = SDKConstant.NINTYNINE;
+                break;
+            default:
+                rLevelIndex = SDKConstant.FOUR;
+                break;
+        }
+        return rLevelIndex;
+    }
+
+    public static String getDateReachGoalForSdk(final SkillDataVO skillDataVO) {
+        int days = 0;
+        String maxLevel = skillDataVO.getMaxLevel();
+        if (null == maxLevel) {
+            maxLevel = "1";
+        }
+        switch (maxLevel) {
+            case "1":
+                days = Integer.parseInt(skillDataVO.getNoviceEta());
+                break;
+            case "2":
+                days = Integer.parseInt(skillDataVO.getAmateurEta());
+                break;
+            case "3":
+                days = Integer.parseInt(skillDataVO.getProEta());
+                break;
+            case "4":
+                days = Integer.parseInt(skillDataVO.getChampEta());
+                break;
+            case "99":
+                days = Integer.parseInt(skillDataVO.getChampEta());
+                break;
+            default:
+                days = Integer.parseInt(skillDataVO.getNoviceEta());
+                break;
+        }
+        final Calendar cal = Calendar.getInstance(Locale.getDefault());
+        SimpleDateFormat format;
+        String time = null;
+        try {
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, days);
+            format = new SimpleDateFormat(SDKConstant.EXP_DATE_FOR, Locale.ENGLISH);
+            time = format.format(cal.getTime());
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return time;
+    }
+
+    private static String[] nameArray = {"Jyoti Kalra", " Wasim Hamid", "Vijay Shah", "Upasna Ishwar", "Tanvir Alam", "Subhendu Hasan",
+            "Ravi Ishwar", "Rahul Rai", "Reshma Fernandes", "Omesh Pai", "Manas Sain", "Murari Jain", "Lakshay Mittal",
+            "Tushar Khanna", "Kajal Sharma", "Gaurav Rohilla", "Esha Qureshi", "Deepak Jain", "Disha Kamra", "Aarav Kumar",
+            "Supriya Nehra", "Pooja Mudgil", "Jaya ", "Vibhu", "Ankur", "Anuj", "Mohit", "Danish", "Tarun",
+            "Anupriya", "Ankita", "Shruti", "Vishal"};
+
+    public static String getVirtulUser() {
+        String user = null;
+        try {
+            int index = generateRandomNumber(0, 30);
+            String str = nameArray[index];
+            user = "{\n" +
+                    "            \"status\":\"201\",\n" +
+                    "            \"data\":[\n" +
+                    "            { \n" +
+                    "             \"goal_id\":\"0\",\"player_id\":\"0\",\n" +
+                    "            \"player_name\":\"" + str + "\",\n" +
+                    "             \"image\":\"deepak.png \",\"clevel_id\":\"0\",\n" +
+                    "             \"clevel\":\"\",\n" +
+                    "             \"csublevel_id\":\"0\",\n" +
+                    "             \"csublevel\":\"\",\n" +
+                    "            \"country_code\":\"91\",\n" +
+                    "             \"subskill\":\"xyz\",\n" +
+                    "            \"subskill_id\":\"0\",\n" +
+                    "            \"player_email\":\"deepak@gmail.com\"\n" +
+                    "            } \n" +
+                    "            ]\n" +
+                    "            }";
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return user;
+    }
+
+    public static String intToString(final int num, String authType, final int digits) {
+        StringBuffer s = new StringBuffer(digits);
+        StringBuffer auth = new StringBuffer(authType);
+        try {
+            int zeroes = digits - (int) (Math.log(num) / Math.log(10)) - 1 - authType.length();
+            for (int i = 0; i < zeroes; i++) {
+                s.append(0);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return auth.append(s).append(num).toString();
+    }
+}

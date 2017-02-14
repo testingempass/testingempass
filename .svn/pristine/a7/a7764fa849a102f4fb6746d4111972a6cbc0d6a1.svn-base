@@ -1,0 +1,271 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class SkillDataVO {
+    public SkillDataVO() {
+    }
+
+    @SerializedName("id")                                    // declear variable
+    private String id;
+    @SerializedName("name")                                    // declear variable
+    private String name;
+    @SerializedName("domain_id")                                    // declear variable
+    private String domainId;
+    @SerializedName("domain_name")                                    // declear variable
+    private String domainName;
+    @SerializedName("active")                                    // declear variable
+    private String active;
+    @SerializedName("type")                                    // declear variable
+    private String type;
+    @SerializedName("payment_mode")                                    // declear variable
+    private String paymentMode;
+    @SerializedName("is_secured")                                    // declear variable
+    private String isSecured;
+    @SerializedName("max_game")                                    // declear variable
+    private String maxGame;
+    @SerializedName("logo")                                    // declear variable
+    private String logo;
+    @SerializedName("novice_eta")                                    // declear variable
+    private String noviceEta;
+    @SerializedName("pro_eta")                                    // declear variable
+    private String proEta;
+    @SerializedName("champ_eta")                                    // declear variable
+    private String champEta;
+    @SerializedName("amateur_eta")                                    // declear variable
+    private String amateurEta;
+    @SerializedName("large_banner")                                    // declear variable
+    private String largeBanner;
+    @SerializedName("promo_text1")                                    // declear variable
+    private String promoText1;
+    @SerializedName("promo_text2")                                    // declear variable
+    private String promoText2;
+    @SerializedName("contest_type")                                    // declear variable
+    private String contestType;
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
+    }
+
+    @SerializedName("end_date")                                    // declear variable
+    private String endDate;
+    public String getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(String questionCount) {
+        this.questionCount = questionCount;
+    }
+
+    @SerializedName("question_count")                                    // declear variable
+    private String questionCount;
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(String domainId) {
+        this.domainId = domainId;
+    }
+
+    public String getDomainName() {
+        return domainName;
+    }
+
+    public void setDomainName(String domainName) {
+        this.domainName = domainName;
+    }
+
+    public String getActive() {
+        return active;
+    }
+
+    public void setActive(String active) {
+        this.active = active;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getPaymentMode() {
+        return paymentMode;
+    }
+
+    public void setPaymentMode(String paymentMode) {
+        this.paymentMode = paymentMode;
+    }
+
+    public String getIsSecured() {
+        return isSecured;
+    }
+
+    public void setIsSecured(String isSecured) {
+        this.isSecured = isSecured;
+    }
+
+    public String getMaxGame() {
+        return maxGame;
+    }
+
+    public void setMaxGame(String maxGame) {
+        this.maxGame = maxGame;
+    }
+
+    public String getLogo() {
+        return logo;
+    }
+
+    public void setLogo(String logo) {
+        this.logo = logo;
+    }
+
+    public String getNoviceEta() {
+        return noviceEta;
+    }
+
+    public void setNoviceEta(String noviceEta) {
+        this.noviceEta = noviceEta;
+    }
+
+    public String getProEta() {
+        return proEta;
+    }
+
+    public void setProEta(String proEta) {
+        this.proEta = proEta;
+    }
+
+    public String getChampEta() {
+        return champEta;
+    }
+
+    public void setChampEta(String champEta) {
+        this.champEta = champEta;
+    }
+
+    public String getAmateurEta() {
+        return amateurEta;
+    }
+
+    public void setAmateurEta(String amateurEta) {
+        this.amateurEta = amateurEta;
+    }
+
+    public String getLargeBanner() {
+        return largeBanner;
+    }
+
+    public void setLargeBanner(String largeBanner) {
+        this.largeBanner = largeBanner;
+    }
+
+    public String getPromoText1() {
+        return promoText1;
+    }
+
+    public void setPromoText1(String promoText1) {
+        this.promoText1 = promoText1;
+    }
+
+    public String getPromoText2() {
+        return promoText2;
+    }
+
+    public void setPromoText2(String promoText2) {
+        this.promoText2 = promoText2;
+    }
+
+    public String getContestType() {
+        return contestType;
+    }
+
+    public void setContestType(String contestType) {
+        this.contestType = contestType;
+    }
+
+    public String getContestRules() {
+        return contestRules;
+    }
+
+    public void setContestRules(String contestRules) {
+        this.contestRules = contestRules;
+    }
+
+    public String getContestDetails() {
+        return contestDetails;
+    }
+
+    public void setContestDetails(String contestDetails) {
+        this.contestDetails = contestDetails;
+    }
+
+    public String getMaxLevel() {
+        return maxLevel;
+    }
+
+    public void setMaxLevel(String maxLevel) {
+        this.maxLevel = maxLevel;
+    }
+
+    @SerializedName("contest_rules")                                    // declear variable
+    private String contestRules;
+    @SerializedName("contest_details")
+    private String contestDetails;
+    @SerializedName("max_level")                                    // declear variable
+    private String maxLevel;
+    private String contestAdded;
+
+    public String getContestAdded() {
+        return contestAdded;
+    }
+
+    public void setContestAdded(String contestAdded) {
+        this.contestAdded = contestAdded;
+    }
+
+    @SerializedName("color")                                    // declear variable
+    private String color;
+
+    public String getAmount() {
+        return amount;
+    }
+
+    public void setAmount(String amount) {
+        this.amount = amount;
+    }
+
+    @SerializedName("amount")
+    private String amount;
+
+    public String getColor() {
+        return color;
+    }
+
+    public void setColor(String color) {
+        this.color = color;
+    }
+}

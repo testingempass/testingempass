@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/topHeaderWithOptation"
+        layout="@layout/empass_main_header"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_50" />
+
+    <RelativeLayout
+        android:id="@+id/rl_no_skill"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="visible">
+
+        <ImageView
+            android:id="@+id/iv_no_skill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:src="@drawable/no_skill_icon" />
+
+        <TextView
+            android:id="@+id/tv_comingsoon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/iv_no_skill"
+            android:layout_centerInParent="true"
+            android:gravity="center"
+            android:text="@string/m_coming_soon"
+            android:textSize="@dimen/sp_22" />
+
+        <com.empass.sdk.customview.MobiButton
+            android:id="@+id/tv_skill_ref"
+            android:layout_width="@dimen/sp_180"
+            android:layout_height="@dimen/dp_60"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="@dimen/dp_10"
+            android:layout_marginLeft="@dimen/dp_5"
+            android:layout_marginRight="@dimen/dp_5"
+            android:layout_weight="1"
+            android:background="@drawable/m_info_button"
+            android:onClick="onClickRefresh"
+            android:text="@string/m_refresh"
+            android:textColor="@drawable/m_orange_text"
+            android:textSize="16sp" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:id="@+id/lv_skill"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/sp_8"
+        android:divider="@color/m_grey_85"
+        android:gravity="center" />
+</LinearLayout>

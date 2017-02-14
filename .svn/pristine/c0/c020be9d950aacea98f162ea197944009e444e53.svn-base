@@ -1,0 +1,132 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 2/9/2016.
+ */
+@SuppressWarnings("ALL")
+public class CoinDataVO {
+    @SerializedName("id")                                 //Variable for msg
+    private String id;
+    @SerializedName("player_id")                                 //Variable for msg
+    private String playerId;
+    @SerializedName("profile_id")                                 //Variable for msg
+    private String profileId;
+    @SerializedName("game_id")                                 //Variable for msg
+    private String gameId;
+    @SerializedName("coins")                                 //Variable for msg
+    private String coins;
+    @SerializedName("type")                                 //Variable for msg
+    private String type;
+
+    public String getEvent() {
+        return event;
+    }
+
+    public void setEvent(String event) {
+        this.event = event;
+    }
+
+    @SerializedName("event")                                 //Variable for msg
+    private String event;
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
+
+    public String getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(String profileId) {
+        this.profileId = profileId;
+    }
+
+    public String getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(String gameId) {
+        this.gameId = gameId;
+    }
+
+    public String getCoins() {
+        return coins;
+    }
+
+    public void setCoins(String coins) {
+        this.coins = coins;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public void setType(String type) {
+        this.type = type;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public String getPaymentTxnId() {
+        return paymentTxnId;
+    }
+
+    public void setPaymentTxnId(String paymentTxnId) {
+        this.paymentTxnId = paymentTxnId;
+    }
+
+    public String getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(String createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public String getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(String createdDate) {
+        this.createdDate = createdDate;
+    }
+
+    @SerializedName("source")                                 //Variable for msg
+    private String source;
+    @SerializedName("comments")                                 //Variable for msg
+    private String comment;
+    @SerializedName("payment_txn_id")                                 //Variable for msg
+    private String paymentTxnId;
+    @SerializedName("created_by")                                 //Variable for msg
+    private String createdBy;
+    @SerializedName("created_date")                                 //Variable for msg
+    private String createdDate;
+}

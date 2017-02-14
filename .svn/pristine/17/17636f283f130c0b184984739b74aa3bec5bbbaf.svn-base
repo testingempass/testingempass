@@ -1,0 +1,1878 @@
+package com.empass.sdk.db;
+
+import android.content.Context;
+import android.content.res.Resources;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.empass.sdk.R;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.s2.FinalResult;
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.EducationDataVO;
+import com.empass.sdk.vo.ExpectedDateVO;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.KeyData;
+import com.empass.sdk.vo.OpponentResponse;
+import com.empass.sdk.vo.OpponentVO;
+import com.empass.sdk.vo.ProgressionVO;
+import com.empass.sdk.vo.SkillDataVO;
+import com.empass.sdk.vo.TempUserVO;
+import com.empass.sdk.vo.User;
+import com.empass.sdk.vo.UserOption;
+import com.empass.sdk.vo.UserQuestionVO;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class SDKDBHelper extends SDKDatabaseHelper {
+    /**
+     *
+     */
+
+    private static SDKDBHelper mInstance = null;
+
+    /**
+     * @param context
+     */
+    private SDKDBHelper(final Context context) {
+        super(context);
+    }
+
+    public static SDKDBHelper getInstance(final Context ctx) {
+
+        if (mInstance == null) {
+            mInstance = new SDKDBHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
+
+    /**
+     * saveData
+     */
+    public void saveData() {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        try {
+            final String deleteProgression = resources.getString(R.string.delete_progression_master);
+            dbHelper.execSQL(deleteProgression);
+            final String insert1 = SDKConstant.INSERT_1;
+            dbHelper.execSQL(insert1);
+            final String insert2 = SDKConstant.INSERT_2;
+            dbHelper.execSQL(insert2);
+            final String insert3 = SDKConstant.INSERT_3;
+            dbHelper.execSQL(insert3);
+            final String insert4 = SDKConstant.INSERT_4;
+            dbHelper.execSQL(insert4);
+            final String insert5 = SDKConstant.INSERT_5;
+            dbHelper.execSQL(insert5);
+            final String insert6 = SDKConstant.INSERT_6;
+            dbHelper.execSQL(insert6);
+            final String insert7 = SDKConstant.INSERT_7;
+            dbHelper.execSQL(insert7);
+            final String insert8 = SDKConstant.INSERT_8;
+            dbHelper.execSQL(insert8);
+            final String insert9 = SDKConstant.INSERT_9;
+            dbHelper.execSQL(insert9);
+            final String insert10 = SDKConstant.INSERT_10;
+            dbHelper.execSQL(insert10);
+            final String insert11 = SDKConstant.INSERT_11;
+            dbHelper.execSQL(insert11);
+            final String insert12 = SDKConstant.INSERT_12;
+            dbHelper.execSQL(insert12);
+            final String insert13 = SDKConstant.INSERT_13;
+            dbHelper.execSQL(insert13);
+            final String insert14 = SDKConstant.INSERT_14;
+            dbHelper.execSQL(insert14);
+            final String insert15 = SDKConstant.INSERT_15;
+            dbHelper.execSQL(insert15);
+            final String insert16 = SDKConstant.INSERT_16;
+            dbHelper.execSQL(insert16);
+            final String insert99 = SDKConstant.INSERT_99;
+            dbHelper.execSQL(insert99);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+
+    /**
+     * @param userId
+     */
+    public void deleteUser(final String userId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String deleteUserQuery = resources.getString(R.string.delete_user);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{userId};
+            dbHelper.execSQL(deleteUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * @param user
+     */
+    public void saveLogedUser(final User user) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        try {
+            final String insertUser = resources.getString(R.string.insert_user_master);
+            Object[] bindArgs;
+            LogUtils.debug(SDKConstant.TAG, "Country Code:" + user.getCountryCode());
+            bindArgs = new Object[]{user.getName(), user.getEmail(), user.getPhone(), user.getGender(), user.getType(), user.getDob(),
+                    user.getId(), "Y", user.getCountryCode(), user.getImage(), user.getCcName(),
+                    user.getMaxGoal(), user.getIsChat(), user.getAuthType(), user.getUuid(), user.getResume(),
+                    user.getInviteCode(), user.getMultiSkill()};
+            dbhelper.execSQL(insertUser, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    /**
+     * @param list
+     */
+    public void saveLogedUserProfile(final List<Goal> list) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        dbHelper.execSQL(resources.getString(R.string.delete_profile));
+        try {
+            for (final Goal goal : list) {
+                final String insertUserProfile = resources.getString(R.string.insert_user_profile);
+                final String totalPlay = String.valueOf((Integer.parseInt(goal.getTotalWin()) + Integer.parseInt(goal.getTotalTie())
+                        + Integer.parseInt(goal.getTotalLost()) + Integer.parseInt(goal.getTotalAbandon())));
+                final Object[] bindArgs = new Object[]{
+                        goal.getGoalId(), goal.getDomainId(),
+                        goal.getDomain(), goal.getSubSkillId(),
+                        goal.getSubSkill(), goal.getSubskillType(),
+                        goal.getSubskillPaymentMode(), goal.getSubskillStartDate(),
+                        goal.getSubskillEndDate(), goal.getSubskillLogo(),
+                        goal.getSubskillSmallBanner(), goal.getSubskillLargeBanner(),
+                        goal.getPromoText1(), goal.getPromoText2(),
+                        goal.getContestType(), goal.getContestDetails(),
+                        goal.getContestRules(), goal.getSubskillHtml(),
+                        goal.getSubskillCf1(), goal.getSubskillCf2(),
+                        goal.getSubskillCf3(), goal.getSubskillMaxGame(),
+                        goal.getSubskillCorrectAnsScore(), goal.getSubskillSpeedBonus(),
+                        goal.getSubskillFinishBonus(), goal.getSubskillWinningBonus(),
+                        goal.getSubskillCreatedDate(), goal.getrLevelId(),
+                        goal.getrLevel(), goal.getrSubLevel(),
+                        goal.getrSubLevelId(), goal.getcLevelId(),
+                        goal.getcLevel(), goal.getcSubLevel(),
+                        goal.getcSubLevelId(), goal.gettLevelId(),
+                        goal.gettLevel(), goal.gettSubLevel(),
+                        goal.gettSubLevelId(), goal.getPoints(),
+                        goal.getMaxPoints(), goal.getCountryCode(),
+                        goal.getStrikeRate(), goal.getWinPercentage(),
+                        goal.getAvgPoints(), goal.getTotalWin(),
+                        goal.getTotalLost(), goal.getTotalAbandon(),
+                        goal.getTotalTie(), totalPlay, goal.getActive(),
+                        goal.getCreatedBy(), goal.getCreatedDate(),
+                        goal.getUpdateBy(), goal.getUpdateDate(),
+                        goal.getLastPlayed(), goal.getExpectedDate(),
+                        goal.getNumGame(), goal.getSubskillActive(),
+                        goal.getCoins(), goal.getRank(),
+                        goal.getIsChat(), goal.getColor(),
+                        goal.getTick(), goal.getDifficultyLvl(),
+                        goal.getQuesPerGame(), goal.getDomainColor(),
+                        goal.getReachGoalDate(), goal.getHighestPoints()};
+                dbHelper.execSQL(insertUserProfile, bindArgs);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * get key data form ref teable
+     */
+    public String getRefData(final String key) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String appKey = "";
+        try {
+            final String selectQuery = resources.getString(R.string.select_appkey);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{key});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                appKey = cursor.getString(cursor.getColumnIndex("value"));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return appKey;
+    }
+
+    /**
+     *
+     */
+    public SkillDataVO[] getSubSkill() {
+        List<SkillDataVO> data = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            final String query = "select * from SKILL_MASTER_REF WHERE active= 'Y'";
+            Cursor cursor;
+            cursor = database.rawQuery(query, null);
+            data = getContestData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+
+    /**
+     */
+    public SkillDataVO[] getSubSkills(String str) {
+        List<SkillDataVO> data = null;
+        Cursor cursor = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            String query = "select * from SKILL_MASTER_REF where active= 'Y'";
+            if (str.length() > 0) {
+                str = str.substring(0, str.length() - 1);
+                LogUtils.debug(SDKConstant.TAG, "String:" + str);
+                query = "select * from SKILL_MASTER_REF where active= 'Y'  AND id NOT IN(" + str + ")";
+            }
+            cursor = database.rawQuery(query, null);
+            data = getContestData(cursor);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+    /**
+     * @param parentId
+     * @param text
+     */
+    public String getSubSkillId(final String parentId, final String text) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String subSkill = "";
+        try {
+            final String selectQuery = resources.getString(R.string.select_subskill_id_ref);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{parentId, text});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                subSkill = cursor.getString(cursor.getColumnIndex("id"));
+            }
+            LogUtils.debug(SDKConstant.TAG, "subSkill:" + subSkill);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return subSkill;
+    }
+
+    public String getSkillColor(final String index) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String appKey = "#0095DA";
+        try {
+            final String selectQuery = resources.getString(R.string.select_skill_color);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{index});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                appKey = cursor.getString(cursor.getColumnIndex("color"));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return appKey;
+    }
+
+    /**
+     * @param skillData
+     */
+
+    public void saveRefSkill(final List<SkillDataVO> skillData) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        int count = 0;
+        final String selectQuery = resources.getString(R.string.select_subskill_count);
+        final String insertQuery = resources.getString(R.string.insert_skill);
+        final String updateQuery = resources.getString(R.string.update_skill);
+        Object[] bindArgs;
+        try {
+            for (final SkillDataVO skillDataVO : skillData) {
+                cursor = dbHelper.rawQuery(selectQuery, new String[]{skillDataVO.getId()});
+                cursor.getCount();
+                while (cursor.moveToNext()) {
+                    count = cursor.getInt(cursor.getColumnIndex("name"));
+                }
+                if (count > 0) {
+                    LogUtils.debug(SDKConstant.TAG, "Update");
+                    bindArgs = new Object[]{skillDataVO.getName(), skillDataVO.getDomainId(),
+                            skillDataVO.getDomainName(), skillDataVO.getActive(),
+                            skillDataVO.getType(), skillDataVO.getLogo(), skillDataVO.getPaymentMode(),
+                            skillDataVO.getMaxGame(), skillDataVO.getIsSecured(),
+                            skillDataVO.getNoviceEta(), skillDataVO.getAmateurEta(),
+                            skillDataVO.getProEta(), skillDataVO.getChampEta(), skillDataVO.getLargeBanner(),
+                            skillDataVO.getPromoText1(), skillDataVO.getPromoText2(),
+                            skillDataVO.getContestType(), skillDataVO.getContestRules(),
+                            skillDataVO.getContestDetails(), skillDataVO.getMaxLevel(), skillDataVO.getColor(),
+                            skillDataVO.getAmount(), skillDataVO.getQuestionCount(), "Y", skillDataVO.getEndDate(), skillDataVO.getId()};
+                    dbHelper.execSQL(updateQuery, bindArgs);
+                } else {
+                    LogUtils.debug(SDKConstant.TAG, "Insert");
+                    bindArgs = new Object[]{skillDataVO.getId(), skillDataVO.getName(), skillDataVO.getDomainId(),
+                            skillDataVO.getDomainName(), skillDataVO.getActive(),
+                            skillDataVO.getType(), skillDataVO.getLogo(), skillDataVO.getPaymentMode(),
+                            skillDataVO.getMaxGame(), skillDataVO.getIsSecured(),
+                            skillDataVO.getNoviceEta(), skillDataVO.getAmateurEta(),
+                            skillDataVO.getProEta(), skillDataVO.getChampEta(), skillDataVO.getLargeBanner(),
+                            skillDataVO.getPromoText1(), skillDataVO.getPromoText2(),
+                            skillDataVO.getContestType(), skillDataVO.getContestRules(),
+                            skillDataVO.getContestDetails(), skillDataVO.getMaxLevel(), skillDataVO.getColor(),
+                            skillDataVO.getAmount(), skillDataVO.getQuestionCount(), "Y", skillDataVO.getEndDate()};
+                    dbHelper.execSQL(insertQuery, bindArgs);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+    }
+
+    /**
+     */
+    public SkillDataVO[] getContestList() {
+        List<SkillDataVO> data = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            Cursor cursor;
+            final String getContact = resources.getString(R.string.select_contest);
+            cursor = database.rawQuery(getContact, new String[]{SDKConstant.CONTEST});
+            data = getContestData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+    /**
+     * @return
+     */
+    private SkillDataVO getSkillObj() {
+        return new SkillDataVO();
+    }
+
+    /**
+     * @param cursor
+     * @return
+     */
+    private List<SkillDataVO> getContestData(final Cursor cursor) {
+        final List<SkillDataVO> data = new ArrayList<SkillDataVO>();
+        while (cursor.moveToNext()) {
+            final SkillDataVO contestVo = getSkillObj();
+            contestVo.setId(cursor.getString(cursor.getColumnIndex("id")));
+            contestVo.setName(cursor.getString(cursor.getColumnIndex("name")));
+            contestVo.setDomainId(cursor.getString(cursor.getColumnIndex("domain_id")));
+            contestVo.setDomainName(cursor.getString(cursor.getColumnIndex("max_game")));
+            contestVo.setPaymentMode(cursor.getString(cursor.getColumnIndex("payment_mode")));
+            contestVo.setIsSecured(cursor.getString(cursor.getColumnIndex("is_secured")));
+            contestVo.setNoviceEta(cursor.getString(cursor.getColumnIndex("novice_eta")));
+            contestVo.setAmateurEta(cursor.getString(cursor.getColumnIndex("amateur_eta")));
+            contestVo.setProEta(cursor.getString(cursor.getColumnIndex("pro_eta")));
+            contestVo.setChampEta(cursor.getString(cursor.getColumnIndex("champ_eta")));
+            contestVo.setLargeBanner(cursor.getString(cursor.getColumnIndex("large_banner")));
+            contestVo.setPromoText1(cursor.getString(cursor.getColumnIndex("promo_text1")));
+            contestVo.setPromoText2(cursor.getString(cursor.getColumnIndex("promo_text2")));
+            contestVo.setContestType(cursor.getString(cursor.getColumnIndex("contest_type")));
+            contestVo.setContestRules(cursor.getString(cursor.getColumnIndex("contest_rules")));
+            contestVo.setContestDetails(cursor.getString(cursor.getColumnIndex("contest_details")));
+            contestVo.setMaxLevel(cursor.getString(cursor.getColumnIndex("max_level")));
+            contestVo.setLogo(cursor.getString(cursor.getColumnIndex("logo")));
+            contestVo.setColor(cursor.getString(cursor.getColumnIndex("color")));
+            contestVo.setAmount(cursor.getString(cursor.getColumnIndex("amount")));
+            contestVo.setQuestionCount(cursor.getString(cursor.getColumnIndex("question_count")));
+            contestVo.setEndDate(cursor.getString(cursor.getColumnIndex("end_date")));
+            contestVo.setContestAdded(SDKConstant.NTEXT);
+            data.add(contestVo);
+        }
+        return data;
+    }
+
+    /**
+     * @param str
+     */
+    public SkillDataVO[] getContest(final String str) {
+        List<SkillDataVO> data = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            Cursor cursor;
+            final String getContact = resources.getString(R.string.select_contest_str);
+            cursor = database.rawQuery(getContact, new String[]{str});
+            data = getContestData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+    /**
+     * @param str
+     * @return
+     */
+    public SkillDataVO[] getContestLists(String str) {
+        List<SkillDataVO> data = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            String query = "select * from SKILL_MASTER_REF where type= '" + SDKConstant.CONTEST + "' AND active= 'Y'";
+            if (str.length() > 0) {
+                str = str.substring(0, str.length() - 1);
+                LogUtils.debug(SDKConstant.TAG, "String:" + str);
+                query = "select * from SKILL_MASTER_REF where type= '" + SDKConstant.CONTEST + "' AND active= 'Y' AND id NOT IN(" + str + ")";
+            }
+            cursor = database.rawQuery(query, null);
+            data = getContestData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+    /**
+     * get contest list for select ids
+     *
+     * @param string
+     * @param str
+     * @return
+     */
+    public SkillDataVO[] getContestListSelect(final String string, String str) {
+
+        LogUtils.debug(SDKConstant.TAG, "String:" + str);
+        List<SkillDataVO> data = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            String getContact = "select * from SKILL_MASTER_REF where type= '" + SDKConstant.CONTEST + "' AND active= 'Y' AND contest_type = " + "'" + string + "'";
+            if (str.length() > 0) {
+                str = str.substring(0, str.length() - 1);
+                LogUtils.debug(SDKConstant.TAG, "String:" + str);
+                getContact = "select * from SKILL_MASTER_REF where type= '" + SDKConstant.CONTEST + "' AND active= 'Y' AND contest_type = " + "'" + string + "'" + " AND id NOT IN(" + str + ")";
+            }
+            Cursor cursor;
+            LogUtils.debug(SDKConstant.TAG, "Query:" + getContact);
+            cursor = database.rawQuery(getContact, null);
+            data = getContestData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            database.close();
+        }
+        return data.toArray(new SkillDataVO[data.size()]);
+    }
+
+    /**
+     * save new download contest
+     *
+     * @param skillData
+     * @return
+     */
+    public boolean saveContest(final List<SkillDataVO> skillData) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        boolean flag = true;
+        int count = 0;
+        final String selectQuery = resources.getString(R.string.select_subskill_count);
+        final String insertQuery = resources.getString(R.string.insert_skill);
+        final String updateQuery = resources.getString(R.string.update_skill);
+        Object[] bindArgs;
+        try {
+            final String query = "UPDATE SKILL_MASTER_REF  SET flag='N' WHERE type='contest'";
+            dbHelper.execSQL(query);
+            for (final SkillDataVO skillDataVO : skillData) {
+                cursor = dbHelper.rawQuery(selectQuery, new String[]{skillDataVO.getId()});
+                cursor.getCount();
+                while (cursor.moveToNext()) {
+                    count = cursor.getInt(cursor.getColumnIndex("name"));
+                }
+                if (count > 0) {
+                    LogUtils.debug(SDKConstant.TAG, "Update");
+                    bindArgs = new Object[]{skillDataVO.getName(), skillDataVO.getDomainId(),
+                            skillDataVO.getDomainName(), skillDataVO.getActive(),
+                            skillDataVO.getType(), skillDataVO.getLogo(), skillDataVO.getPaymentMode(),
+                            skillDataVO.getMaxGame(), skillDataVO.getIsSecured(),
+                            skillDataVO.getNoviceEta(), skillDataVO.getAmateurEta(),
+                            skillDataVO.getProEta(), skillDataVO.getChampEta(), skillDataVO.getLargeBanner(),
+                            skillDataVO.getPromoText1(), skillDataVO.getPromoText2(),
+                            skillDataVO.getContestType(), skillDataVO.getContestRules(),
+                            skillDataVO.getContestDetails(), skillDataVO.getMaxLevel(),
+                            skillDataVO.getColor(), skillDataVO.getAmount(), skillDataVO.getQuestionCount(), "Y", skillDataVO.getId()};
+                    dbHelper.execSQL(updateQuery, bindArgs);
+                } else {
+                    LogUtils.debug(SDKConstant.TAG, "Insert");
+                    bindArgs = new Object[]{skillDataVO.getId(), skillDataVO.getName(), skillDataVO.getDomainId(),
+                            skillDataVO.getDomainName(), skillDataVO.getActive(),
+                            skillDataVO.getType(), skillDataVO.getLogo(), skillDataVO.getPaymentMode(),
+                            skillDataVO.getMaxGame(), skillDataVO.getIsSecured(),
+                            skillDataVO.getNoviceEta(), skillDataVO.getAmateurEta(),
+                            skillDataVO.getProEta(), skillDataVO.getChampEta(), skillDataVO.getLargeBanner(),
+                            skillDataVO.getPromoText1(), skillDataVO.getPromoText2(),
+                            skillDataVO.getContestType(), skillDataVO.getContestRules(),
+                            skillDataVO.getContestDetails(), skillDataVO.getMaxLevel(),
+                            skillDataVO.getColor(), skillDataVO.getAmount(), skillDataVO.getQuestionCount(), "Y"
+                    };
+                    dbHelper.execSQL(insertQuery, bindArgs);
+                    flag = false;
+                }
+            }
+            final String deleteQuery = "DELETE FROM SKILL_MASTER_REF WHERE flag='N'";
+            dbHelper.execSQL(deleteQuery);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return flag;
+    }
+
+
+    public void deleteContest(final String type) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        try {
+            final String delete = resources.getString(R.string.delete_ref_master);
+            Object[] bindArgs;
+            bindArgs = new Object[]{type};
+            dbhelper.execSQL(delete, bindArgs);
+        } catch (Exception e) {
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+
+    public void deleteSkill(final String type, final int parentId) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        try {
+            final String delete = resources.getString(R.string.delete_ref_master_skill);
+            Object[] bindArgs;
+            bindArgs = new Object[]{type, parentId};
+            dbhelper.execSQL(delete, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+
+    public String getDomainId(String selectedSubSkillId) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String type = "test";
+        try {
+            final String selectQuery = resources.getString(R.string.select_domain);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{selectedSubSkillId});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                type = cursor.getString(cursor.getColumnIndex("domain_id"));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return type;
+    }
+
+    /**
+     */
+    public void insertKeyData(final String category, final String value) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            final String insertRefMaster = resources.getString(R.string.insert_reference_master);
+            Object[] bindArgs;
+            bindArgs = new Object[]{category, value};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    /**
+     * @param keys
+     */
+    public void insertKeyData(final KeyData[] keys) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            final String insertRefMaster = resources.getString(R.string.insert_reference_master);
+            for (final KeyData keyData : keys) {
+                Object[] bindArgs;
+                bindArgs = getKeyBind(keyData);
+                dbhelper.execSQL(insertRefMaster, bindArgs);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    private Object[] getKeyBind(final KeyData keys) {
+        return new Object[]{keys.getCategory(), keys.getValue()};
+    }
+
+    public String getUserCurrentState() {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String type = "N";
+        try {
+            final String selectQuery = resources.getString(R.string.select_currentstate);
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                type = cursor.getString(cursor.getColumnIndex("isLoggedIn"));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return type;
+    }
+
+    public User getLogedUser() {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        final User user = new User();
+        try {
+            final String selectQuery = resources.getString(R.string.select_isLoggedIn);
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            cursor.getCount();
+            LogUtils.debug(SDKConstant.TAG, selectQuery);
+
+            while (cursor.moveToNext()) {
+                final String loggedInSts = cursor.getString(cursor.getColumnIndex("isLoggedIn"));
+                if (loggedInSts.equalsIgnoreCase(SDKConstant.LOGGEDIN_TRUE)) {
+                    user.setIsLoggedIn(true);
+                } else {
+                    user.setIsLoggedIn(false);
+                }
+                user.setName(cursor.getString(cursor.getColumnIndex(SDKConstant.NAME)));
+                user.setId(cursor.getString(cursor.getColumnIndex("login_id")));
+                user.setEmail(cursor.getString(cursor.getColumnIndex("email")));
+                user.setPhone(cursor.getString(cursor.getColumnIndex("mobile")));
+                user.setDob(cursor.getString(cursor.getColumnIndex("dob")));
+                user.setGender(cursor.getString(cursor.getColumnIndex("gender")));
+                user.setType(cursor.getString(cursor.getColumnIndex("type")));
+                user.setCountryCode(cursor.getString(cursor.getColumnIndex("countryCode")));
+                user.setCcName(cursor.getString(cursor.getColumnIndex("ccname")));
+                user.setMaxGoal(cursor.getString(cursor.getColumnIndex("max_goal")));
+                user.setIsChat(cursor.getString(cursor.getColumnIndex("is_chat")));
+                user.setAuthType(cursor.getString(cursor.getColumnIndex("auth_type")));
+                user.setUuid(cursor.getString(cursor.getColumnIndex("uuid")));
+                user.setResume(cursor.getString(cursor.getColumnIndex("resume")));
+                user.setInviteCode(cursor.getString(cursor.getColumnIndex("invite_code")));
+                user.setMultiSkill(cursor.getString(cursor.getColumnIndex("multiskill")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return user;
+    }
+
+    public Goal[] getUserGoals() {
+        List<Goal> data = null;
+        Cursor cursor = null;
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        try {
+            final String selectQuery = resources.getString(R.string.select_LoggedInProfile);
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            data = getGoalData(cursor);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return data.toArray(new Goal[data.size()]);
+    }
+
+    /**
+     * getGoalData
+     *
+     * @param cursor
+     * @return
+     */
+    private List<Goal> getGoalData(final Cursor cursor) {
+        final List<Goal> data = new ArrayList<Goal>();
+        while (cursor.moveToNext()) {
+            final Goal user = getGoalObj();
+            user.setGoalId(cursor.getString(cursor.getColumnIndex("goal_id")));
+            user.setDomainId(cursor.getString(cursor.getColumnIndex("domain_id")));
+            user.setDomain(cursor.getString(cursor.getColumnIndex("domain")));
+            user.setSubSkillId(cursor.getString(cursor.getColumnIndex("subskill_id")));
+            user.setSubSkill(cursor.getString(cursor.getColumnIndex("subskill")));
+            user.setPromoText1(cursor.getString(cursor.getColumnIndex("promo_text1")));
+            user.setPromoText2(cursor.getString(cursor.getColumnIndex("promo_text2")));
+            user.setContestType(cursor.getString(cursor.getColumnIndex("contest_type")));
+            user.setContestDetails(cursor.getString(cursor.getColumnIndex("contest_details")));
+            user.setContestRules(cursor.getString(cursor.getColumnIndex("contest_rules")));
+            user.setSubskillType(cursor.getString(cursor.getColumnIndex("subskill_type")));
+            user.setSubskillPaymentMode(cursor.getString(cursor.getColumnIndex("subskill_payment_mode")));
+            user.setSubskillStartDate(cursor.getString(cursor.getColumnIndex("subskill_start_date")));
+            user.setSubskillEndDate(cursor.getString(cursor.getColumnIndex("subskill_end_date")));
+            user.setSubskillLogo(cursor.getString(cursor.getColumnIndex("subskill_logo")));
+            user.setSubskillSmallBanner(cursor.getString(cursor.getColumnIndex("subskill_small_banner")));
+            user.setSubskillLargeBanner(cursor.getString(cursor.getColumnIndex("subskill_large_banner")));
+            user.setSubskillHtml(cursor.getString(cursor.getColumnIndex("subskill_html")));
+            user.setSubskillCf1(cursor.getString(cursor.getColumnIndex("subskill_cf1")));
+            user.setSubskillCf2(cursor.getString(cursor.getColumnIndex("subskill_cf2")));
+            user.setSubskillCf3(cursor.getString(cursor.getColumnIndex("subskill_cf3")));
+            user.setSubskillMaxGame(cursor.getString(cursor.getColumnIndex("subskill_max_game")));
+            user.setSubskillCorrectAnsScore(cursor.getString(cursor.getColumnIndex("subskill_correct_ans_score")));
+            user.setSubskillSpeedBonus(cursor.getString(cursor.getColumnIndex("subskill_speed_bonus")));
+            user.setSubskillFinishBonus(cursor.getString(cursor.getColumnIndex("subskill_finish_bonus")));
+            user.setSubskillWinningBonus(cursor.getString(cursor.getColumnIndex("subskill_winning_bonus")));
+            user.setSubskillCreatedDate(cursor.getString(cursor.getColumnIndex("subskill_created_date")));
+            user.setrLevel(cursor.getString(cursor.getColumnIndex("rlevel")));
+            user.setrLevelId(cursor.getString(cursor.getColumnIndex("rlevel_id")));
+            user.setrSubLevel(cursor.getString(cursor.getColumnIndex("rsublevel")));
+            user.setrSubLevelId(cursor.getString(cursor.getColumnIndex("rsublevel_id")));
+            user.setcLevel(cursor.getString(cursor.getColumnIndex("clevel")));
+            user.setcLevelId(cursor.getString(cursor.getColumnIndex("clevel_id")));
+            user.setcSubLevel(cursor.getString(cursor.getColumnIndex("csublevel")));
+            user.setcSubLevelId(cursor.getString(cursor.getColumnIndex("csublevel_id")));
+            user.settLevel(cursor.getString(cursor.getColumnIndex("tlevel")));
+            user.settLevelId(cursor.getString(cursor.getColumnIndex("tlevel_id")));
+            user.settSubLevel(cursor.getString(cursor.getColumnIndex("tsublevel")));
+            user.settSubLevelId(cursor.getString(cursor.getColumnIndex("tsublevel_id")));
+            user.setPoints(cursor.getString(cursor.getColumnIndex("points")));
+            user.setCountryCode(cursor.getString(cursor.getColumnIndex("countryCode")));
+            user.setMaxPoints(cursor.getString(cursor.getColumnIndex("maxPoints")));
+            user.setStrikeRate(cursor.getString(cursor.getColumnIndex("strike_rate")));
+            user.setWinPercentage(cursor.getString(cursor.getColumnIndex("winPercent")));
+            user.setAvgPoints(cursor.getString(cursor.getColumnIndex("avgPoint")));
+            user.setTotalWin(cursor.getString(cursor.getColumnIndex("total_win")));
+            user.setTotalLost(cursor.getString(cursor.getColumnIndex("total_lost")));
+            user.setTotalAbandon(cursor.getString(cursor.getColumnIndex("total_abandon")));
+            user.setTotalTie(cursor.getString(cursor.getColumnIndex("total_tie")));
+            user.setTotalPlayed(cursor.getString(cursor.getColumnIndex("total_played")));
+            user.setActive(cursor.getString(cursor.getColumnIndex("active")));
+            user.setCreatedBy(cursor.getString(cursor.getColumnIndex("created_by")));
+            user.setCreatedDate(cursor.getString(cursor.getColumnIndex("created_date")));
+            user.setUpdateBy(cursor.getString(cursor.getColumnIndex("updated_by")));
+            user.setUpdateDate(cursor.getString(cursor.getColumnIndex("updated_date")));
+            user.setLastPlayed(cursor.getString(cursor.getColumnIndex("last_played")));
+            user.setExpectedDate(cursor.getString(cursor.getColumnIndex("expected_date")));
+            user.setNumGame(cursor.getString(cursor.getColumnIndex("num_game")));
+            user.setSubskillActive(cursor.getString(cursor.getColumnIndex("subskill_active")));
+            user.setCoins(cursor.getString(cursor.getColumnIndex("coins")));
+            user.setRank(cursor.getString(cursor.getColumnIndex("rank")));
+            user.setIsChat(cursor.getString(cursor.getColumnIndex("is_chat")));
+            user.setColor(cursor.getString(cursor.getColumnIndex("color")));
+            user.setTick(cursor.getString(cursor.getColumnIndex("tick")));
+            user.setDifficultyLvl(cursor.getString(cursor.getColumnIndex("difficulty_lvl")));
+            user.setQuesPerGame(cursor.getString(cursor.getColumnIndex("ques_per_game")));
+            user.setDomainColor(cursor.getString(cursor.getColumnIndex("domain_color")));
+            user.setReachGoalDate(cursor.getString(cursor.getColumnIndex("reach_goal_date")));
+            user.setHighestPoints(cursor.getString(cursor.getColumnIndex("highest_points")));
+            data.add(user);
+        }
+        return data;
+    }
+
+    /**
+     */
+    private Goal getGoalObj() {
+
+        return new Goal();
+    }
+
+    /**
+     * @param userId
+     */
+    public void updateUserLog(final String userId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_user_master_logged);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{userId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+            LogUtils.debug("is_logged set to=", "N");
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * delete leaderboard data
+     */
+    public void deleteLeaderBoard() {
+        try {
+            final SQLiteDatabase dbhelper = getWritableDatabase();
+            final String delete = "DELETE from LEADERBOARD_MASTER";
+            dbhelper.execSQL(delete);
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public Goal getGoal(final String skillId) {
+        LogUtils.debug(SDKConstant.TAG, "skillId" + skillId);
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        final Goal user = new Goal();
+        try {
+            final String selectQuery = resources.getString(R.string.select_goal);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{skillId});
+            cursor.getCount();
+            LogUtils.debug(SDKConstant.TAG, selectQuery);
+            while (cursor.moveToNext()) {
+                user.setGoalId(cursor.getString(cursor.getColumnIndex("goal_id")));
+                user.setDomainId(cursor.getString(cursor.getColumnIndex("domain_id")));
+                user.setDomain(cursor.getString(cursor.getColumnIndex("domain")));
+                user.setSubSkillId(cursor.getString(cursor.getColumnIndex("subskill_id")));
+                user.setSubSkill(cursor.getString(cursor.getColumnIndex("subskill")));
+                user.setPromoText1(cursor.getString(cursor.getColumnIndex("promo_text1")));
+                user.setPromoText2(cursor.getString(cursor.getColumnIndex("promo_text2")));
+                user.setContestType(cursor.getString(cursor.getColumnIndex("contest_type")));
+                user.setContestDetails(cursor.getString(cursor.getColumnIndex("contest_details")));
+                user.setContestRules(cursor.getString(cursor.getColumnIndex("contest_rules")));
+                user.setSubskillType(cursor.getString(cursor.getColumnIndex("subskill_type")));
+                user.setSubskillPaymentMode(cursor.getString(cursor.getColumnIndex("subskill_payment_mode")));
+                user.setSubskillStartDate(cursor.getString(cursor.getColumnIndex("subskill_start_date")));
+                user.setSubskillEndDate(cursor.getString(cursor.getColumnIndex("subskill_end_date")));
+                user.setSubskillLogo(cursor.getString(cursor.getColumnIndex("subskill_logo")));
+                user.setSubskillSmallBanner(cursor.getString(cursor.getColumnIndex("subskill_small_banner")));
+                user.setSubskillLargeBanner(cursor.getString(cursor.getColumnIndex("subskill_large_banner")));
+                user.setSubskillHtml(cursor.getString(cursor.getColumnIndex("subskill_html")));
+                user.setSubskillCf1(cursor.getString(cursor.getColumnIndex("subskill_cf1")));
+                user.setSubskillCf2(cursor.getString(cursor.getColumnIndex("subskill_cf2")));
+                user.setSubskillCf3(cursor.getString(cursor.getColumnIndex("subskill_cf3")));
+                user.setSubskillMaxGame(cursor.getString(cursor.getColumnIndex("subskill_max_game")));
+                user.setSubskillCorrectAnsScore(cursor.getString(cursor.getColumnIndex("subskill_correct_ans_score")));
+                user.setSubskillSpeedBonus(cursor.getString(cursor.getColumnIndex("subskill_speed_bonus")));
+                user.setSubskillFinishBonus(cursor.getString(cursor.getColumnIndex("subskill_finish_bonus")));
+                user.setSubskillWinningBonus(cursor.getString(cursor.getColumnIndex("subskill_winning_bonus")));
+                user.setSubskillCreatedDate(cursor.getString(cursor.getColumnIndex("subskill_created_date")));
+                user.setrLevel(cursor.getString(cursor.getColumnIndex("rlevel")));
+                user.setrLevelId(cursor.getString(cursor.getColumnIndex("rlevel_id")));
+                user.setrSubLevel(cursor.getString(cursor.getColumnIndex("rsublevel")));
+                user.setrSubLevelId(cursor.getString(cursor.getColumnIndex("rsublevel_id")));
+                user.setcLevel(cursor.getString(cursor.getColumnIndex("clevel")));
+                user.setcLevelId(cursor.getString(cursor.getColumnIndex("clevel_id")));
+                user.setcSubLevel(cursor.getString(cursor.getColumnIndex("csublevel")));
+                user.setcSubLevelId(cursor.getString(cursor.getColumnIndex("csublevel_id")));
+                user.settLevel(cursor.getString(cursor.getColumnIndex("tlevel")));
+                user.settLevelId(cursor.getString(cursor.getColumnIndex("tlevel_id")));
+                user.settSubLevel(cursor.getString(cursor.getColumnIndex("tsublevel")));
+                user.settSubLevelId(cursor.getString(cursor.getColumnIndex("tsublevel_id")));
+                user.setPoints(cursor.getString(cursor.getColumnIndex("points")));
+                user.setCountryCode(cursor.getString(cursor.getColumnIndex("countryCode")));
+                user.setMaxPoints(cursor.getString(cursor.getColumnIndex("maxPoints")));
+                user.setStrikeRate(cursor.getString(cursor.getColumnIndex("strike_rate")));
+                user.setWinPercentage(cursor.getString(cursor.getColumnIndex("winPercent")));
+                user.setAvgPoints(cursor.getString(cursor.getColumnIndex("avgPoint")));
+                user.setTotalWin(cursor.getString(cursor.getColumnIndex("total_win")));
+                user.setTotalLost(cursor.getString(cursor.getColumnIndex("total_lost")));
+                user.setTotalAbandon(cursor.getString(cursor.getColumnIndex("total_abandon")));
+                user.setTotalTie(cursor.getString(cursor.getColumnIndex("total_tie")));
+                user.setTotalPlayed(cursor.getString(cursor.getColumnIndex("total_played")));
+                user.setActive(cursor.getString(cursor.getColumnIndex("active")));
+                user.setCreatedBy(cursor.getString(cursor.getColumnIndex("created_by")));
+                user.setCreatedDate(cursor.getString(cursor.getColumnIndex("created_date")));
+                user.setUpdateBy(cursor.getString(cursor.getColumnIndex("updated_by")));
+                user.setUpdateDate(cursor.getString(cursor.getColumnIndex("updated_date")));
+                user.setLastPlayed(cursor.getString(cursor.getColumnIndex("last_played")));
+                user.setExpectedDate(cursor.getString(cursor.getColumnIndex("expected_date")));
+                user.setNumGame(cursor.getString(cursor.getColumnIndex("num_game")));
+                user.setSubskillActive(cursor.getString(cursor.getColumnIndex("subskill_active")));
+                user.setCoins(cursor.getString(cursor.getColumnIndex("coins")));
+                user.setRank(cursor.getString(cursor.getColumnIndex("rank")));
+                user.setIsChat(cursor.getString(cursor.getColumnIndex("is_chat")));
+                user.setColor(cursor.getString(cursor.getColumnIndex("color")));
+                user.setTick(cursor.getString(cursor.getColumnIndex("tick")));
+                user.setDifficultyLvl(cursor.getString(cursor.getColumnIndex("difficulty_lvl")));
+                user.setQuesPerGame(cursor.getString(cursor.getColumnIndex("ques_per_game")));
+                user.setDomainColor(cursor.getString(cursor.getColumnIndex("domain_color")));
+                user.setReachGoalDate(cursor.getString(cursor.getColumnIndex("reach_goal_date")));
+                user.setHighestPoints(cursor.getString(cursor.getColumnIndex("highest_points")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return user;
+    }
+
+    /**
+     * @param userId
+     * @return
+     */
+    public String profileImage(final String userId) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String imagePath = "";
+        try {
+            final String selectQuery = resources.getString(R.string.select_user_master_details);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{userId});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                imagePath = cursor.getString(cursor.getColumnIndex("image"));
+            }
+            LogUtils.debug(SDKConstant.TAG, "Image path" + imagePath);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (null != cursor) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return imagePath;
+    }
+
+    /**
+     * @param points
+     * @return
+     */
+    public ProgressionVO getProgressionDeatils(final String points) {
+        final ProgressionVO progressionVO = new ProgressionVO();
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = "SELECT id,level,sub_level FROM 'PROGRESSION_MASTER' WHERE min_score <= " + Integer.parseInt(points)
+                    + " AND max_score >= " + Integer.parseInt(points);
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            LogUtils.debug(SDKConstant.TAG, selectQuery);
+            cursor.getCount();
+            LogUtils.debug("count", String.valueOf(cursor.getCount()));
+            LogUtils.debug("log cursor", selectQuery);
+            while (cursor.moveToNext()) {
+                progressionVO.setId(cursor.getInt(cursor.getColumnIndex("id")));
+                progressionVO.setLevel(cursor.getString(cursor.getColumnIndex("level")));
+                progressionVO.setSubLevel(cursor.getString(cursor.getColumnIndex("sub_level")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return progressionVO;
+    }
+
+
+    public void updateTotalScore(int totalScore, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_totalscore);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{totalScore, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateLastPlayed(String format, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_lastplayed);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{format, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateLavel(String id, String level, String subLevel, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_level);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{id, id, level, subLevel, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateScore(String totalGame, String totalPlay, String avgPoint, String winPer, String strikeRate, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_score);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{totalGame, totalPlay, avgPoint, winPer, strikeRate, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateWinCount(String win, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_win);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{win, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+
+    public void updateLossCount(String loss, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_loss);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{loss, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateAbondonCount(String abondon, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_abondon);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{abondon, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateTieCount(String tie, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_tie);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{tie, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateGoal(String id, String tLevel, String tSubLevel, String expectedDate,
+                           String point, String cId, String cLevel, String cSubLevel, String skillId) {
+
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_goal);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{id, id, tLevel, tSubLevel, expectedDate, point,
+                    cId, cId, cLevel, cSubLevel, skillId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * @param skillId
+     */
+    public void deleteAndUpdateGoal(Goal goal, String skillId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        try {
+            final String delete = resources.getString(R.string.delete_and_update_goal);
+            Object[] bindDelete;
+            bindDelete = new Object[]{skillId};
+            dbHelper.execSQL(delete, bindDelete);
+            final String insertUserProfile = resources.getString(R.string.insert_user_profile);
+            final String totalPlay = String.valueOf((Integer.parseInt(goal.getTotalWin()) + Integer.parseInt(goal.getTotalTie())
+                    + Integer.parseInt(goal.getTotalLost()) + Integer.parseInt(goal.getTotalAbandon())));
+            final Object[] bindArgs = new Object[]{
+                    goal.getGoalId(), goal.getDomainId(),
+                    goal.getDomain(), goal.getSubSkillId(),
+                    goal.getSubSkill(), goal.getSubskillType(),
+                    goal.getSubskillPaymentMode(), goal.getSubskillStartDate(),
+                    goal.getSubskillEndDate(), goal.getSubskillLogo(),
+                    goal.getSubskillSmallBanner(), goal.getSubskillLargeBanner(),
+                    goal.getPromoText1(), goal.getPromoText2(),
+                    goal.getContestType(), goal.getContestDetails(),
+                    goal.getContestRules(), goal.getSubskillHtml(),
+                    goal.getSubskillCf1(), goal.getSubskillCf2(),
+                    goal.getSubskillCf3(), goal.getSubskillMaxGame(),
+                    goal.getSubskillCorrectAnsScore(), goal.getSubskillSpeedBonus(),
+                    goal.getSubskillFinishBonus(), goal.getSubskillWinningBonus(),
+                    goal.getSubskillCreatedDate(), goal.getrLevelId(),
+                    goal.getrLevel(), goal.getrSubLevel(),
+                    goal.getrSubLevelId(), goal.getcLevelId(),
+                    goal.getcLevel(), goal.getcSubLevel(),
+                    goal.getcSubLevelId(), goal.gettLevelId(),
+                    goal.gettLevel(), goal.gettSubLevel(),
+                    goal.gettSubLevelId(), goal.getPoints(),
+                    goal.getMaxPoints(), goal.getCountryCode(),
+                    goal.getStrikeRate(), goal.getWinPercentage(),
+                    goal.getAvgPoints(), goal.getTotalWin(),
+                    goal.getTotalLost(), goal.getTotalAbandon(),
+                    goal.getTotalTie(), totalPlay, goal.getActive(),
+                    goal.getCreatedBy(), goal.getCreatedDate(),
+                    goal.getUpdateBy(), goal.getUpdateDate(),
+                    goal.getLastPlayed(), goal.getExpectedDate(),
+                    goal.getNumGame(), goal.getSubskillActive(),
+                    goal.getCoins(), goal.getRank(),
+                    goal.getIsChat(), goal.getColor(),
+                    goal.getTick(), goal.getDifficultyLvl(),
+                    goal.getQuesPerGame(), goal.getDomainColor(),
+                    goal.getReachGoalDate(), goal.getHighestPoints()};
+            dbHelper.execSQL(insertUserProfile, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void updateCoins(int total) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        final String updateUserQuery = resources.getString(R.string.update_coin);
+        LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{total};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * @param subSkillId
+     * @return
+     */
+    public String[] getLeaderBoardData(final String subSkillId, String type) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        String[] res = null;
+        try {
+            if (null == type || SDKConstant.EMPTY.equalsIgnoreCase(type)) {
+                type = "Global";
+            }
+            final String selectQuery = resources.getString(R.string.select_leaderboard_master);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{subSkillId, type});
+            res = new String[4];
+            if (cursor.moveToFirst()) {
+                res[0] = cursor.getString(0);
+                res[1] = cursor.getString(1);
+                res[2] = cursor.getString(2);
+                res[3] = cursor.getString(3);
+            }
+
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return res;
+    }
+
+    /**
+     * @param subSkillId
+     * @param response
+     * @param formattedDate
+     */
+    public void saveLeaderBoardData(final String subSkillId, final String response, final String formattedDate, final String type) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        final String delete = resources.getString(R.string.delete_leaderboard_master);
+        final String insertRefMaster = resources.getString(R.string.insert_leaderboard_master);
+        try {
+            Object[] deleArgs;
+            deleArgs = new Object[]{subSkillId, type};
+            dbhelper.execSQL(delete, deleArgs);
+            Object[] bindArgs;
+            bindArgs = new Object[]{subSkillId, response, formattedDate, type};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    public void updateResume(final String path, final String userId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        try {
+            final String updateUserQuery = resources.getString(R.string.update_user_master_resume);
+            LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+            Object[] bindArgs;
+            bindArgs = new Object[]{path, userId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+            LogUtils.debug(SDKConstant.TAG, path);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    /**
+     * @param userId
+     * @return
+     */
+    public EducationDataVO[] getEducation(final String userId) {
+        List<EducationDataVO> data = null;
+        Cursor cursor = null;
+        final SQLiteDatabase database = this.getReadableDatabase();
+        try {
+            final String getContact = resources.getString(R.string.select_education_master);
+            cursor = database.rawQuery(getContact, new String[]{userId});
+            data = getEducationData(cursor);
+            cursor.close();
+            database.close();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            database.close();
+        }
+        //noinspection ToArrayCallWithZeroLengthArrayArgument
+        return data.toArray(new EducationDataVO[data.size()]);
+    }
+
+    /**
+     * @param cursor
+     * @return
+     */
+    private List<EducationDataVO> getEducationData(final Cursor cursor) {
+        final List<EducationDataVO> data = new ArrayList<EducationDataVO>();
+        while (cursor.moveToNext()) {
+            final EducationDataVO educationVo = getEduObj();
+            educationVo.setId(cursor.getInt(cursor.getColumnIndex("id")));
+            educationVo.setCollegeName(cursor.getString(cursor.getColumnIndex("college")));
+            educationVo.setDegree(cursor.getString(cursor.getColumnIndex("degree")));
+            educationVo.setEndYear(cursor.getString(cursor.getColumnIndex("to_year")));
+            educationVo.setGrade(cursor.getString(cursor.getColumnIndex("percent")));
+            educationVo.setStartYear(cursor.getString(cursor.getColumnIndex("from_year")));
+            educationVo.setStudy(cursor.getString(cursor.getColumnIndex("branch")));
+            data.add(educationVo);
+        }
+        return data;
+    }
+
+    /**
+     * @return
+     */
+    private EducationDataVO getEduObj() {
+        return new EducationDataVO();
+    }
+
+    /**
+     */
+    public List<String> getDegree() {
+        final List<String> degree = new ArrayList<>();
+        final SQLiteDatabase database = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            LogUtils.error("getDegree ", "select data from table");
+            final String getDegree = resources.getString(R.string.select_degree_from_degree_master);
+            cursor = database.rawQuery(getDegree, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    degree.add(cursor.getString(cursor.getColumnIndex("degreename")));
+                }
+                while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            database.close();
+        }
+        return degree;
+    }
+
+    /**
+     * updateEducation
+     */
+    public void updateEducation(final EducationDataVO eduVO, final String userId) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            LogUtils.debug(SDKConstant.TAG, "updateEducation");
+            final String insertRefMaster = resources.getString(R.string.update_education_master);
+            Object[] bindArgs;
+            bindArgs = new Object[]{eduVO.getCollegeName(), eduVO.getStartYear(), eduVO.getEndYear(), eduVO.getDegree(),
+                    eduVO.getStudy(), eduVO.getGrade(), userId, eduVO.getId()};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    /**
+     */
+    public List<String> getCourse(final String courseName) {
+        final List<String> course = new ArrayList<>();
+        final SQLiteDatabase database = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            LogUtils.error("getCourse ", "select data from table");
+            final String getCourse = resources.getString(R.string.select_course_from_degree_master) + "'" + courseName + "'";
+            cursor = database.rawQuery(getCourse, null);
+            if (cursor.moveToFirst()) {
+                do {
+                    course.add(cursor.getString(cursor.getColumnIndex("coursename")));
+                }
+                while (cursor.moveToNext());
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            database.close();
+        }
+        return course;
+    }
+
+    /**
+     * saveEducation
+     */
+    public void saveEducation(final EducationDataVO eduVo, final String player, final int index) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        final String insertRefMaster = resources.getString(R.string.insert_education_master);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{index, eduVo.getCollegeName(), eduVo.getStartYear(), eduVo.getEndYear(), eduVo.getDegree(),
+                    eduVo.getStudy(), eduVo.getGrade(), player};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    /**
+     * @return
+     */
+    public Boolean degreeTableIsExist() {
+        Boolean check = false;
+        Cursor cursor = null;
+        try {
+            final SQLiteDatabase database = this.getReadableDatabase();
+            cursor = database.rawQuery("SELECT  * FROM DEGREE_MASTER", null);
+            if (cursor.moveToNext()) {
+                check = true;
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exce", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+        }
+        return check;
+    }
+
+    /**
+     * @param education
+     */
+    public void saveEducationData(final List<EducationDataVO> education) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        try {
+            final String delete = resources.getString(R.string.delete_education_master);
+            dbhelper.execSQL(delete);
+            final String insertRefMaster = resources.getString(R.string.insert_education_master);
+            Object[] bindArgs;
+            for (final EducationDataVO educationDataVO : education) {
+                bindArgs = getEduBind(educationDataVO);
+                dbhelper.execSQL(insertRefMaster, bindArgs);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+
+    }
+
+    private Object[] getEduBind(final EducationDataVO educationDataVO) {
+        return new Object[]{educationDataVO.getId(), educationDataVO.getCollegeName(), educationDataVO.getStartYear(),
+                educationDataVO.getEndYear(), educationDataVO.getDegree(), educationDataVO.getStudy(), educationDataVO.getGrade(),
+                educationDataVO.getPlayerId()};
+    }
+
+    /**
+     * changes in v2.5 for save image
+     *
+     * @param imageFile
+     * @param userId
+     */
+    public void updateImage(final String imageFile, final String userId) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        try {
+            final String updateUserQuery = resources.getString(R.string.update_user_master_image);
+            LogUtils.debug("Save Profile Image Path", updateUserQuery);
+            Object[] bindArgs;
+            bindArgs = new Object[]{imageFile, userId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+            LogUtils.debug("Image Path Saved", imageFile);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+
+    }
+
+    /**
+     * @param dob
+     * @param gender
+     * @param profileType
+     * @param userId
+     */
+    public void updateProfile(final String dob, final String gender, final String profileType, final String userId, final String ccname) {
+        final SQLiteDatabase dbHelper = getWritableDatabase();
+        try {
+            final String updateUserQuery = resources.getString(R.string.update_user_detils);
+            LogUtils.debug(SDKConstant.TAG, updateUserQuery);
+            Object[] bindArgs;
+            bindArgs = new Object[]{dob, gender, profileType, userId};
+            dbHelper.execSQL(updateUserQuery, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbHelper.close();
+        }
+    }
+
+    public void saveTempUser(final String userName, final String email, final String mobile, final String authType) {
+        final SQLiteDatabase dbhelper = getWritableDatabase();
+        final String delete = resources.getString(R.string.delete_tempuser_master);
+        dbhelper.execSQL(delete);
+        final String insertRefMaster = resources.getString(R.string.insert_tempuser_master);
+        try {
+            Object[] bindArgs;
+            bindArgs = new Object[]{userName, email, mobile, authType};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    public TempUserVO getTempUser() {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        final TempUserVO user = new TempUserVO();
+        try {
+            final String selectQuery = resources.getString(R.string.select_tempuser_master);
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            cursor.getCount();
+            LogUtils.debug(SDKConstant.TAG, selectQuery);
+            while (cursor.moveToNext()) {
+                user.setUserName(cursor.getString(cursor.getColumnIndex("name")));
+                user.setEmail(cursor.getString(cursor.getColumnIndex("email")));
+                user.setMobile(cursor.getString(cursor.getColumnIndex("mobile")));
+                user.setAuthType(cursor.getString(cursor.getColumnIndex("auth_type")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return user;
+    }
+
+
+    public SkillDataVO getSkillData(String subSkillId) {
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        final SkillDataVO skillDataVO = new SkillDataVO();
+        try {
+            final String selectQuery = resources.getString(R.string.select_skilldata);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{subSkillId});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                skillDataVO.setId(subSkillId);
+                skillDataVO.setDomainId(cursor.getString(cursor.getColumnIndex("domain_id")));
+                skillDataVO.setName(cursor.getString(cursor.getColumnIndex("name")));
+                skillDataVO.setMaxLevel(cursor.getString(cursor.getColumnIndex("max_level")));
+                skillDataVO.setNoviceEta(cursor.getString(cursor.getColumnIndex("novice_eta")));
+                skillDataVO.setAmateurEta(cursor.getString(cursor.getColumnIndex("amateur_eta")));
+                skillDataVO.setProEta(cursor.getString(cursor.getColumnIndex("pro_eta")));
+                skillDataVO.setChampEta(cursor.getString(cursor.getColumnIndex("champ_eta")));
+                skillDataVO.setType(cursor.getString(cursor.getColumnIndex("type")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return skillDataVO;
+    }
+
+    public void saveOpponentData(String opponentkey, String opponentVO) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            final String deleteRefMaster = resources.getString(R.string.delete_appliaction_key);
+            Object[] bindArgDelete;
+            bindArgDelete = new Object[]{opponentkey};
+            dbhelper.execSQL(deleteRefMaster, bindArgDelete);
+            final String insertRefMaster = resources.getString(R.string.insert_appliaction_master);
+            Object[] bindArgs;
+            bindArgs = new Object[]{opponentkey, opponentVO};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    public OpponentVO getOpponentData(String opponentkey) {
+        OpponentVO opponentVO = new OpponentVO();
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = resources.getString(R.string.select_appliaction);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{opponentkey});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                final SDKDatabaseController oppController = new SDKDatabaseController(context);
+                final OpponentResponse opponentResponse = oppController.parseOpponentResponse(cursor.getString(cursor.getColumnIndex("value")));
+                final OpponentVO[] opponentPlayer = opponentResponse.getData();
+                opponentVO = opponentPlayer[0];
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return opponentVO;
+    }
+
+    public void saveResultData(String resultkey, FinalResult[] finalResult) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            final String deleteRefMaster = resources.getString(R.string.delete_appliaction_key);
+            Object[] bindArgDelete;
+            bindArgDelete = new Object[]{resultkey};
+            dbhelper.execSQL(deleteRefMaster, bindArgDelete);
+            final String insertRefMaster = resources.getString(R.string.insert_appliaction_master);
+            Object[] bindArgs;
+
+            final List<Object> myArray = new ArrayList<>();
+            for (final FinalResult finalResultArray : finalResult) {
+                final Map<String, Object> json = getObj();
+                json.put(SDKConstant.USERNAME, finalResultArray.getUserName());
+                json.put(SDKConstant.TOTAL_TIME, finalResultArray.getTotalTime());
+                json.put(SDKConstant.TOTAL_GAME_POINT, finalResultArray.getTotalScore());
+                json.put(SDKConstant.TOTAL_SPEED_BONUS, finalResultArray.getSpeedScore());
+                json.put(SDKConstant.COMPLETION_BONUS, finalResultArray.getCompletionScore());
+                json.put(SDKConstant.WIN_BONUS, finalResultArray.getWinBounas());
+                json.put(SDKConstant.GAME_STATUS, finalResultArray.getGameStatus());
+                json.put(SDKConstant.GAME_ID, finalResultArray.getGameId());
+                myArray.add(json);
+            }
+            String response = AbstractBEJsonParser.convertToJson(myArray).toString();
+            bindArgs = new Object[]{resultkey, response};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    private Map<String, Object> getObj() {
+        return new HashMap<>();
+    }
+
+    public void saveSummeryData(String summerykey, ArrayList<UserQuestionVO> summary) {
+        final SQLiteDatabase dbhelper = this.getWritableDatabase();
+        try {
+            final String deleteRefMaster = resources.getString(R.string.delete_appliaction_key);
+            Object[] bindArgDelete;
+            bindArgDelete = new Object[]{summerykey};
+            dbhelper.execSQL(deleteRefMaster, bindArgDelete);
+            final List<Object> myArray = new ArrayList<>();
+            for (final UserQuestionVO finalResultArray : summary) {
+                final Map<String, Object> json = getObj();
+                final List<Object> optionArray = new ArrayList<>();
+                for (final UserOption options : finalResultArray.getOptions()) {
+                    final Map<String, Object> option = getObj();
+                    option.put("seq", options.getSeq());
+                    option.put("value", options.getValue());
+                    option.put("flag", options.getFlag());
+                    optionArray.add(option);
+                }
+                json.put("goalId", finalResultArray.getGoalId());
+                json.put("question", finalResultArray.getQuestion());
+                json.put("questionNo", finalResultArray.getQuestionNo());
+                json.put("player1Score", finalResultArray.getPlayer1Score());
+                json.put("player2Score", finalResultArray.getPlayer2Score());
+                json.put("player1Time", finalResultArray.getPlayer1Time());
+                json.put("player2Time", finalResultArray.getPlayer2Time());
+                json.put("options", optionArray);
+                json.put("playerCLevel", finalResultArray.getPlayerCLevel());
+                json.put("playerCSubLevel", finalResultArray.getPlayerCSubLevel());
+                myArray.add(json);
+            }
+            String response = AbstractBEJsonParser.convertToJson(myArray).toString();
+            final String insertRefMaster = resources.getString(R.string.insert_appliaction_master);
+            Object[] bindArgs;
+            bindArgs = new Object[]{summerykey, response};
+            dbhelper.execSQL(insertRefMaster, bindArgs);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            dbhelper.close();
+        }
+    }
+
+    public FinalResult[] getResultData(String resultkey) {
+        FinalResult[] opponentVO = new FinalResult[2];
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = resources.getString(R.string.select_appliaction);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{resultkey});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                final SDKDatabaseController oppController = new SDKDatabaseController(context);
+                opponentVO = oppController.parseResultResponse(cursor.getString(cursor.getColumnIndex("value")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return opponentVO;
+    }
+
+    public UserQuestionVO[] getSummray(String summerykey) {
+        UserQuestionVO[] opponentVO = null;
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = resources.getString(R.string.select_appliaction);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{summerykey});
+            cursor.getCount();
+            while (cursor.moveToNext()) {
+                final SDKDatabaseController oppController = new SDKDatabaseController(context);
+                opponentVO = oppController.summeryResponse(cursor.getString(cursor.getColumnIndex("value")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return opponentVO;
+    }
+
+    public void deleteAppliactionMaster() {
+        try {
+            final SQLiteDatabase dbhelper = getWritableDatabase();
+            final String delete = "DELETE from APPLICATION_MASTER";
+            dbhelper.execSQL(delete);
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public Boolean getUserLogin(final String email) {
+        boolean flag = false;
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = resources.getString(R.string.get_isLoggedIn);
+            cursor = dbHelper.rawQuery(selectQuery, new String[]{email});
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.getCount();
+            }
+            while (cursor.moveToNext()) {
+                final String loggedInSts = cursor.getString(cursor.getColumnIndex("isLoggedIn"));
+                if (loggedInSts.equalsIgnoreCase(SDKConstant.YTEXT)) {
+                    flag = true;
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            if (cursor != null && !cursor.isClosed()) {
+                cursor.close();
+            }
+            dbHelper.close();
+        }
+        return flag;
+    }
+    /**
+     * @param selectedSubSkill
+     * @return
+     */
+    public ExpectedDateVO getExpectedVO(final String selectedSubSkill) {
+        final ExpectedDateVO expectedDateVO = new ExpectedDateVO();
+        final SQLiteDatabase dbHelper = this.getReadableDatabase();
+        Cursor cursor = null;
+        try {
+            final String selectQuery = "SELECT novice_eta,amateur_eta,pro_eta,champ_eta FROM 'SKILL_MASTER_REF' WHERE name= '" + selectedSubSkill + "'";
+            cursor = dbHelper.rawQuery(selectQuery, null);
+            LogUtils.debug(SDKConstant.TAG, selectQuery);
+            cursor.getCount();
+            LogUtils.debug(SDKConstant.TAG, String.valueOf(cursor.getCount()));
+            LogUtils.debug("log cursor", selectQuery);
+            while (cursor.moveToNext()) {
+                expectedDateVO.setNoviceEta(cursor.getString(cursor.getColumnIndex("novice_eta")));
+                expectedDateVO.setAmateurEta(cursor.getString(cursor.getColumnIndex("amateur_eta")));
+                expectedDateVO.setProEta(cursor.getString(cursor.getColumnIndex("pro_eta")));
+                expectedDateVO.setChampEta(cursor.getString(cursor.getColumnIndex("champ_eta")));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        } finally {
+            cursor.close();
+            dbHelper.close();
+        }
+        return expectedDateVO;
+    }
+
+}
+

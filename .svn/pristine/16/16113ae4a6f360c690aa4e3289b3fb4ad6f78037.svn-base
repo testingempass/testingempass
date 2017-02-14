@@ -1,0 +1,93 @@
+package com.empass.sdk.s2;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public final class WarpCallbackMessageCode {
+	/**
+ * 
+ */
+	public static final int CONNECTION_DONE = 1000;
+	/**
+	 * 
+	 */
+	public static final int SUCCESS_RECOVERED = 1001;
+	/**
+	 * 
+	 */
+	public static final int BAD_REQUEST = 1002;
+	/**
+	 * 
+	 */
+	public static final int AUTH_ERROR = 1003;
+	/**
+	 * 
+	 */
+	public static final int C_E_RECOVERABLE = 1004;
+	/**
+	 * 
+	 */
+	public static final int ERROR = 1005;
+	/**
+	 * 
+	 */
+	public static final int RES_NOT_FOUND = 1012;
+	/**
+	 * 
+	 */
+	public static final int RESOURCE_MOVED = 1013;
+	/**
+	 * 
+	 */
+	public static final int CONNECTION_ERROR = 1014;
+	/**
+	 * 
+	 */
+	public static final int UNKNOWN_ERROR = 1015;
+	/**
+	 * 
+	 */
+	public static final int RESULT_SIZE_ERROR = 1016;
+
+	/**
+	 * 
+	 */
+	public static final int MSG_RNOT_FOUND = 1007;
+	/**
+	 * 
+	 */
+	public static final int MSG_OPP_REC = 1008;
+	/**
+	 * 
+	 */
+	public static final int MSG_QUE_REC = 1009;
+	/**
+	 * 
+	 */
+	public static final int MSG_ANS_REC = 1010;
+	/**
+	 * 
+	 */
+	public static final int MSG_FINAL_RESULT = 1011;
+	/**
+	 * 
+	 */
+	public static final int MSG_S2_DISCONNECT = 2020;
+	/**
+	 * 
+	 */
+	public static final int MSG_NO_INTERNET = 2021;
+	/**
+	 * 
+	 */
+	public static final int MSG_NO_QUESTION = 1111;
+	/**
+	 *
+	 */
+	public static final int MSG_TIMEDIFF = 1212;
+
+	private WarpCallbackMessageCode() {
+	}
+}

@@ -1,0 +1,114 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.Color;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.Goal;
+
+import java.util.Locale;
+
+
+/**
+ * @author Deepak
+ */
+public class GoalsGridItemsAdapter extends ArrayAdapter<Goal> {
+    /**
+     * declear
+     */
+    private transient final Context context;
+    /**
+     * declear vabiable
+     */
+    public transient final int height;
+
+
+    /**
+     * declear
+     */
+
+    public GoalsGridItemsAdapter(final Context context, final int txt, final Goal[] goal, final int height) {
+        super(context, txt, goal);
+        this.context = context;
+        this.height = height;
+    }
+
+    /**
+     *
+     */
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(final int position, View rowView, final ViewGroup parent) {
+        LogUtils.debug(SDKConstant.TAG, "Goal possition:" + position);
+        try {
+            final Goal goals = getItem(position);
+            final LayoutInflater mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            ViewHolder holder;
+            if (rowView != null) {
+                holder = (ViewHolder) rowView.getTag();
+            } else {
+                rowView = mInflater.inflate(R.layout.m_goals_grid_item, parent, false);
+                holder = new ViewHolder();
+                holder.tvSkillName = (TextView) rowView.findViewById(R.id.tvSkill);
+                holder.tvSkillId = (TextView) rowView.findViewById(R.id.tvSkillId);
+                holder.tvScore = (TextView) rowView.findViewById(R.id.tvScore);
+                holder.tvTargetScore = (TextView) rowView.findViewById(R.id.tvTargetScore);
+                holder.ivScore = (ImageView) rowView.findViewById(R.id.ivScore);
+                holder.ivTarget = (ImageView) rowView.findViewById(R.id.ivTarget);
+                holder.progressBar = (ProgressBar) rowView.findViewById(R.id.progressbar);
+                rowView.setTag(holder);
+            }
+            final RelativeLayout llPlaySummary = (RelativeLayout) rowView.findViewById(R.id.ll_PlaySummary);
+            if (SDKConstant.ZERO.contains(goals.getGoalId())) {
+                rowView.setMinimumHeight(0);
+                llPlaySummary.setVisibility(View.GONE);
+            } else{
+                rowView.setMinimumHeight(height);
+                LogUtils.debug(SDKConstant.TAG, "Active:" + goals.getSubskillActive());
+                final String imageName = "drawable/" + goals.getrLevel().toLowerCase(Locale.getDefault()) + "_"
+                        + goals.getrSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+                final String targetImage = "drawable/" + goals.gettLevel().toLowerCase(Locale.getDefault()) + "_"
+                        + goals.gettSubLevel().toLowerCase(Locale.getDefault()) + "_index";
+                holder.tvSkillName.setText(goals.getSubSkill());
+                holder.tvSkillId.setText(goals.getSubSkillId());
+                holder.tvScore.setText(String.format("%,d", Integer.parseInt(goals.getPoints())));
+                holder.tvTargetScore.setText(String.format("%,d", Integer.parseInt(goals.getMaxPoints())));
+                final int imageResource = SDKCommonUtils.getImageResource(context, imageName);
+                final int tarImageResource = SDKCommonUtils.getImageResource(context, targetImage);
+                holder.ivScore.setImageResource(imageResource);
+                holder.ivTarget.setImageResource(tarImageResource);
+                holder.progressBar.setMax(Integer.parseInt(goals.getMaxPoints()));
+                holder.progressBar.setProgress(Integer.parseInt(goals.getPoints()));
+                llPlaySummary.setVisibility(View.VISIBLE);
+                llPlaySummary.setBackgroundColor(Color.parseColor(goals.getColor()));
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return rowView;
+    }
+
+    public static class ViewHolder {
+        public transient TextView tvSkillName;
+        public transient TextView tvSkillId;
+        public transient TextView tvScore;
+        public transient TextView tvTargetScore;
+        public transient ImageView ivScore;
+        public transient ImageView ivTarget;
+        public transient ProgressBar progressBar;
+    }
+
+}

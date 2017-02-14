@@ -1,0 +1,41 @@
+package com.empass.sdk.vo;
+
+/**
+ * Created by Deepak on 12/7/2015.
+ */
+@SuppressWarnings("ALL")
+public class SpinnerVO {
+    public SpinnerVO() {
+        //noting action here
+    }
+
+    private String countryCode = "";
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+
+    private String countryName = "";
+    public String getCountryImage() {
+        return countryImage;
+    }
+
+    public void setCountryImage(String countryImage) {
+        this.countryImage = countryImage;
+    }
+
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    private String countryImage = "";
+}

@@ -1,0 +1,116 @@
+package com.empass.sdk.adapter;
+
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.graphics.drawable.GradientDrawable;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.EducationDataVO;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class EducationAdapter extends ArrayAdapter<EducationDataVO> {
+    /**
+     *
+     */
+    private transient Context context;
+    /**
+     *
+     */
+
+
+    private transient final int[] colorArray = {
+            R.color.m_blue,
+            R.color.m_red,
+            R.color.sdk_seconderycolor,
+            R.color.m_yellow,
+            R.color.sdk_primarycolor,
+            R.color.sdk_tickcolor,
+            R.color.m_Gold,
+            R.color.primary_dark,
+            R.color.teal};
+
+
+    /**
+     * @param context
+     * @param resource
+     * @param educationVo
+     */
+    public EducationAdapter(final Context context, final int resource, final EducationDataVO[] educationVo) {
+        super(context, resource, educationVo);
+        try {
+            this.context = context;
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+
+    }
+
+    @SuppressLint({"InflateParams", "SetTextI18n"})
+    @Override
+    /**
+     * getView
+     */
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        try {
+            final LayoutInflater mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            final EducationDataVO data = getItem(position);
+            ViewHolder holder;
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = mInflater.inflate(R.layout.m_list_item_education, parent, false);
+                holder = new ViewHolder();
+                holder.textCollege = (MobiTextView) convertView.findViewById(R.id.textView_college_name);
+                holder.textStartYear = (MobiTextView) convertView.findViewById(R.id.textView_start_year);
+                holder.textDegree = (MobiTextView) convertView.findViewById(R.id.textView_degree);
+                holder.textGrade = (MobiTextView) convertView.findViewById(R.id.textView_grade);
+                holder.textFirstChar = (TextView) convertView.findViewById(R.id.textView_first_char);
+                holder.imageView = (ImageView) convertView.findViewById(R.id.ibUserImageSlider);
+                holder.ivOption = (ImageView) convertView.findViewById(R.id.option);
+                convertView.setTag(holder);
+            }
+            final GradientDrawable drawable = (GradientDrawable) holder.imageView.getDrawable();
+            final int index = SDKCommonUtils.generateRandomNumber(0, 8);
+            drawable.setColor(context.getResources().getColor(colorArray[index]));
+            holder.textCollege.setText(data.getCollegeName());
+            final String firstChar = data.getDegree().substring(0, 1).toUpperCase();
+            holder.textStartYear.setText(data.getStartYear() + " - " + data.getEndYear());
+            if (!SDKConstant.EMPTY.equalsIgnoreCase(data.getGrade()) && !SDKConstant.ZERO.equalsIgnoreCase(data.getGrade())) {
+                holder.textGrade.setText(SDKConstant.GRADE + data.getGrade());
+            }
+            holder.textDegree.setText(data.getDegree());
+            holder.textFirstChar.setText(firstChar);
+            holder.ivOption.setColorFilter(context.getResources().getColor(R.color.m_gray));
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    public static class ViewHolder {
+        private transient MobiTextView textCollege;
+        private transient MobiTextView textStartYear;
+        private transient MobiTextView textDegree;
+        private transient MobiTextView textGrade;
+        private transient TextView textFirstChar;
+        private transient ImageView imageView;
+        private transient ImageView ivOption;
+
+    }
+}

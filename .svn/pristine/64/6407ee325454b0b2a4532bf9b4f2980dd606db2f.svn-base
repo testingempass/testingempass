@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/m_white">
+
+    <TextView
+        android:id="@+id/tvAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Action"
+        android:layout_marginTop="@dimen/sp_15"
+        android:layout_marginLeft="@dimen/sp_15"
+        android:textColor="#4F5760"
+        android:textSize="@dimen/sp_13" />
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/m_date"
+        android:layout_below="@+id/tvAction"
+        android:layout_marginLeft="@dimen/sp_15"
+        android:layout_marginTop="@dimen/sp_1"
+        android:layout_marginBottom="@dimen/sp_15"
+        android:textColor="@color/m_gray"
+        android:textSize="@dimen/sp_12" />
+    <TextView
+        android:id="@+id/tvPoint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Point"
+        android:layout_marginRight="@dimen/sp_45"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:textStyle="bold"
+        android:textColor="@color/m_black_dark"
+        android:textSize="@dimen/sp_16" />
+</RelativeLayout>

@@ -1,0 +1,140 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.SkillDataVO;
+import com.squareup.picasso.Picasso;
+
+
+/**
+ * @author Deepak
+ */
+public class ContestItemsAdapter extends ArrayAdapter<SkillDataVO> {
+    /**
+     * declear
+     */
+    private transient final Context context;
+
+
+    /**
+     * declear
+     */
+
+    public ContestItemsAdapter(final Context context, final int txt, final SkillDataVO[] skillDataContest) {
+        super(context, txt, skillDataContest);
+        this.context = context;
+    }
+
+
+    /**
+     *
+     */
+    @SuppressLint("InflateParams")
+    @Override
+    public View getView(final int position, View rowView, final ViewGroup parent) {
+        LogUtils.debug(SDKConstant.TAG, "Goal possition:" + position);
+        try {
+            final SkillDataVO skill = getItem(position);
+            final LayoutInflater mInflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            ViewHolder holder;
+            if (rowView != null) {
+                holder = (ViewHolder) rowView.getTag();
+            } else {
+                rowView = mInflater.inflate(R.layout.m_contest_grid_item, parent, false);
+                holder = new ViewHolder();
+                holder.rlAdd = (RelativeLayout) rowView.findViewById(R.id.rl_addedcontest);
+                holder.rlNew = (RelativeLayout) rowView.findViewById(R.id.rl_newcontest);
+                holder.ivIcon = (ImageView) rowView.findViewById(R.id.iv_icon);
+                holder.ivAdd = (ImageView) rowView.findViewById(R.id.iv_add);
+                holder.ivPlay = (ImageView) rowView.findViewById(R.id.iv_play);
+                holder.ivLock = (ImageView) rowView.findViewById(R.id.iv_lock);
+                holder.tvSkillId = (TextView) rowView.findViewById(R.id.tvSkillId);
+                holder.tvContestName = (TextView) rowView.findViewById(R.id.tv_skill);
+                holder.tvContest = (TextView) rowView.findViewById(R.id.tv_skillname);
+                holder.tvContestId = (TextView) rowView.findViewById(R.id.tvSkillId);
+                holder.tvContestNameNew = (TextView) rowView.findViewById(R.id.tv_skillnew);
+                holder.tvContestPro = (TextView) rowView.findViewById(R.id.tvPramotxt);
+                holder.tvEnddate = (TextView) rowView.findViewById(R.id.tvEndate);
+                holder.tvEnddatenew = (TextView) rowView.findViewById(R.id.tvEndateNew);
+                holder.tvContestSeeId = (TextView) rowView.findViewById(R.id.tv_skillidconNew);
+                holder.tvContestSkillId = (TextView) rowView.findViewById(R.id.tv_skillidcon);
+                rowView.setTag(holder);
+            }
+            if (SDKConstant.NTEXT.contains(skill.getContestAdded())) {
+                holder.ivLock.setVisibility(View.GONE);
+                holder.rlAdd.setVisibility(View.GONE);
+                holder.rlNew.setVisibility(View.VISIBLE);
+                holder.ivPlay.setVisibility(View.GONE);
+                holder.ivAdd.setVisibility(View.VISIBLE);
+                holder.tvContestNameNew.setText(skill.getName());
+                holder.tvContestPro.setText(skill.getPromoText1());
+                holder.tvEnddatenew.setText(skill.getEndDate());
+                holder.tvContest.setText(skill.getName());
+                holder.tvContestId.setText(skill.getId());
+                holder.tvContestSeeId.setText(skill.getId());
+                if (SDKConstant.YTEXT.contains(skill.getIsSecured())) {
+                    holder.ivLock.setVisibility(View.VISIBLE);
+                    holder.ivLock.setColorFilter(context.getResources().getColor(R.color.m_red));
+                }
+            } else {
+                holder.rlAdd.setVisibility(View.VISIBLE);
+                holder.rlNew.setVisibility(View.GONE);
+                holder.ivPlay.setVisibility(View.VISIBLE);
+                holder.ivAdd.setVisibility(View.GONE);
+                holder.ivLock.setVisibility(View.GONE);
+                holder.tvContestName.setText(skill.getName());
+                holder.tvEnddate.setText(skill.getEndDate());
+                holder.tvContest.setText(skill.getName());
+                holder.tvContestId.setText(skill.getId());
+                holder.tvContestSkillId.setText(skill.getId());
+            }
+            if (skill.getLogo().contains(SDKConstant.HTTPS)) {
+                if (!SDKConstant.EMPTY.equalsIgnoreCase(skill.getLogo()) && skill.getLogo().length() > 5) {
+                    Picasso.with(context).load(skill.getLogo()).error(R.drawable.ic_launcher).placeholder(R.drawable.ic_launcher).into(holder.ivIcon);
+                } else {
+                    Picasso.with(context).load(R.drawable.ic_launcher).into(holder.ivIcon);
+                }
+            } else {
+                final String imageName = "drawable/" + skill.getLogo();
+                final int imageResource = SDKCommonUtils.getImageResource(context, imageName);
+                holder.ivIcon.setImageResource(imageResource);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return rowView;
+    }
+
+    public static class ViewHolder {
+        public transient TextView tvContestName;
+        public transient TextView tvContest;
+        public transient TextView tvContestId;
+        public transient TextView tvContestSeeId;
+        public transient TextView tvContestSkillId;
+        public transient TextView tvContestNameNew;
+        public transient TextView tvContestPro;
+        public transient TextView tvSkillId;
+        public transient TextView tvEnddate;
+        public transient TextView tvEnddatenew;
+        public transient ImageView ivIcon;
+        public transient ImageView ivAdd;
+        public transient ImageView ivPlay;
+        public transient ImageView ivLock;
+        public transient RelativeLayout rlAdd;
+        public transient RelativeLayout rlNew;
+    }
+
+}

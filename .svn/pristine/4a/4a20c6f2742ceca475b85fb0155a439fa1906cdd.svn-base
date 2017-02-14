@@ -1,0 +1,94 @@
+package com.empass.sdk.db;
+
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
+import android.os.Environment;
+
+import com.empass.sdk.R;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+
+import java.io.IOException;
+
+/**
+ * SDKDatabaseHelper is define db function
+ */
+public class SDKDatabaseHelper extends SQLiteOpenHelper {
+    public Resources resources;
+    private static String dirName;
+    public Context context;
+    private static String appDir;                                    //array for country spinner with country name
+
+
+    /**
+     *
+     */
+
+    static {
+        if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) && appDir != null) {
+            dirName =appDir + "/";
+        } else {
+            dirName = "";
+        }
+    }
+
+    public SDKDatabaseHelper(final Context context) {
+        this(context, context.getString(R.string.database_name), context.getResources().getInteger(R.integer.database_version));
+        this.context=context;
+    }
+
+    public SDKDatabaseHelper(final Context context, final String dbName, final int version) {
+        super(context, dirName + dbName, null, version);
+        resources = context.getResources();
+    }
+
+    @Override
+    public void onCreate(final SQLiteDatabase db) {
+        LogUtils.debug(SDKConstant.TAG, getClass().getSimpleName() + "creating Tables");
+        createTables(db);
+    }
+
+    public void createTables(final SQLiteDatabase db) {
+        LogUtils.debug(SDKConstant.TAG, "Creating Tables");
+        final String[] sqls = resources.getStringArray(R.array.create_app_tables);
+        for (final String sql : sqls) {
+            LogUtils.debug(SDKConstant.TAG, "Executing : " + sql);
+            db.execSQL(sql);
+        }
+    }
+
+    public void dropTables(final SQLiteDatabase db) {
+        LogUtils.debug(SDKConstant.TAG, "Dropping Tables");
+        final String[] sqls = resources.getStringArray(R.array.drop_app_tables);
+        for (final String sql : sqls) {
+            LogUtils.debug(SDKConstant.TAG, "Executing : " + sql);
+            db.execSQL(sql);
+        }
+    }
+
+    @Override
+    public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+        LogUtils.debug(SDKConstant.TAG, "Upgrading database");
+
+            if (Build.VERSION.SDK_INT >= 19) {
+                ((ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE)).clearApplicationUserData();
+            } else {
+                final Runtime runtime = Runtime.getRuntime();
+                try {
+                    runtime.exec("pm clear com.empaas.empass_sdk");
+                } catch (IOException e) {
+                    LogUtils.error(SDKConstant.TAG, "Exce", e);
+                }
+            }
+        final String dbName=dirName+context.getString(R.string.database_name);
+                context.openOrCreateDatabase( dbName,Context.MODE_PRIVATE,null);
+                dropTables(db);
+                createTables(db);
+            }
+
+
+    }

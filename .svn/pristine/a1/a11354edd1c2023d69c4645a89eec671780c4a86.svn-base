@@ -1,0 +1,50 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class LeaderboardDataVO {
+    @SerializedName("status")
+    public String status;
+    @SerializedName("msg")
+    public String msg;
+    @SerializedName("date")
+    public String date;
+    @SerializedName("data")
+    public LeaderboardData data;
+
+    public LeaderboardDataVO() {                                         //Class Constructor
+        super();
+    }
+
+    public String getStatus() {                                          //Method to get status  @return
+        return status;
+    }
+
+    public void setStatus(String status) {                               // Method to set status  @return
+        this.status = status;
+    }
+
+    public String getMsg() {                                            // Method to get msg  @return
+        return msg;
+    }
+
+    public void setMsg(String msg) {                                    // Method to set msg  @return
+        this.msg = msg;
+    }
+
+    public LeaderboardData getData() {                                         //Method to get data array  @return
+        return data;
+    }
+
+    public void setData(LeaderboardData data) {                                // Method to set data array  @return
+        this.data = data;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+}

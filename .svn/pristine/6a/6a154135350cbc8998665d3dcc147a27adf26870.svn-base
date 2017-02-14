@@ -1,0 +1,70 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+@SuppressWarnings("ALL")
+public class ApiQuestion {
+	/**
+	 * 
+	 */
+	@SerializedName("Questions")
+	private QuestionWrapper questionWrapper;
+	/**
+	 * 
+	 */
+	@SerializedName("Answers")
+	private Answer answer;
+
+	/**
+	 * cons
+	 */
+	public ApiQuestion() {
+		super();
+
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public QuestionWrapper getQuestionWrapper() {
+		return questionWrapper;
+	}
+
+	/**
+	 * 
+	 * @param questionWrapper
+	 */
+	public void setQuestionWrapper(final QuestionWrapper questionWrapper) {
+		this.questionWrapper = questionWrapper;
+	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public Answer getAnswer() {
+		return answer;
+	}
+
+	/**
+	 * 
+	 * @param answer
+	 */
+	public void setAnswer(final Answer answer) {
+		this.answer = answer;
+	}
+
+	/**
+	 * 
+	 */
+	@Override
+	public String toString() {
+		return "ApiQuestion [questionWrapper=" + questionWrapper + ", answer=" + answer + "]";
+	}
+}

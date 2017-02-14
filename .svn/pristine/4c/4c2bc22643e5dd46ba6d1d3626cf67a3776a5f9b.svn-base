@@ -1,0 +1,40 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class EducationResVO {
+    public EducationResVO() {
+    }
+
+    //EducationVO is use for education data @author Deepak
+    @SerializedName("status")                                          //decler variable
+    private String status;
+    @SerializedName("msg")
+    private String message;
+    @SerializedName("education_id")
+    private int educationId;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public int getEducationId() {
+        return educationId;
+    }
+
+    public void setEducationId(int educationId) {
+        this.educationId = educationId;
+    }
+}

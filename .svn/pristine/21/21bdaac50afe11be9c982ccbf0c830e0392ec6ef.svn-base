@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10sp"
+    android:background="@color/m_white"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/dp_10">
+
+    <RelativeLayout
+        android:id="@+id/ll_imageview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_weight="1"
+        android:paddingLeft="10sp">
+
+        <ImageView
+            android:id="@+id/ibUserImageSlider"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/m_circle_orange" />
+
+        <TextView
+            android:id="@+id/tvRankLeaderboard"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:singleLine="true"
+            android:text="@string/m_zero"
+            android:textColor="@color/m_white"
+            android:textSize="@dimen/sp_15" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/tvNameLeaderboard"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center|left"
+        android:singleLine="true"
+        android:text="@string/m_user"
+        android:textSize="@dimen/sp_15" />
+
+    <TextView
+        android:id="@+id/tvPointsLeaderboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text="@string/m_zero"
+        android:textSize="@dimen/sp_15" />
+
+</LinearLayout>

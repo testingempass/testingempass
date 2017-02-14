@@ -1,0 +1,670 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.CoinHistoryAdapter;
+import com.empass.sdk.adapter.PaymentAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.CoinDataVO;
+import com.empass.sdk.vo.CoinHistoryVO;
+import com.empass.sdk.vo.PaymentDataVO;
+import com.empass.sdk.vo.PaymentInitVO;
+import com.empass.sdk.vo.User;
+import com.razorpay.Checkout;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
+/**
+ * for purchase
+ */
+@SuppressWarnings("ALL")
+public class PurchaseActivity extends EmpassActivity {
+    /**
+     * declare variable
+     */
+    public transient MobiTextView tvHeader;
+    /**
+     * declear variable
+     */
+    public transient ListView listViewForCoinPurchase;
+    /**
+     * declear variable
+     */
+    public transient TextView tvBal;
+    /**
+     * declear variable
+     */
+    public transient User user;
+    /**
+     * declear variable
+     */
+    public transient ListView recyclerView;
+    /**
+     * declare variable
+     */
+    public transient TextView txtViewpurchase;
+    /**
+     * declare variable
+     */
+    public int TOTAL_LIST_ITEMS;
+    /**
+     * declare variable
+     */
+    public int NUM_ITEMS_PAGE = 5;
+    /**
+     * cons
+     */
+    public transient Intent intent;
+    /**
+     * declear variable
+     */
+    private transient int total;
+    /**
+     * cons
+     */
+    public transient String achivementRule;
+    /**
+     * declear variable
+     */
+    public transient SharedPreferences prefs;
+    /**
+     * declear variable
+     */
+    public transient boolean isContestAll;
+    /**
+     * declare variable
+     */
+    CoinHistoryVO coinHistoryVO;
+    /**
+     * declare variable
+     */
+    CoinHistoryAdapter historyAdapter;
+    /**
+     * declear variable
+     */
+    public transient int amount;
+    /**
+     * declear variable
+     */
+    public transient String coinCount = "";
+    /**
+     * declear variable
+     */
+    public transient String itemName = "", coinValue = "", discount = "", listValue = "";
+    /**
+     * declear variable
+     */
+    public transient boolean isPaymentSuccess;
+
+    /**
+     * declear variable
+     */
+    public transient PaymentInitVO paymentInitVO;
+
+    public PurchaseActivity() {
+        super();
+    }
+
+    @Override
+    protected void onCreate(final Bundle bundle) {
+        super.onCreate(bundle);
+        setContentView(R.layout.m_activity_purchase);
+        try {
+            context = PurchaseActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            recyclerView = (ListView) findViewById(R.id.my_recycler_view);
+            listViewForCoinPurchase = (ListView) findViewById(R.id.list_coin_puchase);
+            txtViewpurchase = (TextView) findViewById(R.id.txtView_purchase);
+            tvBal = (TextView) findViewById(R.id.tv_bal_point);
+            tvHeader.setText("Coin Statement");
+            dbController = new SDKDatabaseController(context);
+            user = dbHelper.getLogedUser();
+            intent = getIntent();
+            callCoinHistoryApi();
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    /**
+     * callCoinHistoryApi
+     */
+    private void callCoinHistoryApi() {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_COIN_PURCHASE, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(urls.PLAYER_ID, user.getId());
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            getStartSlowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            coinHistoryVO = dbController.hanldeCoinResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(coinHistoryVO.getStatus())) {
+                                achivementRule = coinHistoryVO.getAchCoins();
+                                showPaymentData(coinHistoryVO.getPurchase());
+                                showCoinDataLess(coinHistoryVO.getData());
+                                dbHelper.insertKeyData(sdkConstant.RAZOR_PAY_KEY, coinHistoryVO.getKey());
+                            } else {
+                                slowInternet("No History Available");
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * showCoinData
+     *
+     * @param data
+     */
+
+
+    private void showPaymentData(final PaymentDataVO[] data) {
+        try {
+            final PaymentAdapter paymentAdapter = new PaymentAdapter(this, R.layout.m_activity_purchase, data);
+            paymentAdapter.notifyDataSetChanged();
+            listViewForCoinPurchase.setAdapter(paymentAdapter);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    private void showCoinDataAll(final CoinDataVO[] dataLoad) {
+        try {
+            txtViewpurchase.setVisibility(View.GONE);
+            listViewForCoinPurchase.setVisibility(View.GONE);
+            int earned = 0;
+            int redeemed = 0;
+            total = 0;
+            CoinDataVO coinDataVO;
+            final ArrayList<CoinDataVO> list = new ArrayList<CoinDataVO>();
+            for (int i = 0; i < dataLoad.length; i++) {
+                coinDataVO = getCoinObj();
+                coinDataVO.setComment(dataLoad[i].getComment());
+                coinDataVO.setCreatedDate(dataLoad[i].getCreatedDate());
+                coinDataVO.setCoins(dataLoad[i].getCoins());
+                coinDataVO.setType(dataLoad[i].getType());
+                list.add(coinDataVO);
+            }
+            final CoinDataVO coinDataVO1 = new CoinDataVO();
+            coinDataVO1.setComment(sdkConstant.VIEW_LESS);
+            list.add(coinDataVO1);
+            historyAdapter = new CoinHistoryAdapter(this, R.layout.m_activity_purchase, list);
+            historyAdapter.notifyDataSetChanged();
+            recyclerView.setAdapter((ListAdapter) historyAdapter);
+            for (int i = 0; i < dataLoad.length; i++) {
+                if (sdkConstant.ONE.equalsIgnoreCase(dataLoad[i].getType())) {
+                    earned = earned + Integer.parseInt(dataLoad[i].getCoins());
+                } else {
+                    redeemed = redeemed + Integer.parseInt(dataLoad[i].getCoins());
+                }
+            }
+            total = earned - redeemed;
+            tvBal.setText(String.valueOf(total));
+            setCoins(total);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void showCoinDataLess(final CoinDataVO[] dataLoad) {
+        try {
+            txtViewpurchase.setVisibility(View.VISIBLE);
+            listViewForCoinPurchase.setVisibility(View.VISIBLE);
+            int earned = 0;
+            int redeemed = 0;
+            total = 0;
+            if (dataLoad.length > 5) {
+                CoinDataVO coinDataVO;
+                final ArrayList<CoinDataVO> list = new ArrayList<CoinDataVO>();
+                for (int i = 0; i < 5; i++) {
+                    coinDataVO = getCoinObj();
+                    coinDataVO.setComment(dataLoad[i].getComment());
+                    coinDataVO.setCreatedDate(dataLoad[i].getCreatedDate());
+                    coinDataVO.setCoins(dataLoad[i].getCoins());
+                    coinDataVO.setType(dataLoad[i].getType());
+                    list.add(coinDataVO);
+                }
+                final CoinDataVO coinDataVO1 = new CoinDataVO();
+                coinDataVO1.setComment(sdkConstant.VIEW_ALL);
+                list.add(coinDataVO1);
+                historyAdapter = new CoinHistoryAdapter(this, R.layout.m_activity_purchase, list);
+            } else {
+                CoinDataVO coinDataVO;
+                final ArrayList<CoinDataVO> list = new ArrayList<CoinDataVO>();
+                for (int i = 0; i < dataLoad.length; i++) {
+                    coinDataVO = getCoinObj();
+                    coinDataVO.setComment(dataLoad[i].getComment());
+                    coinDataVO.setCreatedDate(dataLoad[i].getCreatedDate());
+                    coinDataVO.setCoins(dataLoad[i].getCoins());
+                    coinDataVO.setType(dataLoad[i].getType());
+                    list.add(coinDataVO);
+                }
+                historyAdapter = new CoinHistoryAdapter(this, R.layout.m_activity_purchase, list);
+            }
+            historyAdapter.notifyDataSetChanged();
+            recyclerView.setAdapter((ListAdapter) historyAdapter);
+            for (int i = 0; i < dataLoad.length; i++) {
+                if (sdkConstant.ONE.equalsIgnoreCase(dataLoad[i].getType())) {
+                    earned = earned + Integer.parseInt(dataLoad[i].getCoins());
+                } else {
+                    redeemed = redeemed + Integer.parseInt(dataLoad[i].getCoins());
+                }
+            }
+            total = earned - redeemed;
+            tvBal.setText(String.valueOf(total));
+            setCoins(total);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickCoinRow(View v) {
+        try {
+            final LinearLayout linearpayment = (LinearLayout) v.getParent();
+            final LinearLayout linear = (LinearLayout) linearpayment.findViewById(R.id.ll_payment_data);
+            final TextView tvCoinCount = (TextView) linear.findViewById(R.id.tv_coinvalue);
+            final TextView tvDiscount = (TextView) linear.findViewById(R.id.tv_discountper);
+            final TextView tvRemainValue = (TextView) linear.findViewById(R.id.tv_remainvalue);
+            final TextView tvCoinvalue = (TextView) linear.findViewById(R.id.tv_originalvalue);
+            coinCount = tvCoinCount.getText().toString();
+            discount = tvDiscount.getText().toString().replace(sdkConstant.PER, "");
+            coinValue = tvCoinvalue.getText().toString().replace(sdkConstant.RS, "");
+            listValue = tvRemainValue.getText().toString().replace(sdkConstant.RS, "");
+            amount = Integer.parseInt(listValue) * 100;
+            sendPaymentInfoServer(user.getPhone(), user.getEmail());
+        } catch (NumberFormatException e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private CoinDataVO getCoinObj() {
+        return new CoinDataVO();
+    }
+
+    /**
+     * setCoins
+     *
+     * @param total
+     */
+    private void setCoins(final int total) {
+        dbHelper.updateCoins(total);
+    }
+
+
+    public void viewAllClick(View view) {
+        showCoinDataAll(coinHistoryVO.getData());
+    }
+
+    public void viewLessClick(View view) {
+        showCoinDataLess(coinHistoryVO.getData());
+    }
+
+    /**
+     * sendRedeemEmail
+     */
+    private void sendRedeemEmail() {
+        try {
+            if (total >= sdkConstant.TENTHOU) {
+                final Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{sdkConstant.BE_EMAIL});
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, sdkConstant.REDEEM_SUB);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, sdkConstant.DEAR_TEAM + "I want to redeem 1000 coins from my total balance of  " + total +
+                        " . My email id is " + user.getEmail() + "\n\n Thank you.");
+                emailIntent.setType(sdkConstant.TEXT_PLAIN);
+                final PackageManager packageManager = context.getPackageManager();
+                final List<ResolveInfo> matches = packageManager.queryIntentActivities(emailIntent, 0);
+                ResolveInfo best = null;
+                for (final ResolveInfo info : matches) {
+                    if (info.activityInfo.packageName.endsWith(sdkConstant.GM) || info.activityInfo.name.toLowerCase(Locale.ENGLISH).contains(sdkConstant.GMAIL)) {
+                        best = info;
+                    }
+                }
+                if (best != null) {
+                    emailIntent.setClassName(best.activityInfo.packageName, best.activityInfo.name);
+                }
+                context.startActivity(emailIntent);
+            } else {
+                if (!(this).isFinishing()) {
+                    final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                    mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                    mProgressDialog.setCancelable(true);
+                    final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                    tvLoading.setText("Your coin balance is below the minimum required to Redeem. Please go back and play to earn more coins.");
+                    final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                    tvOk.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(final View v) {
+                            mProgressDialog.dismiss();
+                        }
+                    });
+                    mProgressDialog.show();
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onBackPressed() {
+        try {
+            final Intent intent1 = new Intent(this, GoalDetailsActivity.class);
+            intent1.putExtra(sdkConstant.GOAL_INTENT, intent.getExtras().getString(sdkConstant.GOAL_INTENT));
+            startActivity(intent1);
+            finish();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * getStartSlowInternet
+     *
+     * @param message
+     */
+    private void getStartSlowInternet(final String message) {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(message);
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        callCoinHistoryApi();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void redeemClick(View view) {
+        LogUtils.debug(sdkConstant.TAG, "showExitDialog start");
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                mProgressDialog.setCancelable(true);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("You can redeem only if you have a balance of 10000 coins or more.\nYou should have completed a CHAMP level in at least one skill.\n\nWould you like to redeem coins now?");
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        sendRedeemEmail();
+                    }
+                });
+                final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+        LogUtils.debug(sdkConstant.TAG, "showExitDialog stop");
+    }
+
+
+    /**
+     * sendPaymentInfoServer
+     */
+    private void sendPaymentInfoServer(final String mobile, final String email) {
+        if (isInternetAvailable()) {
+            try {
+                itemName = coinCount + "Coins";
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PAYMENT, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.USER_NAME, user.getName());
+                request.params.put(sdkConstant.EMAIL, email);
+                request.params.put(sdkConstant.CONTACT, mobile);
+                request.params.put(sdkConstant.CURRENCY, sdkConstant.INR);
+                request.params.put(sdkConstant.COINS, coinCount);
+                request.params.put(sdkConstant.ITEM_NAM, itemName);
+                request.params.put(sdkConstant.COINE_VALUE, coinValue);
+                request.params.put(sdkConstant.COUPON_CODE, sdkConstant.TEST_CAP);
+                request.params.put(sdkConstant.DISCOUNT, discount);
+                request.params.put(sdkConstant.LIST_VALUE, listValue);
+                request.params.put(sdkConstant.TYPE, sdkConstant.INITIATED);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle call back message
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            paymentInitVO = dbController.hanldePaymentInitVO(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(paymentInitVO.getStatus())) {
+                                startPayment(email, mobile);
+                            } else if (urls.RESPONSE_COSE_404.equalsIgnoreCase(String.valueOf(paymentInitVO.getStatus()))) {
+                                Toast.makeText(getApplicationContext(), "Server Error. Try later.", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                        return true;
+                    }
+
+
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+
+    /**
+     * startPayment
+     *
+     * @param email
+     * @param mobile
+     */
+
+    private void startPayment(final String email, final String mobile) {
+        try {
+            final EmpassActivity activity = this;
+            final Checkout co = new Checkout();
+            co.setPublicKey(dbHelper.getRefData(sdkConstant.RAZOR_PAY_KEY));
+            final JSONObject options = new JSONObject(sdkConstant.DESCRIPTION + coinCount + sdkConstant.COINS_SLESH +
+                    sdkConstant.IMAGE_DOT + sdkConstant.EMPASS_IMAGE + sdkConstant.SLACE +
+                    sdkConstant.CURRENCEY);
+            options.put(sdkConstant.AMOUNT, amount);
+            options.put(sdkConstant.USER_NAME, sdkConstant.TAG);
+            options.put(sdkConstant.PREFILL, new JSONObject(sdkConstant.EMAIL_DOT + email + sdkConstant.CONTACT_DOT + mobile + sdkConstant.BRACKET_CLOSE));
+            co.open(activity, options);
+        } catch (Exception e) {
+            Toast.makeText(this, e.getMessage(), Toast.LENGTH_SHORT).show();
+            LogUtils.error(sdkConstant.TAG, "Exce", e);
+        }
+    }
+
+
+    public void onPaymentSuccess(final String razorpayPaymentID) {
+        try {
+            sendPaymentId(razorpayPaymentID);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * The name of the function has to be
+     */
+    public void onPaymentError(final int code, final String response) {
+        try {
+            paymentDialog("Payment Failed");
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * sendPaymentId
+     *
+     * @param razorpayPaymentID
+     */
+    /**
+     * sendPaymentId
+     *
+     * @param razorpayPaymentID
+     */
+    private void sendPaymentId(final String razorpayPaymentID) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_PAYMENT, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.ID, paymentInitVO.getPaymentId());
+                request.params.put(sdkConstant.PAYMENT_ID, razorpayPaymentID);
+                request.params.put(sdkConstant.TYPE, sdkConstant.AUTHORIZED);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle call back message
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(sdkConstant.TRY_AGAIN);
+                        } else {
+                            paymentInitVO = dbController.hanldePaymentInitVO(response, request);
+                            isPaymentSuccess = true;
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(paymentInitVO.getStatus())) {
+                                paymentDialog("Payment done successfully");
+                            } else if (urls.RESPONSE_COSE_404.equalsIgnoreCase(String.valueOf(paymentInitVO.getStatus()))) {
+                                paymentDialog("Server Error. Try later.");
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    public void paymentDialog(final String status) {
+        try {
+            if (!(this).isFinishing()) {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(status);
+                final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        callCoinHistoryApi();
+                    }
+                });
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+}

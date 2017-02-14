@@ -1,0 +1,10 @@
+package com.empass.sdk.offline;
+
+/**
+ * Class Name : ${CLASS}
+ * Created By : pbinda
+ */
+public enum GameStatus {
+
+    NOT_STARTED, READY , STARTED, RUNNING, STOPPED, GAME_OVER,ABANDONED
+}

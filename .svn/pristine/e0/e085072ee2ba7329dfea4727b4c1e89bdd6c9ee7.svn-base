@@ -1,0 +1,71 @@
+package com.empass.sdk.utils;
+
+/**
+ * Created by Deepak on 9/12/2016.
+ */
+public final class Urls {
+    public static final String RESPONSE_COSE_200 = "200";                      //Response code
+    public static final String RESPONSE_COSE_201 = "201";
+    public static final String RESPONSE_COSE_404 = "404";
+    public static final String RESPONSE_COSE_406 = "406";
+    public static final String RESPONSE_COSE_404A = "404A";
+    public static final String RESPONSE_COSE_404B = "404B";
+    public static final String RESPONSE_COSE_404C = "404C";
+    public static final String RESPONSE_COSE_404D = "404D";
+    public static final String RESPONSE_COSE_000 = "000";
+    public static final String REQUEST_GET = "Get";
+    public static final String TEST = "Test";
+    public static final String UUID = "uuid";
+    public static final String REQUEST_POST = "Post";
+    public static final String TASK_REGISTER_P = "register";                   // Task name for player registration
+    public static final String TASK_ADD_GOAL = "addgoal";
+    public static final String TASK_CHANGE_PASS = "changepassword";            //Task name for change password
+    public static final String TASK_ACHIVEMENT_HISTORY = "getuserachv";
+    public static final String TASK_COIN_PURCHASE = "coinpurchase";
+
+    public static final String TASK_UPDATE_GOAL = "updategoal";
+    public static final String TASK_UPDATE_EDUCATION = "updateeducation";
+    public static final String TASK_UPDATE_P = "updateplayer";
+    public static final String TASK_GETUSERDETAILS = "getuserdetails";
+    public static final String TASK_CAN_PLAY = "canplay";            //Task name for canplay
+    public static final String TASK_CAN_ADD = "canadd";            //Task name for canadd
+    public static final String TASK_ACHIEVEMENT = "achievement";            //Task name for achivement
+    public static final String TASK_PLAYER_PER = "playerperformance";            //Task name for player performance
+    public static final String TAG = "tag";            //Task name for player performance
+    public static final String TASK_LEADERBOARD = "leaderboard";
+    public static final String TASK_UPDATE_GAME_LOC = "updategamelocation";
+    public static final String TASK_CCLIST = "cclist";
+    public static final String TASK_SKILL_AUTH = "skillauth";
+    public static final String TASK_UPDATE_EXE = "updateexception";
+    public static final String TASK_KEY = "key";
+    public static final String TASK_COIN_HISTORY = "coinhistory";
+    public static final String TASK_REFRESH_GOAL = "refreshgoal";
+    public static final String PLAYER_ID = "player_id";                              //Player id for app
+    public static final String MESSAGE = "message";
+    public static final String GOAL_ID = "goal_id";                                  //goal id for app
+    public static final String AUTH_TYPE = "auth_type";
+    public static final String SKILL_AUTH_TYPE = "skill_auth_type";
+    public static final String TASK_SKILL = "getsdkskill";
+    public static final String S3_ACL = "acl";
+    public static final String S3_PUBLIC_READ = "public-read";
+    public static final String S3_SUCCESS_ACTION_STATUS = "success_action_status";
+    public static final String S3_CONTENT_TYPE = "Content-type";
+    public static final String S3_AWS_ACCESS_KEY = "AWSAccessKeyId";
+    public static final String S3_SIGNATURE = "Signature";
+    public static final String S3_FILE = "file";
+    public static final String S3_POLICY = "Policy";
+    public static final String S3_RESUME_CONTENT = "application/pdf";
+    public static final String CURRENT_DATE_TIME = "currentDateTime";
+    public static final String TIME_ZONE = "timeZone";
+    public static final String TASK_PAYMENT = "payment";
+    public static final String TASK_PAYMENT_LIST = "paymentlist";
+    public static final String TASK_ASSESS = "assess";
+    public static final String TASK_CONTEST = "contest";
+    public static final String TASK_FORGOT_PASS = "forgotpassword";
+    public static final String TASK_LOGIN = "login";                            //Task name for player login
+    public static final String TASK_RESEND = "resendsms";
+    public static final String TASK_VALIDATE = "validate";                    //Task name for player validate otp
+
+    private Urls() {
+    }
+}

@@ -1,0 +1,1059 @@
+package com.empass.sdk.activity;
+
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.res.Resources.NotFoundException;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Handler.Callback;
+import android.os.Message;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.EducationAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.ClearableAutoCompleteTextView;
+import com.empass.sdk.customview.MobiButton;
+import com.empass.sdk.customview.MobiEditText;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.vo.EducationDataVO;
+import com.empass.sdk.vo.EducationResVO;
+import com.empass.sdk.vo.User;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class EducationActivity extends EmpassActivity {
+    /**
+     *
+     */
+    private transient RelativeLayout llShowEducation;
+    /**
+     *
+     */
+    private transient LinearLayout llAddEducation;
+    /**
+     *
+     */
+    private transient LinearLayout llListEdu;
+    /**
+     *
+     */
+    private transient LinearLayout llNoEdu;
+    /**
+     * Declear variable
+     */
+    private transient TextView tvErrorYear;
+    /**
+     * Declear variable
+     */
+    private transient MobiEditText etGrade;
+    /**
+     * Declear variable
+     */
+    private transient MobiEditText etDegreeOthers;
+
+    /**
+     * Declear variable
+     */
+    private transient ListView lvViewEducation;
+    /**
+     * Declear variable
+     */
+    private transient EducationAdapter educationAdapter;
+    /**
+     * Declear variable
+     */
+    private transient Button btnStartYear;
+    /**
+     * Declear variable
+     */
+    private transient Button btnEndYear;
+    /**
+     * Declear variable
+     */
+    private transient MobiButton btnSave;
+
+    /**
+     * Declear variable
+     */
+    private transient String fromYear = "";
+    /**
+     * Declear variable
+     */
+    private transient String toYear = "";
+    /**
+     * Declear variable
+     */
+    private transient String degree = "";
+    /**
+     * Declear variable
+     */
+    private transient int currentYear;
+    /**
+     * Declear variable
+     */
+    private transient ClearableAutoCompleteTextView etSchool;
+    /**
+     * Declear variable
+     */
+    private transient ArrayAdapter<String> nameAdapter;
+    /**
+     *
+     */
+    private transient ArrayList<String> list;
+    /**
+     *
+     */
+    private transient EducationDataVO[] educationVo;
+    /**
+     *
+     */
+    private transient int educationId;
+    /*
+    * variable define by Ravi
+    * */
+    private transient ProgressBar barProgressCollege;
+    /**
+     * Declear variable
+     */
+    private transient ClearableAutoCompleteTextView autoCompleteTextDegree;
+    /**
+     * Declear variable
+     */
+    private transient ClearableAutoCompleteTextView autoCompleteTextStudy;
+    /**
+     * Declear variable
+     */
+    private transient MobiTextView tvPrivacy;
+
+    /**
+     * Declear variable
+     */
+    private transient EducationDataVO eduVo;
+    /**
+     * Declear variable
+     */
+    private transient List<String> listDegree;
+    /**
+     * Declear variable
+     */
+    private transient List<String> listCourse;
+    /**
+     * declare variable
+     */
+    private transient MobiTextView tvHeader;
+    private transient User user;
+
+    /**
+     * cons
+     */
+
+    public EducationActivity() {
+        super();
+
+    }
+
+    /**
+     * Declear variable
+     */
+
+    @Override
+    protected void onCreate(final Bundle bundel) {
+        super.onCreate(bundel);
+        setContentView(R.layout.m_activity_education);
+        try {
+            this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+            context = EducationActivity.this;
+            educationId = 0;
+            isInternetAvailable();
+            dbController = new SDKDatabaseController(context);
+            dbHelper = SDKDBHelper.getInstance(context);
+            user = dbHelper.getLogedUser();
+            llShowEducation = (RelativeLayout) findViewById(R.id.ll_show_education);
+            llAddEducation = (LinearLayout) findViewById(R.id.ll_add_education);
+            llListEdu = (LinearLayout) findViewById(R.id.ll_list);
+            llNoEdu = (LinearLayout) findViewById(R.id.ll_text);
+            tvErrorYear = (TextView) findViewById(R.id.textview_expected_graducation);
+            etGrade = (MobiEditText) findViewById(R.id.mobiEditTextGrade);
+            etDegreeOthers = (MobiEditText) findViewById(R.id.mobiEditTextdegreeothers);
+            lvViewEducation = (ListView) findViewById(R.id.listView_data);
+            btnStartYear = (Button) findViewById(R.id.btnStartYear);
+            btnEndYear = (Button) findViewById(R.id.btnEndYear);
+            btnSave = (MobiButton) findViewById(R.id.mobiButtonSave);
+            etSchool = (ClearableAutoCompleteTextView) findViewById(R.id.mobiEditTextSchool);
+            autoCompleteTextDegree = (ClearableAutoCompleteTextView) findViewById(R.id.autoCompleteTextViewDegree);
+            autoCompleteTextStudy = (ClearableAutoCompleteTextView) findViewById(R.id.autoCompleteTextViewStudy);
+            tvPrivacy = (MobiTextView) findViewById(R.id.mobiTextViewPrivacy);
+            tvHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            etSchool.hideClearButton();
+            autoCompleteTextDegree.hideClearButton();
+            autoCompleteTextStudy.hideClearButton();
+            tvHeader.setText("Education");
+            ImageView ivBack = (ImageView) findViewById(R.id.imageViewback);
+            ivBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            listDegree = new ArrayList<>();
+            listCourse = new ArrayList<String>();
+            tvPrivacy.setText(Html.fromHtml(sdkConstant.PRIVACY_POLICY));
+            barProgressCollege = (ProgressBar) findViewById(R.id.progressLoadingCollege);
+            barProgressCollege.setVisibility(View.GONE);
+            //for current year value
+            final Calendar calendar = Calendar.getInstance();
+            currentYear = calendar.get(Calendar.YEAR);
+            lvViewEducation.setOnItemClickListener(new OnItemClickListener() {
+                /**
+                 * onItemClick
+                 */
+                @Override
+                public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long index) {
+                    editEducation(educationVo[position]);
+                }
+            });
+            etSchoolValidation();
+            etStudyValidation();
+            init();
+            etSchool.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                    etSchool.setSelection(0);
+                    etSchool.requestFocus(0);
+                }
+            });
+
+            etSchool.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(final View v, final int keyCode, final KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_NAVIGATE_NEXT)) {
+                        btnStartYear.setFocusableInTouchMode(true);
+                        btnStartYear.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            nameAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, list);
+            etSchool.setAdapter(nameAdapter);
+            etGrade.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+                @Override
+                public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                    if (actionId == EditorInfo.IME_ACTION_DONE) {
+                        validation();
+                    }
+                    return false;
+                }
+            });
+            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_dropdown_item_1line, listDegree);
+            autoCompleteTextDegree.setThreshold(1);
+            autoCompleteTextDegree.setAdapter(adapter);
+            autoCompleteTextDegree.setOnItemClickListener(new OnItemClickListener() {
+                @Override
+                public void onItemClick(final AdapterView<?> parent, final View view, final int position, final long id) {
+                    autoCompleteTextDegree.setError(null);
+                    LogUtils.error(sdkConstant.TAG, "tag" + parent.getItemAtPosition(position));
+                    degree = parent.getItemAtPosition(position).toString();
+                    autoCompleteTextStudy.setText("");
+                    new LoadCourseData().execute();
+                    final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(autoCompleteTextDegree.getWindowToken(), 0);
+                }
+            });
+            autoCompleteTextStudy.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(final CharSequence s, final int start, final int count, final int after) {
+
+                }
+
+                @Override
+                public void onTextChanged(final CharSequence s, final int start, final int before, final int count) {
+                    final String newDegree = autoCompleteTextDegree.getText().toString();
+                    LogUtils.debug(sdkConstant.TAG, "new degree:" + newDegree);
+                    if (s.length() > 0 && sdkConstant.EMPTY.equals(newDegree)) {
+                        slowInternet("First select your degree.");
+                    }
+                }
+
+                @Override
+                public void afterTextChanged(final Editable s) {
+
+                }
+            });
+            autoCompleteTextDegree.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(final View v, final int keyCode, final KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_NAVIGATE_NEXT)) {
+                        autoCompleteTextStudy.setFocusableInTouchMode(true);
+                        autoCompleteTextStudy.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            autoCompleteTextStudy.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(final View v, final int keyCode, final KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_NAVIGATE_NEXT)) {
+                        etGrade.setFocusableInTouchMode(true);
+                        etGrade.requestFocus();
+                        return true;
+                    }
+                    return false;
+                }
+            });
+            ivBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+        } catch (NullPointerException exp) {
+            LogUtils.error(sdkConstant.TAG, "NullPointerException Exp " + exp);
+        } catch (Exception ex) {
+            LogUtils.error(sdkConstant.TAG, "Exception " + ex);
+        }
+    }
+
+    /**
+     * @param educationDataVO
+     */
+    protected void editEducation(final EducationDataVO educationDataVO) {
+        try {
+            educationId = educationDataVO.getId();
+            toYear = educationDataVO.getEndYear();
+            fromYear = educationDataVO.getStartYear();
+            degree = educationDataVO.getDegree();
+            llShowEducation.setVisibility(View.GONE);
+            llAddEducation.setVisibility(View.VISIBLE);
+            etDegreeOthers.setVisibility(View.GONE);
+            etSchool.setText(educationDataVO.getCollegeName());
+            etGrade.setText(educationDataVO.getGrade());
+            btnStartYear.setText(educationDataVO.getStartYear());
+            btnEndYear.setText(educationDataVO.getEndYear());
+            btnSave.setText(R.string.m_update);
+            final String[] spinnerDegree = getResources().getStringArray(R.array.m_degree);
+            if (Arrays.asList(spinnerDegree).indexOf(educationDataVO.getDegree()) == -1) {
+                autoCompleteTextDegree.setText(R.string.m_others);
+                etDegreeOthers.setVisibility(View.VISIBLE);
+                etDegreeOthers.setText(educationDataVO.getDegree());
+            } else {
+                autoCompleteTextDegree.setText(educationDataVO.getDegree());
+            }
+            autoCompleteTextStudy.setText(educationDataVO.getStudy());
+        } catch (NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "NFException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * init is use for show list
+     */
+    private void init() {
+        try {
+            educationVo = dbHelper.getEducation(user.getId());
+            listDegree = dbHelper.getDegree();
+            if (educationVo.length > 0) {
+                llListEdu.setVisibility(View.VISIBLE);
+                llNoEdu.setVisibility(View.GONE);
+                LogUtils.debug(sdkConstant.TAG, "Length:" + educationVo.length);
+                educationAdapter = new EducationAdapter(context, R.id.listView_data, educationVo);
+                lvViewEducation.setAdapter(educationAdapter);
+                final ImageView add = (ImageView) findViewById(R.id.btnAddMore);
+                add.setColorFilter(getResources().getColor(R.color.sdk_seconderycolor));
+            } else {
+                llListEdu.setVisibility(View.GONE);
+                llNoEdu.setVisibility(View.VISIBLE);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * editTextValidation is use for edit text validation
+     */
+    private void etSchoolValidation() {
+        etSchool.addTextChangedListener(new TextWatcher() {
+            /**
+             * onTextChanged of edittext
+             */
+            @Override
+            public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                etSchool.setError(null);
+                if (count > before && sequence.length() >= sdkConstant.THREE && etSchool.isFocused()) {
+                    callApi(sequence.toString());
+                }
+            }
+
+            /**
+             * brfore text change
+             */
+            @Override
+            public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+            }
+
+            /**
+             * after text chnage
+             */
+            @Override
+            public void afterTextChanged(final Editable edit) {
+
+            }
+        });
+
+    }
+
+    /**
+     * callApi
+     *
+     * @param strName
+     */
+    private void callApi(final String strName) {
+        try {
+            if (isInternetAvailable()) {
+                barProgressCollege.setVisibility(View.VISIBLE);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_CCLIST, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.TYPE, sdkConstant.COLLAGE);
+                request.params.put(sdkConstant.NAME, strName);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet("Slow internet");
+                        } else {
+                            LogUtils.error(sdkConstant.TAG, "response:" + response);
+                            list = dbController.handelAutoResponse(response, request);
+                            showList(list);
+                            barProgressCollege.setVisibility(View.GONE);
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 0).execute(request);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showList
+     *
+     * @param list
+     */
+    private void showList(final ArrayList<String> list) {
+        try {
+            nameAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_dropdown_item_1line, list);
+            etSchool.setAdapter(nameAdapter);
+            nameAdapter.notifyDataSetChanged();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * study vadlidatoo
+     */
+    private void etStudyValidation() {
+        etDegreeOthers.addTextChangedListener(new TextWatcher() {
+            /**
+             * onTextChanged of edittext
+             */
+            @Override
+            public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                etDegreeOthers.setError(null);
+            }
+
+            /**
+             * brfore text change
+             */
+            @Override
+            public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+            }
+
+            /**
+             * after text chnage
+             */
+            @Override
+            public void afterTextChanged(final Editable edit) {
+            }
+        });
+    }
+
+    public void onClickSave(View view) {
+        validation();
+    }
+
+    public void onClickAddMore(View view) {
+        btnSave.setText(R.string.m_save_cap);
+        llShowEducation.setVisibility(View.GONE);
+        llAddEducation.setVisibility(View.VISIBLE);
+        etDegreeOthers.setVisibility(View.GONE);
+    }
+
+    public void onClickCancel(View view) {
+        llShowEducation.setVisibility(View.VISIBLE);
+        llAddEducation.setVisibility(View.GONE);
+        clearFields();
+    }
+
+    public void onClickFab(View view) {
+        btnSave.setText(R.string.m_save_cap);
+        llShowEducation.setVisibility(View.GONE);
+        llAddEducation.setVisibility(View.VISIBLE);
+        etDegreeOthers.setVisibility(View.GONE);
+        clearFields();
+        if ("Student".equalsIgnoreCase(user.getType())) {
+            etSchool.setText(user.getCcName());
+        }
+    }
+
+    /**
+     *
+     */
+    private void clearFields() {
+        try {
+            etSchool.setText("");
+            autoCompleteTextStudy.setText("");
+            etGrade.setText("");
+            etDegreeOthers.setText("");
+            btnStartYear.setText(R.string.m_year);
+            btnEndYear.setText(R.string.m_year);
+            autoCompleteTextDegree.setText("");
+            etDegreeOthers.setVisibility(View.GONE);
+            toYear = "";
+            fromYear = "";
+            degree = "";
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param view
+     */
+    public void onClickPrivacy(final View view) {
+        try {
+            LogUtils.debug(sdkConstant.TAG, dbHelper.getRefData(sdkConstant.BE_POLICY));
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(dbHelper.getRefData(sdkConstant.BE_POLICY))));
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "ExceptionOnClick " + e);
+        }
+    }
+
+    /**
+     * validation is use to validate user insert data
+     */
+    private void validation() {
+        try {
+            final String school = etSchool.getText().toString();
+            final String study = autoCompleteTextStudy.getText().toString();
+            final String grade = etGrade.getText().toString();
+            degree = autoCompleteTextDegree.getText().toString();
+            final String degreeOther = etDegreeOthers.getText().toString();
+            //validateYear();
+            if (sdkConstant.EMPTY.equalsIgnoreCase(school) || school.length() < 3) {
+                etSchool.requestFocus();
+                etSchool.setError("College/university name");
+            } else if (sdkConstant.NULL_SMALL.equalsIgnoreCase(fromYear) || sdkConstant.EMPTY.equalsIgnoreCase(fromYear)) {
+                tvErrorYear.requestFocus();
+                tvErrorYear.setError("Provide a valid year");
+            } else if (sdkConstant.NULL_SMALL.equalsIgnoreCase(toYear) || sdkConstant.EMPTY.equalsIgnoreCase(toYear)
+                    || Integer.parseInt(fromYear) > Integer.parseInt(toYear)) {
+                tvErrorYear.requestFocus();
+                tvErrorYear.setError("Provide a valid year");
+            } else if (sdkConstant.NULL_SMALL.equalsIgnoreCase(degree) || sdkConstant.EMPTY.equalsIgnoreCase(degree)) {
+                autoCompleteTextDegree.setError("Required");
+                autoCompleteTextDegree.requestFocus();
+            } else if ("Others".equalsIgnoreCase(degree) && sdkConstant.EMPTY.equalsIgnoreCase(degreeOther)) {
+                etDegreeOthers.requestFocus();
+                etDegreeOthers.setError("Degree");
+            } else if (sdkConstant.NULL_SMALL.equalsIgnoreCase(study) || sdkConstant.EMPTY.equalsIgnoreCase(study) || study.length() < 3) {
+                autoCompleteTextStudy.requestFocus();
+                autoCompleteTextStudy.setError("Required");
+            } else {
+                final EducationDataVO eduVo = new EducationDataVO();
+                eduVo.setCollegeName(school);
+                eduVo.setStudy(study);
+                eduVo.setGrade(grade);
+                eduVo.setDegree(degreeOther);
+                submit(eduVo);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * submit
+     */
+    private void submit(final EducationDataVO eduVos) {
+        try {
+            String finalDegree = degree;
+            if (degree.equalsIgnoreCase("Others")) {
+                finalDegree = eduVos.getDegree();
+            }
+            LogUtils.debug(sdkConstant.TAG, finalDegree);
+            eduVo = new EducationDataVO();
+            eduVo.setId(educationId);
+            eduVo.setCollegeName(eduVos.getCollegeName());
+            eduVo.setStartYear(fromYear);
+            eduVo.setEndYear(toYear);
+            eduVo.setDegree(finalDegree);
+            eduVo.setStudy(eduVos.getStudy());
+            eduVo.setGrade(eduVos.getGrade());
+            final InputMethodManager imm = (InputMethodManager) context.getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+            if (btnSave.getText().toString().contains(sdkConstant.UPDATE)) {
+                updateEducation(eduVo);
+            } else {
+                sendEducationData(eduVo);
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+
+    }
+
+    public void onClickImageBack(View view) {
+        onBackPressed();
+    }
+
+    /**
+     * update eudcation
+     *
+     * @param eduVo
+     */
+    private void updateEducation(final EducationDataVO eduVo) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_EDUCATION, dbHelper.getRefData(sdkConstant.TOKEN));
+                final String currentDateandTime = dateTimeFormat.format(new Date());
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.DEGREE, eduVo.getDegree());
+                request.params.put(sdkConstant.FROM_YEAR, eduVo.getStartYear());
+                request.params.put(sdkConstant.TO_YEAR, eduVo.getEndYear());
+                request.params.put(sdkConstant.BRANCH, eduVo.getStudy());
+                request.params.put(sdkConstant.PERCENT, eduVo.getGrade());
+                request.params.put(sdkConstant.COLLAGE, eduVo.getCollegeName());
+                request.params.put(sdkConstant.UPDATED_DATE, currentDateandTime);
+                request.params.put(sdkConstant.ID, eduVo.getId());
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            educationSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ZERO_INDEX);
+                        } else {
+                            LogUtils.debug(sdkConstant.TAG, "Res" + response);
+                            EducationResVO eduVos = dbController.hanldeUpadteEductaionResponse(response, request);
+                            showMsgWithOk(eduVos.getMessage(), "EDUCATION");
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(eduVos.getStatus())) {
+                                dbHelper.updateEducation(eduVo, user.getId());
+                                llShowEducation.setVisibility(View.VISIBLE);
+                                llAddEducation.setVisibility(View.GONE);
+                                clearFields();
+                                init();
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+                slowInternet(sdkConstant.TRY_AGAIN);
+            }
+        }
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private void educationSlowInternet(final String message, final int index) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    if (sdkConstant.ZERO_INDEX == index) {
+                        updateEducation(eduVo);
+                    } else {
+                        sendEducationData(eduVo);
+                    }
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * sendEducationData is use to send data on server
+     */
+    private void sendEducationData(final EducationDataVO eduVo) {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_UPDATE_EDUCATION, dbHelper.getRefData(sdkConstant.TOKEN));
+                final String currentDateandTime = dateTimeFormat.format(new Date());
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.DEGREE, eduVo.getDegree());
+                request.params.put(sdkConstant.FROM_YEAR, eduVo.getStartYear());
+                request.params.put(sdkConstant.TO_YEAR, eduVo.getEndYear());
+                request.params.put(sdkConstant.BRANCH, eduVo.getStudy());
+                request.params.put(sdkConstant.PERCENT, eduVo.getGrade());
+                request.params.put(sdkConstant.COLLAGE, eduVo.getCollegeName());
+                request.params.put(sdkConstant.CREATED_DATE, currentDateandTime);
+                request.requestMethod = urls.REQUEST_POST;
+                final Callback callback = new Callback() {
+                    /**
+                     * handle callback of response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            educationSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.ONE_INDEX);
+                        } else {
+                            LogUtils.debug(sdkConstant.TAG, "Res" + response);
+                            EducationResVO eduVos = dbController.hanldeUpadteEductaionResponse(response, request);
+                            showMsgWithOk(eduVos.getMessage(), "EDUCATION");
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(eduVos.getStatus())) {
+                                dbHelper.saveEducation(eduVo, user.getId(), eduVos.getEducationId());
+                                llShowEducation.setVisibility(View.VISIBLE);
+                                llAddEducation.setVisibility(View.GONE);
+                                clearFields();
+                                init();
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+                slowInternet(sdkConstant.TRY_AGAIN);
+            }
+        }
+    }
+
+
+    /**
+     * for pick from year of education
+     *
+     * @author Ravi
+     */
+    public void onClickStartYear(final View view) {
+        try {
+            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.m_alertdialog_item, R.id.textView, getResources()
+                    .getStringArray(R.array.m_year));
+            if (null == user.getDob() || sdkConstant.EMPTY.equals(user.getDob())) {
+                slowInternet("Please provide your dob");
+            } else {
+                new AlertDialog.Builder(this).setTitle("Select from year").setAdapter(adapter,
+                        new DialogInterface.OnClickListener() {
+                            /**
+                             * onClick
+                             */
+                            @Override
+                            public void onClick(final DialogInterface dialog, final int which) {
+                                try {
+                                    fromYear = adapter.getItem(which);
+                                } catch (Exception e) {
+                                    LogUtils.error(sdkConstant.TAG, "Exceptions3 " + e);
+                                }
+                                final String year = sdkCommonUtils.getYearFromDob(user.getDob());
+                                if (!fromYear.equals(sdkConstant.EMPTY) && Integer.parseInt(fromYear) > Integer.parseInt(year)) {
+                                    if (Integer.parseInt(fromYear) <= currentYear) {
+                                        if (educationVo.length > 0) {
+                                            for (int i = 0; i < educationVo.length; i++) {
+                                                if (fromYear.equalsIgnoreCase(educationVo[i].getStartYear())) {
+                                                    fromYear = "";
+                                                    btnStartYear.setText(R.string.m_year);
+                                                    tvErrorYear.requestFocus();
+                                                    tvErrorYear.setError("Provide a valid year");
+                                                    return;
+                                                }
+                                            }
+                                            for (int i = 0; i < educationVo.length; i++) {
+                                                final int startYear = Integer.valueOf(educationVo[i].getStartYear());
+                                                final int endYear = Integer.valueOf(educationVo[i].getEndYear());
+                                                for (int j = startYear; j < endYear; j++) {
+                                                    if (j == Integer.valueOf(fromYear)) {
+                                                        fromYear = "";
+                                                        btnStartYear.setText(R.string.m_year);
+                                                        tvErrorYear.requestFocus();
+                                                        tvErrorYear.setError("Provide a valid year");
+                                                        return;
+                                                    }
+                                                }
+                                            }
+                                            if (toYear.equals(sdkConstant.EMPTY)) {
+                                                btnStartYear.setText(fromYear);
+                                                tvErrorYear.setError(null);
+                                                return;
+                                            } else {
+                                                checkLessThenTO(fromYear, toYear, year);
+                                                return;
+                                            }
+                                        } else {
+                                            if (toYear.equals(sdkConstant.EMPTY)) {
+                                                btnStartYear.setText(fromYear);
+                                                tvErrorYear.setError(null);
+                                            } else {
+                                                checkLessThenTO(fromYear, toYear, year);
+                                            }
+                                        }
+                                    } else {
+                                        fromYear = "";
+                                        btnStartYear.setText(R.string.m_year);
+                                        tvErrorYear.requestFocus();
+                                        tvErrorYear.setError("Provide a valid year");
+                                    }
+                                } else {
+                                    fromYear = "";
+                                    btnStartYear.setText(R.string.m_year);
+                                    slowInternet("Your dob is later than the selected year");
+                                }
+                                dialog.dismiss();
+                            }
+
+                            private void checkLessThenTO(final String fromYears, final String toYears, final String years) {
+                                if (Integer.parseInt(fromYears) == Integer.parseInt(toYears)
+                                        && Integer.parseInt(fromYears) > Integer.parseInt(years)) {
+                                    btnStartYear.setText(fromYears);
+                                    tvErrorYear.setError(null);
+                                } else if (Integer.parseInt(fromYears) < Integer.parseInt(toYears)
+                                        && Integer.parseInt(fromYears) > Integer.parseInt(years)) {
+                                    btnStartYear.setText(fromYears);
+                                    tvErrorYear.setError(null);
+                                } else {
+                                    fromYear = "";
+                                    btnStartYear.setText(R.string.m_year);
+                                    tvErrorYear.requestFocus();
+                                    tvErrorYear.setError("Provide a valid year");
+                                }
+                            }
+                        }).create().show();
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * for pick to year of education
+     *
+     * @author Ravi
+     */
+    public void onClickEndYear(final View view) {
+        try {
+            final ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, R.layout.m_alertdialog_item, R.id.textView, getResources()
+                    .getStringArray(R.array.m_year));
+            if (null == user.getDob() || sdkConstant.EMPTY.equals(user.getDob())) {
+                slowInternet("Please provide your dob");
+            } else {
+                new AlertDialog.Builder(this).setTitle("Select to year").setAdapter(adapter,
+                        new DialogInterface.OnClickListener() {
+                            /**Please provide your dob
+                             * onClick
+                             */
+                            @Override
+                            public void onClick(final DialogInterface dialog, final int which) {
+                                try {
+                                    toYear = adapter.getItem(which);
+                                    if (toYear.equals(sdkConstant.EMPTY)) {
+                                        toYear = "";
+                                        btnEndYear.setText(R.string.m_year);
+                                        tvErrorYear.requestFocus();
+                                        tvErrorYear.setError("Provide a valid year");
+                                    } else {
+                                        final String year = sdkCommonUtils.getYearFromDob(user.getDob());
+                                        if (!toYear.equals(sdkConstant.EMPTY) && Integer.parseInt(toYear) > Integer.parseInt(year)) {
+                                            if (educationVo.length > 0) {
+                                                for (int i = 0; i < educationVo.length; i++) {
+                                                    if (toYear.equalsIgnoreCase(educationVo[i].getEndYear())) {
+                                                        toYear = "";
+                                                        btnEndYear.setText(R.string.m_year);
+                                                        tvErrorYear.requestFocus();
+                                                        tvErrorYear.setError("Provide a valid year");
+                                                        return;
+                                                    }
+                                                }
+                                                for (int i = 0; i < educationVo.length; i++) {
+                                                    final int startYear = Integer.valueOf(educationVo[i].getStartYear());
+                                                    final int endYear = Integer.valueOf(educationVo[i].getEndYear());
+                                                    for (int j = startYear + 1; j < endYear; j++) {
+                                                        if (j == Integer.valueOf(toYear)) {
+                                                            toYear = "";
+                                                            btnEndYear.setText(R.string.m_year);
+                                                            tvErrorYear.requestFocus();
+                                                            tvErrorYear.setError("Provide a valid year");
+                                                            return;
+                                                        }
+                                                    }
+                                                }
+                                                setToYear(fromYear, toYear);
+                                            } else {
+                                                setToYear(fromYear, toYear);
+                                            }
+                                        } else {
+                                            toYear = "";
+                                            btnEndYear.setText(R.string.m_year);
+                                            slowInternet("Your dob is later than the selected year");
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    LogUtils.error(sdkConstant.TAG, "Exception", e);
+                                }
+                                dialog.dismiss();
+                            }
+
+                            private void setToYear(final String fromYears, final String toYears) {
+                                if (!fromYears.equals(sdkConstant.EMPTY)
+                                        && Integer.parseInt(toYears) == Integer.parseInt(fromYears)) {
+                                    btnEndYear.setText(toYears);
+                                    tvErrorYear.setError(null);
+                                } else if (!fromYears.equals(sdkConstant.EMPTY)
+                                        && Integer.parseInt(toYears) > Integer.parseInt(fromYears)) {
+                                    btnEndYear.setText(toYears);
+                                    tvErrorYear.setError(null);
+                                } else if (fromYears.equals(sdkConstant.EMPTY)) {
+                                    btnEndYear.setText(toYears);
+                                    tvErrorYear.setError(null);
+                                } else {
+                                    toYear = "";
+                                    btnEndYear.setText(R.string.m_year);
+                                    tvErrorYear.requestFocus();
+                                    tvErrorYear.setError("Provide a valid year");
+                                }
+                            }
+                        }
+                ).create().show();
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(sdkConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (llAddEducation.getVisibility() == View.VISIBLE) {
+            final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm.isAcceptingText()) {
+                imm.hideSoftInputFromWindow(this.getCurrentFocus().getWindowToken(), 0);
+            }
+            llShowEducation.setVisibility(View.VISIBLE);
+            llAddEducation.setVisibility(View.GONE);
+        } else {
+            final Intent intentDashboard = new Intent(context, DashBoardActivity.class);
+            intentDashboard.putExtra(sdkConstant.TITLE, "ProfileActivity");
+            startActivity(intentDashboard);
+            finish();
+        }
+    }
+
+    class LoadCourseData extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected void onPostExecute(final Void aVoid) {
+            super.onPostExecute(aVoid);
+            try {
+                final ArrayAdapter<String> adapterCousre = new ArrayAdapter<String>(EducationActivity.this, android.R.layout.simple_dropdown_item_1line, listCourse);
+                autoCompleteTextStudy.setThreshold(1);
+                autoCompleteTextStudy.setAdapter(adapterCousre);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            }
+        }
+
+        @Override
+        protected Void doInBackground(final Void... params) {
+            try {
+                listCourse = dbHelper.getCourse(degree);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            }
+            return null;
+        }
+    }
+
+}

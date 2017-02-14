@@ -1,0 +1,73 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Admin on 22-03-2016.
+ */
+public class PaymentDataVO {
+
+
+    @SerializedName("listvalue")                                    // declear variable
+    private String listValue;
+    @SerializedName("coinvalue")                                    // declear variable
+    private String coinValue;
+
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
+    }
+
+    public String getListValue() {
+        return listValue;
+    }
+
+    public void setListValue(String listValue) {
+        this.listValue = listValue;
+    }
+
+    public String getCoinValue() {
+        return coinValue;
+    }
+
+    public void setCoinValue(String coinValue) {
+        this.coinValue = coinValue;
+    }
+
+    public String getDiscountPer() {
+        return discountPer;
+    }
+
+    public void setDiscountPer(String discountPer) {
+        this.discountPer = discountPer;
+    }
+
+    public String getCoinCount() {
+        return coinCount;
+    }
+
+    public void setCoinCount(String coinCount) {
+        this.coinCount = coinCount;
+    }
+
+    public String getCoinImage() {
+        return coinImage;
+    }
+
+    public void setCoinImage(String coinImage) {
+        this.coinImage = coinImage;
+    }
+
+    @SerializedName("discount")                                    // declear variable
+    private String discount;
+    @SerializedName("discountper")
+    private String discountPer;
+    @SerializedName("coincount")
+    private String coinCount;
+    @SerializedName("coinimg")
+    private String coinImage;
+
+}

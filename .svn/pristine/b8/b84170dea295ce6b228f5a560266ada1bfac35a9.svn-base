@@ -1,0 +1,100 @@
+package com.empass.sdk.adapter;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.PaymentDataVO;
+import com.squareup.picasso.Picasso;
+
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class PaymentAdapter extends ArrayAdapter<PaymentDataVO> {
+    /**
+     * declear vabiable
+     */
+    private transient final Context context;
+    /**
+     * declear vabiable
+     */
+
+
+    public transient SDKDBHelper dbHelper;
+
+    /**
+     * @param ctx
+     */
+    public PaymentAdapter(final Context ctx, final int resource, final PaymentDataVO[] data) {
+        super(ctx, resource, data);
+        this.context = ctx;
+        dbHelper = SDKDBHelper.getInstance(context);
+    }
+
+
+    /**
+     * getView
+     */
+    @SuppressLint({"InflateParams", "SetTextI18n"})
+    @Override
+    public View getView(final int position, View convertView, final ViewGroup parent) {
+        final PaymentDataVO data = getItem(position);
+        try {
+            final LayoutInflater inflater = (LayoutInflater) context.getSystemService(Activity.LAYOUT_INFLATER_SERVICE);
+            final ViewHolder holder;
+            if (convertView != null) {
+                holder = (ViewHolder) convertView.getTag();
+            } else {
+                convertView = inflater.inflate(R.layout.m_list_payment_row, parent, false);
+                holder = new ViewHolder();
+                holder.tvCoinValue = (TextView) convertView.findViewById(R.id.tv_coinvalue);
+                holder.tvOriginalValue = (TextView) convertView.findViewById(R.id.tv_originalvalue);
+                holder.tvDiscountPer = (TextView) convertView.findViewById(R.id.tv_discountper);
+                holder.tvRemainValue = (TextView) convertView.findViewById(R.id.tv_remainvalue);
+                holder.ivPay = (ImageView) convertView.findViewById(R.id.iv_pay);
+                convertView.setTag(holder);
+            }
+            holder.tvCoinValue.setText(data.getCoinCount());
+            holder.tvOriginalValue.setText(SDKConstant.RS + data.getCoinValue());
+            holder.tvDiscountPer.setText(data.getDiscountPer() + SDKConstant.PER);
+            holder.tvRemainValue.setText(SDKConstant.RS + data.getListValue());
+            if (!SDKConstant.EMPTY.equalsIgnoreCase(data.getCoinImage()) && !SDKConstant.NO_IMAGE.equalsIgnoreCase(data.getCoinImage())) {
+                Picasso.with(context).load(data.getCoinImage()).placeholder(R.drawable.pmcoins).into(holder.ivPay, new com.squareup.picasso.Callback() {
+                    @Override
+                    public void onSuccess() {
+                    }
+
+                    @Override
+                    public void onError() {
+                        holder.ivPay.setImageResource(R.drawable.pmcoins);
+                    }
+                });
+            } else {
+                holder.ivPay.setImageResource(R.drawable.pmcoins);
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return convertView;
+    }
+
+    public static class ViewHolder {
+        public transient TextView tvCoinValue;
+        public transient TextView tvOriginalValue;
+        public transient TextView tvDiscountPer;
+        public transient TextView tvRemainValue;
+        public transient ImageView ivPay;
+    }
+}

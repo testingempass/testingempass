@@ -1,0 +1,53 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 12/2/2015.
+ */
+@SuppressWarnings("ALL")
+public class CommonResVO {
+    public CommonResVO() {
+    }
+
+    @SerializedName("status")
+    private String status;
+    @SerializedName("msg")
+    private String msg;
+
+
+    public String getSkillId() {
+        return skillId;
+    }
+
+    public void setSkillId(String skillId) {
+        this.skillId = skillId;
+    }
+
+    public String getMultiSkill() {
+        return multiSkill;
+    }
+
+    public void setMultiSkill(String multiSkill) {
+        this.multiSkill = multiSkill;
+    }
+
+    private String multiSkill;
+    private String skillId;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+}

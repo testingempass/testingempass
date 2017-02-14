@@ -1,0 +1,57 @@
+package com.empass.sdk.offline;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * 
+ * @author Deepak
+ *
+ */
+public class GameIdVO {
+	/**
+	 * declear variable
+	 */
+	@SerializedName("status")
+	private String status;
+	/**
+	 * declear variable
+	 */
+	@SerializedName("game_no")
+	private String gameNo;
+
+	/**
+ * 
+ */
+	public GameIdVO() {
+		super();
+	}
+
+	/**
+	 * variable declear
+	 */
+	public String getStatus() {
+		return status;
+	}
+
+	/**
+	 * variable declear
+	 */
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	/**
+	 * variable declear
+	 */
+	public String getGameNo() {
+		return gameNo;
+	}
+
+	/**
+	 * variable declear
+	 */
+
+	public void setGameNo(String gameNo) {
+		this.gameNo = gameNo;
+	}
+}

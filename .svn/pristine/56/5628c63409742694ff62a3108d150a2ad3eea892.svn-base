@@ -1,0 +1,192 @@
+package com.empass.sdk.s2;
+
+import android.os.Handler;
+import android.os.Message;
+
+import com.empass.sdk.utils.AbstractBEJsonParser;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.shephertz.app42.gaming.multiplayer.client.events.ChatEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.LobbyData;
+import com.shephertz.app42.gaming.multiplayer.client.events.MoveEvent;
+import com.shephertz.app42.gaming.multiplayer.client.events.RoomData;
+import com.shephertz.app42.gaming.multiplayer.client.events.UpdateEvent;
+import com.shephertz.app42.gaming.multiplayer.client.listener.NotifyListener;
+
+import java.util.HashMap;
+
+/**
+ * @author Deepak
+ */
+public class WarpNotifyListener implements NotifyListener {
+
+    /**
+     *
+     */
+    private transient final Handler handler;
+
+    /**
+     * @param handler
+     */
+    public WarpNotifyListener(final Handler handler) {
+        this.handler = handler;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onChatReceived(final ChatEvent onChatReceived) {
+        LogUtils.debug(SDKConstant.TAG, "");
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGameStarted(final String onGameStarted, final String onGameStarted1, final String onGameStarted2) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onGameStopped(final String onGameStopped, final String onGameStopped1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onMoveCompleted(final MoveEvent moveEvent) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onPrivateChatReceived(final String onPrivateChatReceived, final String onPrivateChatReceived1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onRoomCreated(final RoomData roomData) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onRoomDestroyed(final RoomData roomData) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUpdatePeersReceived(final UpdateEvent updateEvent) {
+        LogUtils.debug(SDKConstant.TAG, "onUpdatePeersReceived");
+        String response = null;
+        try {
+            response = new String(updateEvent.getUpdate(), "UTF-8");
+            String tag = response.substring(1, response.length() - 1);
+            LogUtils.debug(SDKConstant.TAG, "response : " + response);
+            if (response != null) {
+                if (WarpResponseCode.DIFF_DATE.contains(tag)) {
+                    LogUtils.debug(SDKConstant.TAG, "Response: " + response);
+                    final String res = AbstractBEJsonParser.parseServerResponse(response, String.class);
+                    final Message msg = handler.obtainMessage(WarpCallbackMessageCode.MSG_TIMEDIFF);
+                    msg.obj = res;
+                    handler.sendMessage(msg);
+                } else {
+                    LogUtils.debug(SDKConstant.TAG, "Response: " + response);
+                    final String[] res = AbstractBEJsonParser.parseServerResponse(response, String[].class);
+                    final Message msg = handler.obtainMessage(WarpCallbackMessageCode.MSG_OPP_REC);
+                    msg.obj = res;
+                    handler.sendMessage(msg);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "exc", e);
+        }
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserChangeRoomProperty(final RoomData roomData, final String data, final HashMap<String, Object> hashMap,
+                                         final HashMap<String, String> hashMap1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserJoinedLobby(final LobbyData lobbyData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserJoinedRoom(final RoomData roomData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserLeftLobby(final LobbyData lobbyData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserLeftRoom(final RoomData roomData, final String data) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserPaused(final String data, final boolean arg, final String data1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+    /**
+     *
+     */
+    @Override
+    public void onUserResumed(final String data, final boolean arg, final String data1) {
+        LogUtils.debug(SDKConstant.TAG, "");
+
+    }
+
+}

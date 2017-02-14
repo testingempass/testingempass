@@ -1,0 +1,56 @@
+package com.empass.sdk.vo;
+import com.google.gson.annotations.SerializedName;
+
+public class RegisterResponseVO {
+	public RegisterResponseVO() {
+	}
+
+	@SerializedName("status")
+	public String status;
+	@SerializedName("requestId")
+	public int requestId;
+	@SerializedName("code")
+	public int code;
+	@SerializedName("register_id")
+	public String registerId;
+	@SerializedName("msg")
+	public String msg;
+	@SerializedName("goal_id")
+	public int goalId;
+	public String getStatus() {                                    //@return
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public int getRequestId() {
+		return requestId;
+	}
+	public void setRequestId(int requestId) {
+		this.requestId = requestId;
+	}
+	public int getCode() {
+		return code;
+	}
+	public void setCode(int code) {
+		this.code = code;
+	}
+	public String getRegisterId() {
+		return registerId;
+	}
+	public void setRegisterId(String registerId) {
+		this.registerId = registerId;
+	}
+	public String getMsg() {
+		return msg;
+	}
+	public void setMsg(String msg) {
+		this.msg = msg;
+	}
+	public int getGoalId() {
+		return goalId;
+	}
+	public void setGoalId(int goalId) {
+		this.goalId = goalId;
+	}
+}

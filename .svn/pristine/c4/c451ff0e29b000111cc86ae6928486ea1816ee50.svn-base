@@ -1,0 +1,58 @@
+package com.empass.sdk.s2;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * @author Deepak
+ */
+@SuppressWarnings("ALL")
+public class Answer {
+
+    /**
+     *
+     */
+    @SerializedName("QuestionId")
+    private String questionId;
+    /**
+     *
+     */
+    @SerializedName("Answers")
+    private String answers;
+
+
+    /**
+     * @return
+     */
+    public String getQuestionId() {
+        return questionId;
+    }
+
+    /**
+     * @param questionId
+     */
+    public void setQuestionId(final String questionId) {
+        this.questionId = questionId;
+    }
+
+    /**
+     * @return
+     */
+    public String getAnswer() {
+        return answers;
+    }
+
+    /**
+     * @param answer
+     */
+    public void setAnswer(final String answer) {
+        this.answers = answer;
+    }
+
+    /**
+     *
+     */
+    @Override
+    public String toString() {
+        return "Answer [questionId=" + questionId + ", answer=" + answers + "]";
+    }
+}

@@ -1,0 +1,848 @@
+package com.empass.sdk.activity;
+
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.app.Dialog;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Resources;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.widget.CardView;
+import android.telephony.TelephonyManager;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
+import android.util.DisplayMetrics;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.SkillButtonAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.AddGoalVo;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.Goal;
+import com.empass.sdk.vo.SkillDataVO;
+import com.empass.sdk.vo.User;
+
+import java.util.List;
+
+/**
+ * Created by Deepak on 9/12/2016.
+ */
+public class SkillActivity extends EmpassActivity {
+    /**
+     * declear variable
+     */
+    private transient RelativeLayout rlNoSkill;
+    /**
+     * declear variable
+     */
+    private transient ListView lvSkill;
+    /**
+     * declear variable
+     */
+    private User user;
+    /**
+     * declear variable
+     */
+    private transient SkillDataVO[] skillData;
+    /**
+     * declear variable
+     */
+    private transient int subSkillId;
+    /**
+     * declear variable
+     */
+    private transient Boolean isAddSkillIntent;
+    /**
+     * declear variable
+     */
+    private transient String subSkillText;
+    /**
+     * declear variable
+     */
+    private transient Boolean isBack;
+    /**
+     * declear variable
+     */
+    private transient Boolean isDirectReg;
+    /**
+     * declear variable
+     */
+    private transient String subSkillIds;
+    /**
+     * declear variable
+     */
+    private transient int parentId;
+    /**
+     * declear variable
+     */
+    private transient int skillIndex;
+    /**
+     * declear variable
+     */
+    private transient String auth, add;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        try {
+            setContentView(R.layout.m_activity_skill);
+            context = SkillActivity.this;
+            dbHelper = SDKDBHelper.getInstance(context);
+            isAddSkillIntent = getIntent().getExtras().getBoolean(sdkConstant.ADD_SKILL_INTENT);
+            isBack = getIntent().getExtras().getBoolean(sdkConstant.IS_BACK);
+            isDirectReg = getIntent().getExtras().getBoolean(sdkConstant.IS_DOWNLOAD);
+            dbController = new SDKDatabaseController(context);
+            rlNoSkill = (RelativeLayout) findViewById(R.id.rl_no_skill);
+            final MobiTextView tvTopHeader = (MobiTextView) findViewById(R.id.mobiTextView_topHeader);
+            tvTopHeader.setText(getResources().getString(R.string.m_add_goal));
+            lvSkill = (ListView) findViewById(R.id.lv_skill);
+            final ImageView icBack = (ImageView) findViewById(R.id.imageViewback);
+            icBack.setColorFilter(getResources().getColor(R.color.header_textcolor));
+            icBack.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    onClickImageBack(view);
+                }
+            });
+            subSkillId = 0;
+            skillIndex = 0;
+            parentId = 0;
+            subSkillText = sdkConstant.EMPTY;
+            if (isDirectReg) {
+                initSkill();
+            } else if (isBack && prefs.getString(sdkConstant.PREF_DOMAINID, null) != null) {
+                parentId = Integer.parseInt(prefs.getString(sdkConstant.PREF_DOMAINID, null));
+                subSkillId = Integer.parseInt(prefs.getString(sdkConstant.PREF_SUBSKILLID, null));
+                initSkill();
+            } else {
+                downloadSkill(urls.TASK_SKILL);
+            }
+        } catch (Resources.NotFoundException e) {
+            e.printStackTrace();
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void onClickImageBack(View view) {
+        try {
+            onBackPressed();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            if (isAddSkillIntent) {
+                final Intent intent = new Intent(SkillActivity.this, DashBoardActivity.class);
+                intent.putExtra(sdkConstant.TITLE, false);
+                startActivity(intent);
+                finish();
+            } else {
+                final Intent intent = new Intent(SkillActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickRefresh(View view) {
+        downloadSkill(urls.TASK_SKILL);
+    }
+
+    /**
+     * download new skill
+     *
+     * @param task
+     */
+    private void downloadSkill(final String task) {
+        if (isInternetAvailable()) {
+            final TelephonyManager tm = (TelephonyManager) this.getSystemService(this.TELEPHONY_SERVICE);
+            final String county = tm.getNetworkCountryIso().toUpperCase();
+            LogUtils.debug(sdkConstant.TAG, "Country:" + county);
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), task, dbHelper.getRefData(sdkConstant.TOKEN));
+                request.params.put(sdkConstant.COUNTRY, county);
+                request.params.put(urls.SKILL_AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            initSkill();
+                        } else {
+                            CommonResVO commonResVO = dbController.hanldeRefSkillResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                initSkill();
+                            } else {
+                                rlNoSkill.setVisibility(View.VISIBLE);
+                                showAlertDialog(commonResVO.getMsg());
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    private void initSkill() {
+        try {
+            if (isAddSkillIntent) {
+                final StringBuilder strIds = new StringBuilder();
+                user = dbHelper.getLogedUser();
+                final Goal[] goals = dbHelper.getUserGoals();
+                for (final Goal goal : goals) {
+                    strIds.append(goal.getSubSkillId()).append(",");
+                }
+                LogUtils.debug(sdkConstant.TAG, "Ids:" + strIds);
+                skillData = dbHelper.getSubSkills(strIds.toString());
+            } else {
+                skillData = dbHelper.getSubSkill();
+            }
+            setGridData(skillData);
+        } catch (Resources.NotFoundException e) {
+            LogUtils.error(sdkConstant.TAG, "NFException", e);
+        }
+    }
+
+    /**
+     * show data on grid
+     *
+     * @param list
+     */
+    private void setGridData(final SkillDataVO[] list) {
+        try {
+            if (list.length > sdkConstant.ZERO_VALUE) {
+                lvSkill.setVisibility(View.VISIBLE);
+                rlNoSkill.setVisibility(View.GONE);
+                final DisplayMetrics display = new DisplayMetrics();
+                this.getWindowManager().getDefaultDisplay().getMetrics(display);
+                lvSkill.setAdapter(null);
+                final SkillButtonAdapter adapter = new SkillButtonAdapter(context, R.id.lv_skill, list, subSkillId);
+                lvSkill.setAdapter(adapter);
+            } else {
+                if (isAddSkillIntent) {
+                    lvSkill.setVisibility(View.GONE);
+                    rlNoSkill.setVisibility(View.VISIBLE);
+                    final TextView tvComingsoon = (TextView) findViewById(R.id.tv_comingsoon);
+                    tvComingsoon.setText("More skills coming soon.\n Please come back later.");
+                } else {
+                    lvSkill.setVisibility(View.GONE);
+                    rlNoSkill.setVisibility(View.VISIBLE);
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param view
+     */
+    public void onClickItem(final View view) {
+        try {
+            final CardView cardView = (CardView) view.getParent();
+            final RelativeLayout relative = (RelativeLayout) cardView.findViewById(R.id.rl_skill);
+            final TextView tvComing = (TextView) relative.findViewById(R.id.tv_comingsoon);
+            if (tvComing.getVisibility() == View.GONE) {
+                final TextView tvSecuer = (TextView) relative.findViewById(R.id.tv_secquer);
+                final TextView tvPaid = (TextView) relative.findViewById(R.id.tv_paid);
+                final TextView tvSkill = (TextView) relative.findViewById(R.id.tv_skill);
+                final TextView tvSkillId = (TextView) relative.findViewById(R.id.tv_skillid);
+                final TextView tvSkillSubTxt = (TextView) relative.findViewById(R.id.tv_skill_subtxt);
+                LogUtils.debug(sdkConstant.TAG, "ivLock:" + tvSecuer.getVisibility());
+                relative.setBackgroundColor(Color.parseColor(sdkCommonUtils.getColorCodeWithLessOpacity(dbHelper.getSkillColor(tvSkillId.getText().toString()))));
+                tvSkill.setText(Html.fromHtml(sdkCommonUtils.getFormatedText(tvSkill.getText().toString(), "#000000")));
+                tvSkillSubTxt.setText(Html.fromHtml(sdkCommonUtils.getFormatedText(tvSkillSubTxt.getText().toString(), "#20000000")));
+                subSkillText = tvSkill.getText().toString();
+                subSkillIds = dbHelper.getSubSkillId(tvSkillId.getText().toString(), tvSkill.getText().toString());
+                if (isBack && subSkillId != Integer.parseInt(subSkillIds)) {
+                    isBack = false;
+                }
+                final String[] paidTxt = tvPaid.getText().toString().split("#");
+                skillIndex = 0;
+                if (sdkConstant.YTEXT.equalsIgnoreCase(tvSecuer.getText().toString())) {
+                    skillIndex = sdkConstant.TWO_INDEX;
+                }
+                if (sdkConstant.PAID.equalsIgnoreCase(paidTxt[0])) {
+                    skillIndex = sdkConstant.ONE_INDEX;
+                }
+                if (sdkConstant.YTEXT.equalsIgnoreCase(tvSecuer.getText().toString()) && sdkConstant.PAID.equalsIgnoreCase(paidTxt[0])) {
+                    skillIndex = sdkConstant.THREE;
+                }
+
+                switch (skillIndex) {
+                    case 0:
+                        if (isAddSkillIntent) {
+                            canAdd(tvSecuer.getText().toString());
+                        } else {
+                            callAuth(tvSecuer.getText().toString());
+                        }
+                        break;
+                    case 1:
+                        if (isAddSkillIntent) {
+                            showPaidDialog(paidTxt[1], tvSecuer.getText().toString());
+                        } else {
+                            callAuth(tvSecuer.getText().toString());
+                        }
+                        break;
+                    case 2:
+                        if (isAddSkillIntent) {
+                            canAdd(tvSecuer.getText().toString());
+                        } else {
+                            callAuth(tvSecuer.getText().toString());
+                        }
+                        break;
+                    case 3:
+                        if (isAddSkillIntent) {
+                            showPaidDialog(paidTxt[1], tvSecuer.getText().toString());
+                        } else {
+                            callAuth(tvSecuer.getText().toString());
+                        }
+                        break;
+                }
+            } else {
+                if (!(this).isFinishing()) {
+                    final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                    mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                    mProgressDialog.setCanceledOnTouchOutside(true);
+                    final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                    tvLoading.setText("Skill launching soon. \n Please check back later.");
+                    final Button tvOk = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+                    tvOk.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(final View v) {
+                            mProgressDialog.dismiss();
+
+                        }
+                    });
+                    mProgressDialog.show();
+                }
+            }
+            lvSkill.setAdapter(null);
+            final SkillButtonAdapter adapter = new SkillButtonAdapter(context, R.id.lv_skill, skillData, subSkillId);
+            lvSkill.setAdapter(adapter);
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * onClickItem
+     */
+    public void canAdd(final String string) {
+        if (isInternetAvailable()) {
+            try {
+                add = string;
+                SkillDataVO type = dbHelper.getSkillData(subSkillIds);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_CAN_ADD, dbHelper.getRefData(sdkConstant.TOKEN));
+                if (sdkConstant.IS_CONTEST.equalsIgnoreCase(type.getType())) {
+                    request.params.put(sdkConstant.TYPE, urls.TASK_CONTEST);
+                } else {
+                    request.params.put(sdkConstant.TYPE, urls.TASK_ASSESS);
+                }
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.SUB_SKILL_ID, subSkillIds);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * response is null
+                         */
+                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            domainSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.FIVE_INDEX);
+                        } else {
+                            CommonResVO canAdd = dbController.handelCommonResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(canAdd.getStatus())) {
+                                if (skillIndex == 2 || skillIndex == 3) {
+                                    callAuth(string);
+                                } else {
+                                    final SharedPreferences.Editor prefsEditor = prefs.edit();
+                                    prefsEditor.putString(sdkConstant.PREF_DOMAINID, String.valueOf(parentId));
+                                    prefsEditor.putString(sdkConstant.PREF_SUBSKILLID, subSkillIds);
+                                    prefsEditor.putString(sdkConstant.PREF_SUBSKILL, subSkillText);
+                                    prefsEditor.putString(sdkConstant.PREF_SKILL, subSkillText);
+                                    prefsEditor.putString(sdkConstant.PREF_AUTHKEY, "");
+                                    prefsEditor.apply();
+                                    addGoal();
+                                }
+                            } else if (urls.RESPONSE_COSE_406.equalsIgnoreCase(canAdd.getStatus())) {
+                                showProDialog(canAdd.getMsg());
+                            } else {
+                                showProDialogs(canAdd.getMsg());
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+
+    }
+
+    /**
+     * @param string
+     */
+    private void callAuth(final String string) {
+        try {
+            auth = string;
+            if (!sdkConstant.YTEXT.equalsIgnoreCase(string)) {
+                final SharedPreferences.Editor prefsEditor = prefs.edit();
+                prefsEditor.putString(sdkConstant.PREF_DOMAINID, String.valueOf(parentId));
+                prefsEditor.putString(sdkConstant.PREF_SUBSKILLID, subSkillIds);
+                prefsEditor.putString(sdkConstant.PREF_SUBSKILL, subSkillText);
+                prefsEditor.putString(sdkConstant.PREF_SKILL, subSkillText);
+                prefsEditor.putString(sdkConstant.PREF_AUTHKEY, "");
+                prefsEditor.apply();
+                if (isAddSkillIntent) {
+                    addGoal();
+                } else {
+                    Intent intent = new Intent(context, RegisterActivity.class);
+                    intent.putExtra(SDKConstant.IS_BACK, false);
+                    intent.putExtra(SDKConstant.COMEFROMLOGIN, true);
+                    intent.putExtra(SDKConstant.IS_DIRECTREG, false);
+                    startActivity(intent);
+                    finish();
+                }
+            } else {
+                final Dialog dialog = new Dialog(this);
+                dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+                dialog.setContentView(R.layout.m_dialog_secure_skill);
+                dialog.show();
+                final Button acceptButton = (Button) dialog.findViewById(R.id.tv_yes);
+                final EditText etAuth = (EditText) dialog.findViewById(R.id.mobiEditAuth);
+                final TextView tvSkillEmail = (TextView) dialog.findViewById(R.id.tv_lounchcode_email);
+                tvSkillEmail.setText(Html.fromHtml("Don't have one? \n  <font color='#FF7700'><u>Click here</u></font> to request one."));
+                tvSkillEmail.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        dialog.dismiss();
+                        final Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{sdkConstant.BE_EMAIL});
+                        emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Launch Code");
+                        emailIntent.putExtra(Intent.EXTRA_TEXT, sdkConstant.DEAR_TEAM + " I need a Launch Code to unlock" + " " + subSkillText + "\n\n Thank you.");
+                        emailIntent.setType(sdkConstant.TEXT_PLAIN);
+                        final PackageManager pm = context.getPackageManager();
+                        final List<ResolveInfo> matches = pm.queryIntentActivities(emailIntent, 0);
+                        ResolveInfo best = null;
+                        for (final ResolveInfo info : matches) {
+                            if (info.activityInfo.packageName.endsWith(sdkConstant.GM) || info.activityInfo.name.toLowerCase().contains(sdkConstant.GMAIL)) {
+                                best = info;
+                            }
+                        }
+                        if (best != null) {
+                            emailIntent.setClassName(best.activityInfo.packageName, best.activityInfo.name);
+                        }
+                        context.startActivity(emailIntent);
+                    }
+                });
+                etAuth.addTextChangedListener(new TextWatcher() {
+                    /**
+                     * on text change of email
+                     */
+                    @Override
+                    public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    }
+
+                    /**
+                     * before text change of email
+                     */
+                    @Override
+                    public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+
+                    }
+
+                    /**
+                     * after text change
+                     */
+                    @Override
+                    public void afterTextChanged(final Editable edit) {
+                        if (etAuth.getText().toString().trim().length() > 0) {
+                            etAuth.setError(null);
+                        } else {
+                            etAuth.requestFocus();
+                            etAuth.setError("Required");
+                        }
+                    }
+                });
+                final Button declineButton = (Button) dialog.findViewById(R.id.tv_no);
+                acceptButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        if (sdkConstant.EMPTY.equalsIgnoreCase(etAuth.getText().toString().trim())) {
+                            etAuth.setError("Required");
+                        } else {
+                            if (isInternetAvailable()) {
+                                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_SKILL_AUTH, dbHelper.getRefData(sdkConstant.TOKEN));
+                                request.params.put(sdkConstant.SKILL_ID, subSkillIds);
+                                request.params.put(sdkConstant.AUTH_KEY, etAuth.getText().toString());
+                                request.requestMethod = urls.REQUEST_POST;
+                                final Handler.Callback callback = new Handler.Callback() {
+                                    /**
+                                     * handle callback of request
+                                     */
+                                    @Override
+                                    public boolean handleMessage(final Message msg) {
+                                        final String response = (String) msg.obj;
+                                        /**
+                                         * response is null
+                                         */
+                                        if (null == response || sdkConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                                            domainSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN, sdkConstant.THREE);
+                                        } else {
+                                            LogUtils.debug(sdkConstant.TAG, "Response:" + response);
+                                            CommonResVO authVo = dbController.handelCommonResponse(response, request);
+                                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(authVo.getStatus())) {
+                                                final SharedPreferences.Editor prefsEditor = prefs.edit();
+                                                prefsEditor.putString(sdkConstant.PREF_DOMAINID, String.valueOf(parentId));
+                                                prefsEditor.putString(sdkConstant.PREF_SUBSKILLID, subSkillIds);
+                                                prefsEditor.putString(sdkConstant.PREF_SUBSKILL, subSkillText);
+                                                prefsEditor.putString(sdkConstant.PREF_SKILL, subSkillText);
+                                                prefsEditor.putString(sdkConstant.PREF_AUTHKEY, etAuth.getText().toString());
+                                                prefsEditor.apply();
+                                                if (isAddSkillIntent) {
+                                                    addGoal();
+                                                } else {
+                                                    Intent intent = new Intent(context, RegisterActivity.class);
+                                                    intent.putExtra(SDKConstant.IS_BACK, false);
+                                                    intent.putExtra(SDKConstant.COMEFROMLOGIN, true);
+                                                    intent.putExtra(SDKConstant.IS_DIRECTREG, false);
+                                                    startActivity(intent);
+                                                    finish();
+                                                }
+                                            } else {
+                                                showAlertDialog(authVo.getMsg());
+                                            }
+                                        }
+                                        return true;
+                                    }
+                                };
+                                new SDKHttpRequestHandler(SkillActivity.this, new Handler(callback), 1).execute(request);
+                            }
+                            dialog.dismiss();
+                        }
+                    }
+                });
+                declineButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        dialog.dismiss();
+                    }
+                });
+
+
+            }
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void showPaidDialog(final String message, final String string) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText("This is a paid skill, " + message + " coins will be deducted from your account. Are you sure you wish to add new goal?");
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    canAdd(string);
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private void domainSlowInternet(final String message, final int index) {
+        if (!((Activity) context).isFinishing()) {
+            try {
+                final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+                mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(message);
+                final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                        if (sdkConstant.ZERO_INDEX == index) {
+                            downloadSkill(urls.TASK_SKILL);
+                        } else if (sdkConstant.THREE == index) {
+                            callAuth(auth);
+                        } else {
+                            canAdd(add);
+                        }
+                    }
+                });
+                final Button tvNO = (Button) mProgressDialog.findViewById(R.id.tv_no);
+                tvNO.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        mProgressDialog.dismiss();
+                    }
+                });
+                mProgressDialog.show();
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    private void showProDialog(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void showProDialogs(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setText("PURCHASE");
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    final Intent emailIntent = new Intent(Intent.ACTION_SEND);
+                    emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{sdkConstant.BE_EMAIL});
+                    emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Purchase Coin");
+                    emailIntent.putExtra(Intent.EXTRA_TEXT, sdkConstant.DEAR_TEAM + "I want to purchase 1000" + ". My email id is" + " " + user.getEmail() + "\n\n Thank you.");
+                    emailIntent.setType("text/plain");
+                    final PackageManager pm = context.getPackageManager();
+                    final List<ResolveInfo> matches = pm.queryIntentActivities(emailIntent, 0);
+                    ResolveInfo best = null;
+                    for (final ResolveInfo info : matches) {
+                        if (info.activityInfo.packageName.endsWith(".gm") || info.activityInfo.name.toLowerCase().contains("gmail")) {
+                            best = info;
+                        }
+                    }
+                    if (best != null) {
+                        emailIntent.setClassName(best.activityInfo.packageName, best.activityInfo.name);
+                    }
+                    context.startActivity(emailIntent);
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setText("LATER");
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void showAlertDialog(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_with_ok);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvOK = (Button) mProgressDialog.findViewById(R.id.tv_ok);
+            tvOK.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * add goal
+     */
+    private void addGoal() {
+        if (isInternetAvailable()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_ADD_GOAL, dbHelper.getRefData(sdkConstant.TOKEN));
+                final SkillDataVO skillDataVO = dbHelper.getSkillData(prefs.getString(sdkConstant.PREF_SUBSKILLID, null));
+                String tLevel = sdkCommonUtils.getLevel(skillDataVO.getMaxLevel());
+                String date = sdkCommonUtils.getDateReachGoalForSdk(skillDataVO);
+                request.params.put(sdkConstant.PLAYER_ID, user.getId());
+                request.params.put(sdkConstant.DOMAIN_ID, dbHelper.getDomainId(prefs.getString(sdkConstant.PREF_SUBSKILLID, null)));
+                request.params.put(sdkConstant.SKILL_ID, "");
+                request.params.put(sdkConstant.SUB_SKILL_ID, prefs.getString(sdkConstant.PREF_SUBSKILLID, null));
+                request.params.put(sdkConstant.R_LEVEL, 1);
+                request.params.put(sdkConstant.C_LEVEL, 1);
+                request.params.put(sdkConstant.T_LEVEL, tLevel);
+                request.params.put(sdkConstant.EXPECTED_DATE, date);
+                request.params.put(sdkConstant.POINTS, sdkConstant.ZERO);
+                request.params.put(sdkConstant.STRIKE_RAKE, "");
+                request.params.put(sdkConstant.WIN_PERCENTAGE, sdkConstant.ZERO);
+                request.params.put(sdkConstant.AVG_POINT, sdkConstant.ZERO);
+                request.params.put(sdkConstant.TOTAL_WIN, sdkConstant.ZERO);
+                request.params.put(sdkConstant.TOTAL_LOST, sdkConstant.ZERO);
+                request.params.put(sdkConstant.TOTAL_ABANDON, sdkConstant.ZERO);
+                request.params.put(urls.AUTH_TYPE, user.getAuthType());
+                request.params.put(sdkConstant.AUTH_KEY, prefs.getString(sdkConstant.PREF_AUTHKEY, null));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * callback of register request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        // get response is null or slow internet
+                        if (response == null || response == sdkConstant.TRY_AGAIN) {
+                            skillSlowInternet(sdkConstant.SLOW_INTERNET_AND_TRY_AGAIN);
+                        } else {
+                            LogUtils.debug(sdkConstant.TAG, response);
+                            AddGoalVo addGoalVO = dbController.hanldeAddGoalResponse(response, request);
+                            showMsgWithOk(addGoalVO.getMsg(), "ASSESSMENT");
+                            if (urls.RESPONSE_COSE_201.contains(addGoalVO.status)) {
+                                final Intent intent = new Intent(SkillActivity.this, DashBoardActivity.class);
+                                intent.putExtra(sdkConstant.DASHBOARD_INTENT, true);
+                                startActivity(intent);
+                                finish();
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(SkillActivity.this, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+            } catch (Exception e) {
+                LogUtils.error(sdkConstant.TAG, "Exception", e);
+                slowInternet(sdkConstant.TRY_AGAIN);
+            }
+        }
+    }
+
+    /**
+     * @param message
+     */
+    private void skillSlowInternet(final String message) {
+        try {
+            final ProgressDialog mProgressDialog = ProgressDialog.show(context, "", "", true);
+            mProgressDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            mProgressDialog.setContentView(R.layout.m_dialog_message_restart);
+            final TextView tvLoading = (TextView) mProgressDialog.findViewById(R.id.tv_loading);
+            tvLoading.setText(message);
+            final Button tvYes = (Button) mProgressDialog.findViewById(R.id.tv_yes);
+            tvYes.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                    addGoal();
+                }
+            });
+            final Button tvNo = (Button) mProgressDialog.findViewById(R.id.tv_no);
+            tvNo.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(final View v) {
+                    mProgressDialog.dismiss();
+                }
+            });
+            mProgressDialog.show();
+        } catch (Exception e) {
+            LogUtils.error(sdkConstant.TAG, "Exception", e);
+        }
+    }
+
+}

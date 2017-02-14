@@ -1,0 +1,61 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class KeyVO {
+    public KeyVO() {
+    }
+
+    // Created by Deepak on 11/20/15.
+    @SerializedName("status")
+    public String status;
+    @SerializedName("requestId")
+    public String requestId;
+    @SerializedName("msg")
+    public String msg;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+
+    public String getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(String lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
+    public KeyData[] getKeys() {
+        return keys;
+    }
+
+    public void setKeys(KeyData[] keys) {
+        this.keys = keys;
+    }
+
+    @SerializedName("last_updated_date")
+    public String lastUpdatedDate;
+    @SerializedName("data")
+    public KeyData[] keys;
+}

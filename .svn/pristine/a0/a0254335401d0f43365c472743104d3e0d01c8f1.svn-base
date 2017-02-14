@@ -1,0 +1,44 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Created by Deepak on 12/2/2015.
+ */
+@SuppressWarnings("ALL")
+public class OtpResVO {
+    public OtpResVO() {
+    }
+
+    @SerializedName("status")
+    public String status;
+    @SerializedName("msg")
+    public String msg;
+
+    public String getPlayerId() {
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {
+        this.playerId = playerId;
+    }
+
+    @SerializedName("player_id")
+    public String playerId;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
+}

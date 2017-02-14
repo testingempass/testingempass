@@ -1,0 +1,1105 @@
+package com.empass.sdk.activity;
+
+import android.app.ProgressDialog;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.widget.CardView;
+import android.text.Editable;
+import android.text.Html;
+import android.text.TextWatcher;
+import android.text.method.HideReturnsTransformationMethod;
+import android.text.method.PasswordTransformationMethod;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ProgressBar;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.empass.sdk.R;
+import com.empass.sdk.adapter.CustomCountryAdapter;
+import com.empass.sdk.controller.SDKDatabaseController;
+import com.empass.sdk.customview.MobiButton;
+import com.empass.sdk.customview.MobiEditText;
+import com.empass.sdk.customview.MobiTextView;
+import com.empass.sdk.db.SDKDBHelper;
+import com.empass.sdk.http.SDKHttpRequestHandler;
+import com.empass.sdk.http.SDKHttpRequestVO;
+import com.empass.sdk.main.EmpassActivity;
+import com.empass.sdk.utils.AbstractValidationField;
+import com.empass.sdk.utils.LogUtils;
+import com.empass.sdk.utils.SDKCommonUtils;
+import com.empass.sdk.utils.SDKConstant;
+import com.empass.sdk.vo.CommonResVO;
+import com.empass.sdk.vo.OtpResVO;
+import com.empass.sdk.vo.RegisterResponseVO;
+import com.empass.sdk.vo.SkillDataVO;
+import com.empass.sdk.vo.SpinnerVO;
+
+import java.util.ArrayList;
+
+/**
+ * Created by Deepak on 9/13/2016.
+ */
+public class RegisterActivity extends EmpassActivity {
+
+    /**
+     * Declear variable
+     */
+    public transient MobiTextView tvPrivacy;
+    /**
+     * Declear variable
+     */
+    public transient MobiTextView tvConditions;
+    /**
+     * Declear variable
+     */
+    public transient Spinner loginCountry;
+    /**
+     * Declear variable
+     */
+    public transient CustomCountryAdapter adapter;
+    /**
+     * Declear variable
+     */
+    public transient TextView showHidePassword;
+    /**
+     * Declear variable
+     */
+    public transient MobiButton buttonAgree;
+    /**
+     * Declear variable
+     */
+    private int mSpinnerPosition = -1;
+    /**
+     * Declear variable
+     */
+    private transient String isPasswordShow = "NO";
+    /**
+     * Declear variable
+     */
+    public static transient MobiEditText etPassword;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText etName;
+    /**
+     * Declear variable
+     */
+    public transient MobiEditText etEmail;
+    /**
+     * Declear variable
+     */
+    public static transient MobiEditText etMobile;
+    /**
+     * Declear variable
+     */
+    public static transient String countryCode;
+    /**
+     * Declear variable
+     */
+    private transient double latitude = SDKConstant.ZERO_INDEX;
+    /**
+     * Declear variable
+     */
+    private transient double longitude = SDKConstant.ZERO_INDEX;
+    /**
+     * Declear variable
+     */
+    private transient String city = "";
+    /**
+     * Declear variable
+     */
+    Intent intentReg;
+    /**
+     * Declear variable
+     */
+    public transient CardView cardViewOTP;
+    /**
+     * Declear variable
+     */
+    public transient ArrayList<SpinnerVO> CountyListView = new ArrayList<SpinnerVO>();
+    /**
+     * Declear variable
+     */
+    private static transient ProgressDialog progressSending;
+    /**
+     * Declear variable
+     */
+    public static EditText etOtp;
+    /**
+     * Declear variable
+     */
+    public transient MobiButton btnRegenerate;
+    /**
+     * Declear variable
+     */
+    public transient TextView tvSkip;
+    /**
+     * Declear variable
+     */
+    public transient TextView tvTime;
+    /**
+     * Declear variable
+     */
+    public transient ProgressBar progressBar;
+    /**
+     * Declear variable
+     */
+    static BECountDownTimer beCountDownTimer;
+    /**
+     * Declear variable
+     */
+    static boolean getOtp = false;
+    /**
+     * Declear variable
+     */
+    private static String otp;
+    /**
+     * Declear variable
+     */
+    private static String regId;
+    /**
+     * Declear variable
+     */
+    private static String editOtp;
+    /**
+     * Declear variable
+     */
+    private static SDKDatabaseController dbController;
+
+    @Override
+    protected void onCreate(Bundle bundel) {
+        super.onCreate(bundel);
+        setContentView(R.layout.m_activity_register);
+        tvPrivacy = (MobiTextView) findViewById(R.id.mobiTextViewPrivacy);
+        tvConditions = (MobiTextView) findViewById(R.id.mobiTextViewConditions);
+        dbController = new SDKDatabaseController(this);
+        dbHelper = SDKDBHelper.getInstance(this);
+        setListData();
+        intentReg = getIntent();
+        loginCountry = (Spinner) findViewById(R.id.spinner);
+        buttonAgree = (MobiButton) findViewById(R.id.mobiButtonAgree);
+        showHidePassword = (TextView) findViewById(R.id.textView_show_pw);
+        etPassword = (MobiEditText) findViewById(R.id.mobiEditTextPassword);
+        etMobile = (MobiEditText) findViewById(R.id.et_mobile);
+        etEmail = (MobiEditText) findViewById(R.id.mobiEditTextEmail);
+        etName = (MobiEditText) findViewById(R.id.mobiEditTextName);
+        cardViewOTP = (CardView) findViewById(R.id.ll_otp);
+        showHidePassword.setVisibility(View.GONE);
+        tvTime = (TextView) findViewById(R.id.tv_time);
+        etOtp = (EditText) findViewById(R.id.et_otp);
+        btnRegenerate = (MobiButton) findViewById(R.id.mobiresend);
+        tvSkip = (TextView) findViewById(R.id.tv_skip);
+        editTextValidation();
+        tvPrivacy.setText(Html.fromHtml(SDKConstant.TXT_PRIVECY));
+        tvConditions.setText(Html.fromHtml(SDKConstant.TXT_CONDITION));
+        adapter = new CustomCountryAdapter(this, R.layout.m_spinner_rows, CountyListView);
+        // Set adapter to spinner
+        loginCountry.setAdapter(adapter);
+        loginCountry.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(final AdapterView<?> parentView, final View v, final int position, final long id) {
+                mSpinnerPosition = position;
+                countryCode = "+91";
+                final View view = loginCountry.getChildAt(position - loginCountry.getFirstVisiblePosition());
+                if (null != view) {
+                    countryCode = ((TextView) view.findViewById(R.id.country_code)).getText().toString();
+                }
+                countryCode = countryCode.replace("+", "");
+                LogUtils.debug(SDKConstant.TAG, "countryCode:" + countryCode);
+            }
+
+            @Override
+            public void onNothingSelected(final AdapterView<?> parentView) {
+            }
+        });
+        etPassword.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(final TextView v, final int actionId, final KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    registerAction();
+                }
+                return false;
+            }
+        });
+        if (null != prefs.getString(SDKConstant.PREF_NAME, null) && !SDKConstant.EMPTY.equalsIgnoreCase(prefs.getString(SDKConstant.PREF_NAME, null))) {
+            etName.setText(prefs.getString(SDKConstant.PREF_NAME, null));
+        }
+        //email not null
+
+        if (null != prefs.getString(SDKConstant.PREF_EMAIL, null) && !SDKConstant.NULL_SMALL.equalsIgnoreCase(prefs.getString(SDKConstant.PREF_EMAIL, null))
+                && !SDKConstant.EMPTY.equalsIgnoreCase(prefs.getString(SDKConstant.PREF_EMAIL, null))) {
+            etEmail.setText(prefs.getString(SDKConstant.PREF_EMAIL, null));
+        }
+        //password not null
+
+        if (null != prefs.getString(SDKConstant.PREF_PASSWORD, null) && !SDKConstant.EMPTY.equalsIgnoreCase(prefs.getString(SDKConstant.PREF_PASSWORD, null))) {
+            etPassword.setText(prefs.getString(SDKConstant.PREF_PASSWORD, null));
+        }
+        if (null != prefs.getString(SDKConstant.PREF_MOBILE, null) && !SDKConstant.EMPTY.equalsIgnoreCase(prefs.getString(SDKConstant.PREF_MOBILE, null))) {
+            etMobile.setText(prefs.getString(SDKConstant.PREF_MOBILE, null));
+        }
+        //country code not null
+        if (null != prefs.getString(SDKConstant.PREF_COUNTRY, null)) {
+            countryCode = prefs.getString(SDKConstant.PREF_COUNTRY, null);
+            loginCountry.setSelection(Integer.parseInt(prefs.getString(SDKConstant.PREF_COUNTRYINDEX, null)));
+        }
+    }
+
+    public void onClickSignin(View view) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            final SharedPreferences.Editor prefsEditor = prefs.edit();
+            prefsEditor.putString(SDKConstant.PREF_NAME, etName.getText().toString());
+            prefsEditor.putString(SDKConstant.PREF_PASSWORD, etPassword.getText().toString());
+            prefsEditor.putString(SDKConstant.PREF_MOBILE, etMobile.getText().toString());
+            prefsEditor.putString(SDKConstant.PREF_EMAIL, etEmail.getText().toString());
+            prefsEditor.putString(SDKConstant.PREF_COUNTRY, countryCode);
+            prefsEditor.putString(SDKConstant.PREF_COUNTRYINDEX, String.valueOf(mSpinnerPosition));
+            prefsEditor.apply();
+            if (intentReg != null && getIntent().getExtras().getBoolean(sdkConstant.IS_DIRECTREG)) {
+                final Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+            } else {
+                final Intent intent = new Intent(RegisterActivity.this, SkillActivity.class);
+                intent.putExtra(SDKConstant.COMEFROMLOGIN, true);
+                intent.putExtra(SDKConstant.IS_BACK, true);
+                intent.putExtra(SDKConstant.IS_DOWNLOAD, false);
+                startActivity(intent);
+                finish();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * set data on list
+     */
+    public void setListData() {
+        final String[] countryCode = getResources().getStringArray(R.array.m_country_code);
+        final String[] countryFlag = getResources().getStringArray(R.array.m_country_flag);
+        final String[] countryName = getResources().getStringArray(R.array.m_country_name);
+
+        for (int i = 0; i < 15; i++) {
+            LogUtils.debug(SDKConstant.TAG, "Code:" + countryCode[i]);
+            final SpinnerVO sched = new SpinnerVO();
+            sched.setCountryCode(countryCode[i]);
+            sched.setCountryImage(countryFlag[i]);
+            sched.setCountryName(countryName[i]);
+            CountyListView.add(sched);
+        }
+    }
+
+    public void onClickPwdHideShow(View view) {
+        if (isPasswordShow.equals(context.getResources().getString(R.string.m_no))) {
+            showHidePassword.setText(R.string.m_hide);
+            etPassword.setTransformationMethod(HideReturnsTransformationMethod.getInstance());
+            isPasswordShow = context.getResources().getString(R.string.m_yes);
+        } else if (isPasswordShow.equalsIgnoreCase(context.getResources().getString(R.string.m_yes))) {
+            showHidePassword.setText(R.string.m_show);
+            etPassword.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            isPasswordShow = context.getResources().getString(R.string.m_no);
+        }
+    }
+
+    public void onClickSubmit(View view) {
+        registerAction();
+    }
+
+    /**
+     * @param string
+     */
+    private boolean passwordAlert(final String string) {
+        boolean flag = false;
+        try {
+            if (SDKConstant.EMPTY.equalsIgnoreCase(string)) {
+                etPassword.setError(context.getResources().getString(R.string.m_required));
+                etPassword.requestFocus();
+            } else if (SDKConstant.SIX_INDEX > string.length()) {
+                etPassword.setError("Password should be alphanumeric and at least 6 characters long");
+                etPassword.requestFocus();
+            } else {
+                flag = true;
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return flag;
+    }
+
+    protected boolean validate(final String mobile) {
+        boolean flag = true;
+        if (SDKConstant.EMPTY.equalsIgnoreCase(mobile)) {
+            etMobile.setError(context.getResources().getString(R.string.m_required));
+            etMobile.requestFocus();
+            flag = false;
+        } else if (mobile.length() < SDKConstant.TEN) {
+            etMobile.setError(context.getResources().getString(R.string.m_errorMobileMessage));
+            etMobile.requestFocus();
+            flag = false;
+        }
+        return flag;
+    }
+
+    /**
+     * onClick web url
+     *
+     * @param view
+     */
+    public void onClickCondition(final View view) {
+        LogUtils.debug(SDKConstant.TAG, dbHelper.getRefData(SDKConstant.BE_CONDITION));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(dbHelper.getRefData(SDKConstant.BE_CONDITION))));
+
+    }
+
+    /**
+     * onClick Privacy
+     *
+     * @param view
+     */
+    public void onClickPrivacy(final View view) {
+        LogUtils.debug(SDKConstant.TAG, dbHelper.getRefData(SDKConstant.BE_POLICY));
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(dbHelper.getRefData(SDKConstant.BE_POLICY))));
+    }
+
+    /**
+     * editTextValidation is use for edittext empty
+     */
+    private void editTextValidation() {
+        try {
+            etName.addTextChangedListener(new TextWatcher() {
+                /**
+                 * onTextChanged of edittext
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    etName.setError(null);
+                }
+
+                /**
+                 * brfore text change
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                    LogUtils.debug(SDKConstant.TAG, "beforeTextChanged");
+                }
+
+                /**
+                 * after text chnage
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+                    LogUtils.debug(SDKConstant.TAG, "afterTextChanged");
+                    if (SDKConstant.EMPTY.equalsIgnoreCase(etName.getText().toString())) {
+                        etName.requestFocus();
+                        etName.setError("Required");
+                    }
+                }
+            });
+
+            etEmail.addTextChangedListener(new TextWatcher() {
+                /**
+                 * on text change of email
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    LogUtils.debug(SDKConstant.TAG, "onTextChanged");
+                }
+
+                /**
+                 * before text change of email
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                    LogUtils.debug(SDKConstant.TAG, "beforeTextChanged");
+
+                }
+
+                /**
+                 * after text change
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+                    if (SDKConstant.EMPTY.equalsIgnoreCase(etEmail.getText().toString())) {
+                        etEmail.requestFocus();
+                        etEmail.setError("Required");
+                    } else if (!etEmail.getText().toString().trim().matches(SDKConstant.EMAIL_PATTERN)) {
+                        LogUtils.debug(SDKConstant.TAG, "afterTextChanged");
+                        etEmail.requestFocus();
+                        etEmail.setError("Invalid email");
+                    }
+                }
+            });
+            etMobile.addTextChangedListener(new TextWatcher() {
+                /**
+                 * on text change of email
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    LogUtils.debug(SDKConstant.TAG, "onTextChanged");
+                }
+
+                /**
+                 * before text change of email
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                    LogUtils.debug(SDKConstant.TAG, "beforeTextChanged");
+
+                }
+
+                /**
+                 * after text change
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+                    if (SDKConstant.EMPTY.equalsIgnoreCase(etMobile.getText().toString())) {
+                        LogUtils.debug(SDKConstant.TAG, "afterTextChanged");
+                        etMobile.requestFocus();
+                        etMobile.setError("Required");
+                    }
+                }
+            });
+            etPassword.addTextChangedListener(new TextWatcher() {
+                /**
+                 * on text change of email
+                 */
+                @Override
+                public void onTextChanged(final CharSequence sequence, final int start, final int before, final int count) {
+                    LogUtils.debug(SDKConstant.TAG, "onTextChanged" + " " + count);
+                    showHidePassword.setVisibility(View.VISIBLE);
+                }
+
+                /**
+                 * before text change of email
+                 */
+                @Override
+                public void beforeTextChanged(final CharSequence sequence, final int start, final int count, final int after) {
+                    LogUtils.debug(SDKConstant.TAG, "beforeTextChanged" + "  " + count);
+                    showHidePassword.setVisibility(View.VISIBLE);
+                }
+
+                /**
+                 * after text change
+                 */
+                @Override
+                public void afterTextChanged(final Editable edit) {
+                    if (SDKConstant.EMPTY.equalsIgnoreCase(etPassword.getText().toString())) {
+                        LogUtils.debug(SDKConstant.TAG, "afterTextChanged");
+                        etPassword.requestFocus();
+                        etPassword.setError("Required");
+                        showHidePassword.setVisibility(View.GONE);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void registerAction() {
+        try {
+            String userName = etName.getText().toString();
+            userName = userName.trim();
+            final boolean phone = validate(etMobile.getText().toString());
+            /**
+             * password less then 6 digit
+             */
+            final boolean flag = passwordAlert(etPassword.getText().toString());
+
+            //validation successfully
+            if (isInternetAvailable() && AbstractValidationField.hasText(etName) && AbstractValidationField.isEmailAddress(etEmail, true) && phone && flag) {
+                userRegister(userName, etPassword.getText().toString(), etMobile.getText().toString(), etEmail.getText().toString().trim(), countryCode,
+                        urls.TASK_REGISTER_P, prefs.getString(SDKConstant.PREF_SUBSKILLID, null));
+
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+
+    }
+
+    /**
+     * user register is use for player registration
+     *
+     * @param subSkillId
+     */
+    private void userRegister(final String username, final String password, final String mobile, final String email, final String country,
+                              final String task, final String subSkillId) {
+        if (isInternetAvailable()) {
+            try {
+                final SkillDataVO skillDataVO = dbHelper.getSkillData(prefs.getString(sdkConstant.PREF_SUBSKILLID, null));
+                String tLevel = sdkCommonUtils.getLevel(skillDataVO.getMaxLevel());
+                String date = sdkCommonUtils.getDateReachGoalForSdk(skillDataVO);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), task, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.USER_NAME, username);
+                request.params.put(SDKConstant.PASSWORD, SDKCommonUtils.encryptPassword(password));
+                request.params.put(SDKConstant.EMAIL, email);
+                request.params.put(SDKConstant.MOBILE, mobile);
+                request.params.put(SDKConstant.DOMAIN_ID, dbHelper.getDomainId(subSkillId));
+                request.params.put(SDKConstant.SKILL_ID, "");
+                request.params.put(SDKConstant.SUB_SKILL_ID, subSkillId);
+                request.params.put(SDKConstant.R_LEVEL, 1);
+                request.params.put(SDKConstant.C_LEVEL, 1);
+                request.params.put(SDKConstant.T_LEVEL, tLevel);
+                request.params.put(SDKConstant.EXPECTED_DATE, date);
+                request.params.put(SDKConstant.CITY, city);
+                request.params.put(SDKConstant.LATITUDE, latitude);
+                request.params.put(SDKConstant.LONGITUDE, longitude);
+                request.params.put(SDKConstant.COUNTRY_CODE, country);
+                request.params.put(SDKConstant.UUID, mobile);
+                request.params.put(urls.AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.params.put(SDKConstant.AUTH_KEY, prefs.getString(SDKConstant.PREF_AUTHKEY, null));
+                request.requestMethod = urls.REQUEST_POST;
+
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * callback of register request
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        // get response is null or slow internet
+                        if (response == null || SDKConstant.TRY_AGAIN.equals(response)) {
+                            slowInternet("Slow internet");
+                        } else {
+                            RegisterResponseVO regVO = dbController.hanldeRegisterResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.contains(regVO.getStatus())) {
+                                if (countryCode == null || countryCode.equalsIgnoreCase("")) {
+                                    countryCode = "91";
+                                }
+                                regId = regVO.getRegisterId();
+                                otp = String.valueOf(regVO.getCode());
+                                initOtp(regVO.getMsg());
+                            } else {
+                                LogUtils.debug(SDKConstant.TAG, regVO.getMsg());
+                                showMsgWithOk(regVO.getMsg(), "REGISTER");
+                            }
+                        }
+                        return true;
+                    }
+                };
+
+                new SDKHttpRequestHandler(RegisterActivity.this, new Handler(callback), 1).execute(request);
+
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+                slowInternet(SDKConstant.TRY_AGAIN);
+            }
+        }
+    }
+
+    private void initOtp(String msg) {
+        cardViewOTP.setVisibility(View.VISIBLE);
+        beCountDownTimer = new BECountDownTimer(30000, 1000);
+        beCountDownTimer.start();
+    }
+
+    /**
+     * Initialize BEBeforeQuestionCountDownTimer
+     */
+    public class BECountDownTimer extends CountDownTimer {
+
+        /**
+         * Initialize BEBeforeQuestionCountDownTimer
+         */
+        public BECountDownTimer(final long optionStartTime, final long interval) {
+            super(optionStartTime, interval);
+            progressSending = ProgressDialog.show(context, "", "", true);
+            progressSending.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            progressSending.setContentView(R.layout.m_dialog_progress_otp);
+            progressBar = (ProgressBar) progressSending.findViewById(R.id.ProgressBar);
+        }
+
+        /**
+         * Initialize onFinish
+         */
+        @Override
+        public void onFinish() {
+            LogUtils.debug(SDKConstant.TAG, "BECountDownTimer Finish start");
+            try {
+                /**
+                 * dialog is visible
+                 */
+                progressSending.dismiss();
+                tvTime.setText("0:00s");
+                if (!getOtp && !(context).isFinishing()) {
+                    final ProgressDialog dialogRegerate = ProgressDialog.show(context, "", "", true);
+                    btnRegenerate.setVisibility(View.VISIBLE);
+                    tvSkip.setVisibility(View.VISIBLE);
+                    dialogRegerate.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                    dialogRegerate.setContentView(R.layout.m_dialog_message_restart);
+                    final TextView tvLoading = (TextView) dialogRegerate.findViewById(R.id.tv_loading);
+                    tvLoading.setText("Did not receive OTP. Check if your mobile number is correct and reachable. Edit your mobile number and click Regenerate.");
+                    final Button tvYes = (Button) dialogRegerate.findViewById(R.id.tv_yes);
+                    tvYes.setText(getResources().getString(R.string.m_regenerate));
+                    tvYes.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(final View v) {
+                            dialogRegerate.dismiss();
+                            resendOtp();
+                        }
+                    });
+                    final Button tvNo = (Button) dialogRegerate.findViewById(R.id.tv_no);
+                    tvNo.setText(getResources().getString(R.string.m_cancel));
+                    tvNo.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(final View v) {
+                            dialogRegerate.dismiss();
+                        }
+                    });
+                    dialogRegerate.show();
+                }
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Error while onFinish", e);
+            }
+            LogUtils.debug(SDKConstant.TAG, "BEBeforeQuestionCountDownTimer Finish stop");
+        }
+
+        /**
+         * Initialize onTick
+         */
+        @Override
+        public void onTick(final long count) {
+            try {
+                final int time = (int) count / 1000;
+                if (time < 60) {
+                    tvTime.setText("0:" + time + "s");
+                }
+                progressBar.setProgress(30 - time);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    public void onClickResend(View view) {
+        try {
+            etOtp.setText("");
+            resendOtp();
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickDone(View view) {
+        sendOtp();
+    }
+
+    /**
+     * resendOtp
+     */
+    public void resendOtp() {
+        try {
+            etOtp.setText("");
+            final InputMethodManager imm = (InputMethodManager) context.getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(context.getCurrentFocus().getWindowToken(), 0);
+            boolean phone = true;
+            String phoneNo = prefs.getString(SDKConstant.PREF_MOBILE, null);
+            if (etMobile.getVisibility() == View.VISIBLE) {
+                phone = validate(etMobile.getText().toString());
+                phoneNo = etMobile.getText().toString();
+            }
+            if (phone && isInternetAvailable()) {
+                btnRegenerate.setVisibility(View.GONE);
+                tvSkip.setVisibility(View.GONE);
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_RESEND, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.PHONE, phoneNo);
+                request.params.put(SDKConstant.PLAYER_ID, regId);
+                request.params.put(SDKConstant.COUNTRY_CODE, countryCode);
+                request.params.put(SDKConstant.NAME, etName.getText().toString());
+                request.params.put(SDKConstant.PHONE, etMobile.getText());
+                request.params.put(SDKConstant.EMAIL, etEmail.getText().toString());
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of http
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        String response = (String) msg.obj;
+                        LogUtils.debug(SDKConstant.TAG, response);
+                        CommonResVO commonResVO = dbController.handelCommonResponse(response, request);
+                        if (null == response || SDKConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            slowInternet(SDKConstant.TRY_AGAIN);
+                        } else if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                            otp = commonResVO.getMsg();
+                            beCountDownTimer = new BECountDownTimer(30000, 1000);
+                            beCountDownTimer.start();
+                        } else {
+                            showAlreadyNo(commonResVO.getMsg());
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(this, new Handler(callback), 1).execute(request);
+            }
+        } catch (NullPointerException e) {
+            LogUtils.error(SDKConstant.TAG, "NPException", e);
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    private void showAlreadyNo(final String msg) {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog dialogErrorMo = ProgressDialog.show(context, "", "", true);
+                dialogErrorMo.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialogErrorMo.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) dialogErrorMo.findViewById(R.id.tv_loading);
+                tvLoading.setText(msg);
+                final Button tvOk = (Button) dialogErrorMo.findViewById(R.id.tv_ok);
+                tvOk.setText("TRY AGAIN");
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View view) {
+                        btnRegenerate.setVisibility(View.VISIBLE);
+                        tvSkip.setVisibility(View.VISIBLE);
+                        final InputMethodManager inputMang = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                        inputMang.toggleSoftInputFromWindow(etMobile.getApplicationWindowToken(), InputMethodManager.SHOW_FORCED, 0);
+                        etMobile.requestFocus();
+                        dialogErrorMo.dismiss();
+                    }
+                });
+                dialogErrorMo.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * sendOtp
+     */
+    private static void sendOtp() {
+        try {
+            final InputMethodManager imm = (InputMethodManager) context.getSystemService(INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(context.getCurrentFocus().getWindowToken(), 0);
+            if (null != etOtp || !SDKConstant.EMPTY.equals(etOtp)) {
+                editOtp = etOtp.getText().toString();
+            }
+            if (isInternetAvailables() && otp.equalsIgnoreCase(editOtp)) {
+                sendOTPRequest(regId, SDKConstant.NTEXT);
+            } else if (isInternetAvailables() && SDKConstant.DEFAULT_OTP.equals(editOtp)) {
+                sendOTPRequest(regId, SDKConstant.NTEXT);
+            } else {
+                showInvalidOtpPopup();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * showInvalidOtpPopup
+     */
+    private static void showInvalidOtpPopup() {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog progressDialogError = ProgressDialog.show(context, "", "", true);
+                progressDialogError.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                progressDialogError.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) progressDialogError.findViewById(R.id.tv_loading);
+                tvLoading.setText("Incorrect validation code");
+                final Button tvOk = (Button) progressDialogError.findViewById(R.id.tv_ok);
+                tvOk.setText("TRY AGAIN");
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        progressDialogError.dismiss();
+                    }
+                });
+                progressDialogError.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    public void onClickSkip(View view) {
+        sendOTPRequest(regId, SDKConstant.YTEXT);
+    }
+
+    /**
+     * setOtpMessage
+     *
+     * @param message
+     */
+    public static void setOtpMessage(final String message) {
+        try {
+            if (null != message) {
+                etOtp.setText(message);
+                beCountDownTimer.cancel();
+                progressSending.dismiss();
+                sendOtp();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+
+    private static boolean isInternetAvailables() {
+        boolean isInternetPresent = false;
+        try {
+            isInternetPresent = isNetworkAvailable();
+            /**
+             * if internet is not present show message
+             */
+            if (!isInternetPresent) {
+                showInternetDialogs();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return isInternetPresent;
+    }
+
+    /**
+     * Method to check Network Availability
+     */
+    public static boolean isNetworkAvailable() {
+        boolean condition = false;
+        try {
+            final ConnectivityManager connectivity = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            // if connected return true else return false
+            if (connectivity == null) {
+                condition = false;
+            }
+            assert connectivity != null;
+            final NetworkInfo[] info = connectivity.getAllNetworkInfo();
+            // if network info not null then return true else false
+            if (info != null) {
+                for (int i = 0; i < info.length; i++) {
+                    // if state is connected then return true
+                    if (info[i].getState() == NetworkInfo.State.CONNECTED) {
+                        condition = true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+        return condition;
+    }
+
+    /**
+     *
+     */
+
+    protected static void showInternetDialogs() {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog slowNetDialog = ProgressDialog.show(context, "", "", true);
+                slowNetDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                slowNetDialog.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) slowNetDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText("No connection available. Please enable internet!");
+                final Button tvOk = (Button) slowNetDialog.findViewById(R.id.tv_ok);
+                tvOk.setText(R.string.m_enable);
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        slowNetDialog.dismiss();
+                        context.startActivity(new Intent(android.provider.Settings.ACTION_SETTINGS));
+                    }
+                });
+                slowNetDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * send otp resuest
+     *
+     * @param regId
+     */
+    private static void sendOTPRequest(final String regId, final String otpFlag) {
+        if (isInternetAvailables()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_VALIDATE, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.ID, regId);
+                request.params.put(SDKConstant.OTP_VERIFY, otpFlag);
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * handle callback of response
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        /**
+                         * get response is null
+                         */
+                        if (null == response || SDKConstant.TRY_AGAIN.equalsIgnoreCase(response)) {
+                            otpSlowInternet(SDKConstant.SLOW_INTERNET_AND_TRY_AGAIN, SDKConstant.ZERO_INDEX);
+                        } else {
+                            OtpResVO resVO = dbController.hanldeValidateResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(resVO.getStatus())) {
+                                actionLogin();
+                            } else if (urls.RESPONSE_COSE_404.equalsIgnoreCase(resVO.getStatus())) {
+                                showErrorMes("REFERRAL CODE", resVO.getMsg());
+                            } else {
+                                showErrorMes("ERROR", resVO.getMsg());
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(context, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                slowInternet(SDKConstant.TRY_AGAIN);
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+    /**
+     * showErrorMes
+     *
+     * @param title
+     * @param msg
+     */
+    private static void showErrorMes(final String title, final String msg) {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog dialogError = ProgressDialog.show(context, "", "", true);
+                dialogError.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                dialogError.setContentView(R.layout.m_dialog_message_with_ok);
+                final TextView tvLoading = (TextView) dialogError.findViewById(R.id.tv_loading);
+                tvLoading.setText(msg);
+                final Button tvOk = (Button) dialogError.findViewById(R.id.tv_ok);
+                tvOk.setText("TRY AGAIN");
+                tvOk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        dialogError.dismiss();
+                    }
+                });
+                dialogError.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * @param message
+     * @param index
+     */
+    private static void otpSlowInternet(final String message, final int index) {
+        try {
+            if (!(context).isFinishing()) {
+                final ProgressDialog otpSlowDialog = ProgressDialog.show(context, "", "", true);
+                otpSlowDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                otpSlowDialog.setContentView(R.layout.m_dialog_message_restart);
+                final TextView tvLoading = (TextView) otpSlowDialog.findViewById(R.id.tv_loading);
+                tvLoading.setText(message);
+                final Button tvYes = (Button) otpSlowDialog.findViewById(R.id.tv_yes);
+                tvYes.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        otpSlowDialog.dismiss();
+                        if (SDKConstant.ZERO_INDEX == index) {
+                            sendOTPRequest(regId, SDKConstant.NTEXT);
+                        } else {
+                            actionLogin();
+                        }
+                    }
+                });
+                final Button tvNo = (Button) otpSlowDialog.findViewById(R.id.tv_no);
+                tvNo.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(final View v) {
+                        otpSlowDialog.dismiss();
+                    }
+                });
+                otpSlowDialog.show();
+            }
+        } catch (Exception e) {
+            LogUtils.error(SDKConstant.TAG, "Exception", e);
+        }
+    }
+
+    /**
+     * login request
+     */
+    protected static void actionLogin() {
+        if (isInternetAvailables()) {
+            try {
+                final SDKHttpRequestVO request = new SDKHttpRequestVO(getUrl(), urls.TASK_LOGIN, dbHelper.getRefData(SDKConstant.TOKEN));
+                request.params.put(SDKConstant.LOGIN_USER, etMobile.getText().toString());
+                request.params.put(SDKConstant.PASSWORD, SDKCommonUtils.encryptPassword(etPassword.getText().toString()));
+                request.params.put(SDKConstant.COUNTRY_CODE, countryCode);
+                request.params.put(urls.AUTH_TYPE, dbHelper.getRefData(urls.AUTH_TYPE));
+                request.requestMethod = urls.REQUEST_POST;
+                final Handler.Callback callback = new Handler.Callback() {
+                    /**
+                     * callback
+                     */
+                    @Override
+                    public boolean handleMessage(final Message msg) {
+                        final String response = (String) msg.obj;
+                        if (response == null || response.equals(SDKConstant.TRY_AGAIN)) {
+                            otpSlowInternet(SDKConstant.SLOW_INTERNET_AND_TRY_AGAIN, SDKConstant.ONE_INDEX);
+                        } else {
+                            CommonResVO commonResVO = dbController.handelUserDeatilsResponse(response, request);
+                            if (urls.RESPONSE_COSE_201.equalsIgnoreCase(commonResVO.getStatus())) {
+                                SharedPreferences preferences = context.getSharedPreferences(SDKConstant.PKZ, MODE_PRIVATE);
+                                preferences.edit().clear().commit();
+                                if (SDKConstant.YTEXT.equalsIgnoreCase(commonResVO.getMultiSkill())) {
+                                    Intent intent = new Intent(context, DashBoardActivity.class);
+                                    intent.putExtra(SDKConstant.DASHBOARD_INTENT, false);
+                                    context.startActivity(intent);
+                                    context.finish();
+                                } else {
+                                    final Intent intent = new Intent(context, GoalDetailsActivity.class);
+                                    intent.putExtra(SDKConstant.GOAL_INTENT, commonResVO.getSkillId());
+                                    intent.putExtra(SDKConstant.DASHBOARD_INTENT, false);
+                                    context.startActivity(intent);
+                                    context.finish();
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                };
+                new SDKHttpRequestHandler(context, new Handler(callback), 1).execute(request);
+            } catch (NullPointerException e) {
+                LogUtils.error(SDKConstant.TAG, "NPException", e);
+            } catch (Exception e) {
+                slowInternet(SDKConstant.TRY_AGAIN);
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+        }
+    }
+
+}

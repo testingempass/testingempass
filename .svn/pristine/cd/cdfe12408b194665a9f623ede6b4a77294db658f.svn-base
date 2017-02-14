@@ -1,0 +1,61 @@
+package com.empass.sdk.vo;
+
+import com.google.gson.annotations.SerializedName;
+
+public class LoginResponseVO {
+    @SerializedName("status")
+    //Class for Login response  @author Sandeep
+    private String status;                                           // Variable for status
+    private long requestId;                                          //Variable for request id
+    @SerializedName("login_id")                                      //Variable for login id
+    private String loginId;
+
+    @SerializedName("msg")                                           // Variable for msg
+    private String message;
+    @SerializedName("data")
+    private LoginResponseData data;                                  // Class for data array
+
+    public LoginResponseVO() {                                      //Class Constructor
+        super();
+    }
+
+    public String getStatus() {                                      // Method to get status @return
+        return status;
+    }
+
+    public void setStatus(final String status) {                    // Method to set Status @return
+        this.status = status;
+    }
+
+    public long getRequestId() {                                    // Method to get request Id @return
+        return requestId;
+    }
+
+    public void setRequestId(final long requestId) {                // Method to request id @return
+        this.requestId = requestId;
+    }
+
+    public String getLoginId() {                                    // Method to get login id @return
+        return loginId;
+    }
+
+    public void setLoginId(final String loginId) {                 // Method to set login id @return
+        this.loginId = loginId;
+    }
+
+    public String getMessage() {                                   //Method to get message @return
+        return message;
+    }
+
+    public void setMessage(final String message) {                 // Method to set message @return
+        this.message = message;
+    }
+
+    public LoginResponseData getData() {                          //Class to get data array @return
+        return data;
+    }
+
+    public void setData(final LoginResponseData data) {           // Class to set data array  @return
+        this.data = data;
+    }
+}

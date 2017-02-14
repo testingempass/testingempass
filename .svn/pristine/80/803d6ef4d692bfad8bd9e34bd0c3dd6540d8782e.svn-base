@@ -1,0 +1,119 @@
+package com.empass.sdk.vo;
+
+public class LeaderVO {                                                          //Class for data array in response of Leaderboard @author Rockstar
+    private String playerId;                                                     // variable for player id
+    private String rank;                                                         // variable for rank
+    private String country;                                                      //variable for country
+    private String playerName;                                                   //variable for player name
+    private String cLevel;                                                       // variable for clevel
+    private String cSubLevel;                                                    //variable for csublevel
+    private String avgScore;
+    private String ccName;                                                     // variable for avgScore
+
+    public String getDomainColor() {
+        return domainColor;
+    }
+
+    public void setDomainColor(String domainColor) {
+        this.domainColor = domainColor;
+    }
+
+    private String domainColor;
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
+    }
+
+    public String getCcName() {
+        return ccName;
+    }
+
+    public void setCcName(String ccName) {
+        this.ccName = ccName;
+    }
+
+    private String image;                                                     // variable for avgScore
+
+    // variable for avgScore
+    public int getDomainId() {
+        return domainId;
+    }
+
+    public void setDomainId(int domainId) {
+        this.domainId = domainId;
+    }
+
+    private int domainId;
+
+    public LeaderVO() {                                                          //Class Constructor
+        super();
+    }
+
+    @Override
+    public String toString() {                                                   // toString Method
+        return "LeaderVO [playerId=" + playerId + ", rank=" + rank
+                + ", country=" + country + ", playerName=" + playerName
+                + ", cLevel=" + cLevel + ", cSubLevel=" + cSubLevel
+                + ", avgScore=" + avgScore + "]";
+    }
+
+    public String getPlayerId() {                                            // Method to get player id @return
+        return playerId;
+    }
+
+    public void setPlayerId(String playerId) {                                            //Method to set player id @return
+        this.playerId = playerId;
+    }
+
+    public String getRank() {                                                              //Method to get rank @return
+        return rank;
+    }
+
+    public void setRank(String rank) {                                                    //Method to set rank @return
+        this.rank = rank;
+    }
+
+    public String getCountry() {                                                          //Method to get country @return
+        return country;
+    }
+
+    public void setCountry(String country) {                                             //Method to set country @return
+        this.country = country;
+    }
+
+    public String getPlayerName() {                                                     //Method to get player name @return
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {                                      // Method to set player name @return
+        this.playerName = playerName;
+    }
+
+    public String getcLevel() {                                                        //Method to get cLevel @return
+        return cLevel;
+    }
+
+    public void setcLevel(String cLevel) {                                             //Method to set clevel @return
+        this.cLevel = cLevel;
+    }
+
+    public String getcSubLevel() {                                                   //Method to get csublevel @return
+        return cSubLevel;
+    }
+
+    public void setcSubLevel(String cSubLevel) {                                     //Method to set csublevel @return
+        this.cSubLevel = cSubLevel;
+    }
+
+    public String getAvgScore() {                                                     //Method to get avgscore  @return
+        return avgScore;
+    }
+
+    public void setAvgScore(String avgScore) {                                       //Method to set avg score @return
+        this.avgScore = avgScore;
+    }
+}

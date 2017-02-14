@@ -1,0 +1,63 @@
+package com.empass.sdk.utils;
+
+import android.graphics.Color;
+import android.text.SpannableStringBuilder;
+import android.text.style.ForegroundColorSpan;
+import android.widget.TextView;
+
+import java.util.regex.Pattern;
+
+abstract public class AbstractValidationField {
+    /**
+     *
+     */
+    private static final String EMAIL_REGEX = "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";          // Validation for email
+    private static final String REQUIRED_MSG = "Required";                                                     //Error Message
+    private static final String EMAIL_MSG = "Invalid email";
+
+    public static boolean isEmailAddress(final TextView textView, final boolean required) {
+        return isValid(textView, EMAIL_REGEX, EMAIL_MSG, required);
+    }
+
+    public static boolean isValid(final TextView textView, final String regex, final String errMsg, final boolean required) {
+        Boolean flag = true;
+        final String text = textView.getText().toString().trim();
+        textView.setError(null);
+        if (textView.getText().length() == 0) {
+            textView.setError(REQUIRED_MSG);
+        } else if (required && !Pattern.matches(regex, text)) {                                                  // pattern doesn't match so returning false
+            final int ecolor = Color.WHITE;                                                              // whatever color you want
+            try {
+                final ForegroundColorSpan fgcspan = new ForegroundColorSpan(ecolor);
+                final SpannableStringBuilder ssbuilder = new SpannableStringBuilder(errMsg);
+                ssbuilder.setSpan(fgcspan, 0, errMsg.length(), 0);
+
+                textView.setError(ssbuilder);
+
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+            flag = false;
+        }
+        return flag;
+    }
+
+    public static boolean hasText(final TextView textView) {                                              //checks textview text   @param textView   @return
+        Boolean flag = true;
+        final String text = textView.getText().toString().trim();
+        textView.setError(null);
+        if (text.length() == 0) {                                                                        // length 0 means there is no text
+            try {
+                final int ecolor = Color.WHITE; // whatever color you want
+                final ForegroundColorSpan fgcspan = new ForegroundColorSpan(ecolor);
+                final SpannableStringBuilder ssbuilder = new SpannableStringBuilder(REQUIRED_MSG);
+                ssbuilder.setSpan(fgcspan, 0, REQUIRED_MSG.length(), 0);
+                textView.setError(ssbuilder);
+            } catch (Exception e) {
+                LogUtils.error(SDKConstant.TAG, "Exception", e);
+            }
+            flag = false;
+        }
+        return flag;
+    }
+}
