@@ -10,9 +10,9 @@ ext {
     siteUrl = 'https://github.com/testingempass/testingempass'
     gitUrl = 'https://github.com/testingempass/testingempass.git'
     libraryVersion = '1.0'
-    developerId = 'testingempass'
-    developerName = 'Testing Empass'
-    developerEmail = 'deepakjain.mobifly@gmail.com'
+    developerId = 'sdkempass'
+    developerName = 'Empass Sdk'
+    developerEmail = 'buildemploypro@gmail.com'
 
     licenseName = 'The Apache Software License, Version 2.0'
     licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
