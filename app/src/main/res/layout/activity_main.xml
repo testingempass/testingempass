@@ -8,7 +8,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/sp_20"
+        android:layout_marginTop="20dp"
         android:text="Welcome in Empass as a guest user"
         android:textColor="@color/sdk_seconderycolor"
         android:textSize="16dp" />
@@ -19,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/textView"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="@dimen/sp_20"
+        android:layout_marginTop="20dp"
         android:src="@drawable/web_logo" />
 
 
